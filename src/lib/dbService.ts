@@ -1,5 +1,5 @@
 import { insforge, isInsForgeConfigured } from "./insforge";
-import { LogSheet, LogEntry, QCSample, SupervisorUpdateEvent, UserProfile } from "@/types";
+import { LogSheet, LogEntry, SampleReport, SupervisorUpdateEvent, UserProfile } from "@/types";
 
 /**
  * Service to sync data between the Next.js app and the InsForge PostgreSQL backend.

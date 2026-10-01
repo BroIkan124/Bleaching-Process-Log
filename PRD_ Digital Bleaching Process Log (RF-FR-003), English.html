@@ -1,0 +1,540 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}</style><style>:root{color-scheme:light dark;--md-bg:#fff;--md-text:rgba(0,0,0,.8);--md-muted:rgba(0,0,0,.6);--md-fill:rgba(0,0,0,.04);--md-fill-strong:rgba(0,0,0,.06);--md-rule:rgba(0,0,0,.1);--md-rule-strong:rgba(0,0,0,.16);--md-link:hsl(210 100% 45%)}@media (prefers-color-scheme:dark){:root:where(:not([data-theme="light"])){--md-bg:#0d0d0d;--md-text:rgba(255,255,255,.85);--md-muted:rgba(255,255,255,.6);--md-fill:rgba(255,255,255,.06);--md-fill-strong:rgba(255,255,255,.09);--md-rule:rgba(255,255,255,.14);--md-rule-strong:rgba(255,255,255,.22);--md-link:hsl(210 100% 72%)}}:root[data-theme="dark"]{color-scheme:dark;--md-bg:#0d0d0d;--md-text:rgba(255,255,255,.85);--md-muted:rgba(255,255,255,.6);--md-fill:rgba(255,255,255,.06);--md-fill-strong:rgba(255,255,255,.09);--md-rule:rgba(255,255,255,.14);--md-rule-strong:rgba(255,255,255,.22);--md-link:hsl(210 100% 72%)}:root[data-theme="light"]{color-scheme:light}@media print{:root,:root[data-theme="dark"]{color-scheme:light;--md-bg:#fff;--md-text:rgba(0,0,0,.8);--md-muted:rgba(0,0,0,.6);--md-fill:rgba(0,0,0,.04);--md-fill-strong:rgba(0,0,0,.06);--md-rule:rgba(0,0,0,.1);--md-rule-strong:rgba(0,0,0,.16);--md-link:hsl(210 100% 45%)}}body{background:var(--md-bg);color:var(--md-text);max-width:720px;margin:0 auto;padding:32px;display:flex;flex-direction:column;gap:10px;font:14px/1.55 -apple-system,BlinkMacSystemFont,'SF Pro','Segoe UI',sans-serif;overflow-wrap:break-word}body>:first-child{margin-top:0}h1,h2,h3,h4,h5,h6{margin:6px 0 0;line-height:1.25;font-weight:600;text-wrap:balance}h1{font-size:1.35em}h2{font-size:1.15em;color:var(--md-muted)}h3,h4,h5,h6{font-size:1em}p,ul,ol,blockquote,table,pre,hr{margin:0}strong{font-weight:600}a{color:var(--md-link);text-decoration:none}a:hover{text-decoration:underline}ul,ol{display:flex;flex-direction:column;gap:6px;padding-left:22px}ul{list-style:disc}ol{list-style:decimal}:is(li,td,th)>*+:is(p,ul,ol,blockquote){margin-top:6px}blockquote{display:flex;flex-direction:column;gap:10px;border-left:2px solid var(--md-rule);padding-left:10px;color:var(--md-muted)}:not(pre)>code{background:var(--md-fill);padding:1px 3px;border-radius:4px;font:.92em 'SF Mono',ui-monospace,Menlo,Consolas,monospace}a>code{background:none;color:inherit}pre{background:var(--md-fill);padding:10px 12px;border-radius:6px;overflow-x:auto;font:12px/1.5 'SF Mono',ui-monospace,Menlo,Consolas,monospace;margin-block:4px}pre code{background:none;padding:0;font:inherit}table{width:100%;border-collapse:separate;border-spacing:2px;font:inherit}th,td{padding:6px 8px;border-radius:3px;text-align:left;vertical-align:top}th{background:var(--md-fill-strong);font-weight:600}td{background:var(--md-fill)}:is(th,td) :not(pre)>code{background:transparent}hr{border:0;border-top:1px solid var(--md-rule-strong);margin-block:10px}img{max-width:100%;height:auto;border-radius:4px}</style>
+</head><body>
+<h1>PRD: Digital Bleaching Process Log (RF-FR-003)</h1>
+<p><strong>Product:</strong> Web app replacing the paper <em>FS/WS Auto Bleaching Process Log Sheet</em> (Form RF-FR-003, Rev 03), Refinery Department, Lam Soon Edible Oils Sdn Bhd
+<strong>Stack:</strong> Next.js (frontend) · InsForge (database, auth, storage)
+<strong>Status:</strong> Draft v0.2 · Confirmed: L/H level, 3 shifts, supervisor approval</p>
+<p><strong>Contents:</strong> Part A Product Requirements · Part B Project Plan · Part C Workflow</p>
+<hr>
+<h1>Part A: Product Requirements</h1>
+<h2>1. Overview</h2>
+<p>Technicians currently fill this log by hand every hour, 24 hours a day. Paper sheets get lost, handwriting is hard to read, out-of-spec readings are noticed late, and supervisors must check each sheet manually.</p>
+<p>The app digitises the same form with the same fields, so technicians do not need to learn a new process. What changes: instant validation, safe storage, supervisor review, and a PDF export that matches the original form.</p>
+<p><strong>Goals</strong></p>
+<ol>
+<li>Fully replace paper RF-FR-003 after a pilot period.</li>
+<li>Each hourly entry takes under 60 seconds on a tablet.</li>
+<li>Out-of-spec readings are flagged at the moment of entry.</li>
+<li>Every record is searchable, filterable and exportable by date, plant and product.</li>
+</ol>
+<p><strong>Non-goals (v1):</strong> direct PLC/SCADA integration, advanced analytics, other refinery forms.</p>
+<p><strong>Success metrics:</strong> at least 98% of hourly slots filled on time; zero lost sheets; supervisor review time down by 50%; paper retired after a 4-week parallel run.</p>
+<h2>2. Form field inventory</h2>
+<p>Read from the original PDF and verified against its layout. This is the basis of the data schema.</p>
+<h3>2.1 Sheet header</h3>
+<table>
+<thead>
+<tr>
+<th>Field on form</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Form No / Rev No</td>
+<td>Fixed: RF-FR-003 / 03</td>
+<td>Stored on every sheet for revision control</td>
+</tr>
+<tr>
+<td>Date</td>
+<td>Date</td>
+<td>Start date of the sheet (see 2.4)</td>
+</tr>
+<tr>
+<td>Plant</td>
+<td>Select (master data)</td>
+<td></td>
+</tr>
+<tr>
+<td>Product</td>
+<td>Select (master data)</td>
+<td></td>
+</tr>
+<tr>
+<td>Tech 1st / 2nd / 3rd Shift</td>
+<td>User (3 slots)</td>
+<td>One technician per shift</td>
+</tr>
+<tr>
+<td>Feed Tank</td>
+<td>Select (master data)</td>
+<td></td>
+</tr>
+<tr>
+<td>Discharge Tank</td>
+<td>Select (master data)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3>2.2 Parameter block (above the table)</h3>
+<table>
+<thead>
+<tr>
+<th>Group</th>
+<th>Fields and units</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Input flowrate</strong></td>
+<td>MT/HR · MT/DAY</td>
+</tr>
+<tr>
+<td><strong>Citric/Phosphoric acid</strong></td>
+<td>Mm · Cm/Hr · %</td>
+</tr>
+<tr>
+<td><strong>Bleaching earth</strong></td>
+<td>Type · Setting · Min (%) · Kgs/Day</td>
+</tr>
+<tr>
+<td><strong>Filter aids</strong></td>
+<td>Type: 1, 2 · Quantity: 1, 2</td>
+</tr>
+</tbody>
+</table>
+<h3>2.3 Hourly table (24 rows, 0800 to 0700)</h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Sub-heading</th>
+<th>Input type</th>
+<th>Rule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Time</td>
+<td>Hrs</td>
+<td>Fixed slot</td>
+<td>0800…2400, 0100…0700</td>
+</tr>
+<tr>
+<td>Flowrate</td>
+<td>MT/HR · Set</td>
+<td>Number</td>
+<td>Set value</td>
+</tr>
+<tr>
+<td>Acid Dosage</td>
+<td>√</td>
+<td>Checkmark</td>
+<td></td>
+</tr>
+<tr>
+<td>HE Temp</td>
+<td>°C</td>
+<td>Number</td>
+<td>Range <strong>70–115 °C</strong></td>
+</tr>
+<tr>
+<td>Earth Dosage</td>
+<td>√</td>
+<td>Checkmark</td>
+<td></td>
+</tr>
+<tr>
+<td>Bleacher Level</td>
+<td>L/H</td>
+<td>Toggle: <strong>L</strong> or <strong>H</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>Bleacher Vacuum</td>
+<td>Min.</td>
+<td>Number (mmHg)</td>
+<td>Minimum <strong>600 mmHg</strong></td>
+</tr>
+<tr>
+<td>Niagara Filter</td>
+<td>N60-1/2/3/4</td>
+<td>Select one of 4</td>
+<td></td>
+</tr>
+<tr>
+<td>Changing Filter</td>
+<td>Time</td>
+<td>Time (HH:mm)</td>
+<td>Empty if no change</td>
+</tr>
+<tr>
+<td>Quality: FFA</td>
+<td>%</td>
+<td>Decimal number</td>
+<td></td>
+</tr>
+<tr>
+<td>Quality: Colour</td>
+<td>R · Y</td>
+<td>Two numbers</td>
+<td>Red and Yellow</td>
+</tr>
+<tr>
+<td>Remarks</td>
+<td></td>
+<td>Free text</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3>2.4 Details the design must handle</h3>
+<ul>
+<li><strong>One sheet spans two calendar dates.</strong> Rows 0100–0700 fall on the next day. The system stores <code>slot_index</code> 0–23 and derives the real timestamp from the sheet date.</li>
+<li><strong>Three shifts of 8 hours:</strong> Shift 1 = 0800–1500, Shift 2 = 1600–2300, Shift 3 = 2400–0700 (slots 0–7, 8–15, 16–23).</li>
+<li>The paper form has <strong>no signature or approval area</strong>. The supervisor review flow is an addition, confirmed as wanted.</li>
+</ul>
+<h2>3. Users and roles</h2>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Main tasks</th>
+<th>Permissions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Technician</strong></td>
+<td>Fill header and hourly entries for own shift</td>
+<td>Create sheets; edit own shift's entries only</td>
+</tr>
+<tr>
+<td><strong>Supervisor</strong></td>
+<td>Review sheets; return or approve</td>
+<td>Read all; comment; return / approve</td>
+</tr>
+<tr>
+<td><strong>Manager / QA</strong></td>
+<td>Audit, reports, export</td>
+<td>Read all; export</td>
+</tr>
+<tr>
+<td><strong>Admin</strong></td>
+<td>Manage users and master data</td>
+<td>Full access</td>
+</tr>
+</tbody>
+</table>
+<h2>4. Functional requirements</h2>
+<p><strong>P0: must have (MVP)</strong></p>
+<ul>
+<li>Login and role-based access.</li>
+<li>Create a sheet (header + parameter block); block duplicates for the same date + plant + product.</li>
+<li>24-slot entry screen with every column in 2.3; the current slot is highlighted.</li>
+<li>Real-time validation: HE Temp 70–115 °C, Vacuum ≥ 600 mmHg. Failing values are flagged and Remarks becomes mandatory.</li>
+<li>Auto-save per slot, showing who entered it and when.</li>
+<li>Sheet list with filters (date, plant, product, status).</li>
+<li>Submit sheet for review.</li>
+</ul>
+<p><strong>P1: should have</strong></p>
+<ul>
+<li>Supervisor review: comment, return, approve, lock sheet.</li>
+<li>PDF export (A4 landscape) matching RF-FR-003.</li>
+<li>Offline mode (PWA): entries saved locally and synced when the network returns.</li>
+<li>Overdue slot indicator.</li>
+<li>Full audit log (who changed what, old and new value).</li>
+</ul>
+<p><strong>P2: later</strong></p>
+<ul>
+<li>Trend charts for HE Temp, vacuum, FFA, colour per batch.</li>
+<li>CSV/Excel export; overdue-slot notifications.</li>
+<li>Copy header parameters from the previous sheet.</li>
+</ul>
+<h2>5. Data model (InsForge / PostgreSQL)</h2>
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Key fields</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>profiles</code></td>
+<td>id, name, role, active</td>
+</tr>
+<tr>
+<td><code>plants</code>, <code>products</code>, <code>tanks</code></td>
+<td>id, name; <code>tanks.kind</code> = feed / discharge</td>
+</tr>
+<tr>
+<td><code>log_sheets</code></td>
+<td>id, sheet_date, plant_id, product_id, feed_tank_id, discharge_tank_id, tech_s1, tech_s2, tech_s3, form_no, form_rev, input_mt_hr, input_mt_day, acid_type, acid_mm, acid_cm_hr, acid_pct, earth_type, earth_setting, earth_min_pct, earth_kgs_day, aid1_type, aid1_qty, aid2_type, aid2_qty, status, submitted_at, reviewed_by, reviewed_at, review_note</td>
+</tr>
+<tr>
+<td><code>log_entries</code></td>
+<td>id, sheet_id, slot_index (0–23), flowrate_set, acid_dosage_ok, he_temp_c, earth_dosage_ok, bleacher_level (L/H), vacuum_mmhg, niagara_filter, filter_change_time, ffa_pct, colour_r, colour_y, remarks, out_of_spec (jsonb), entered_by, entered_at</td>
+</tr>
+<tr>
+<td><code>audit_log</code></td>
+<td>id, table, record_id, field, old_value, new_value, user_id, at</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Constraints:</strong> <code>UNIQUE(sheet_id, slot_index)</code>; <code>UNIQUE(sheet_date, plant_id, product_id)</code>. Out-of-range values are saved and flagged in <code>out_of_spec</code>, not rejected, because real readings must always be recorded.</p>
+<p><strong>Security:</strong> Postgres Row Level Security so technicians can only edit their own shift's entries, and <code>Approved</code> sheets are writable by Admin only. Confirm RLS and auth support in the current InsForge docs during setup.</p>
+<h2>6. UI/UX direction</h2>
+<p><strong>Context:</strong> used on the plant floor, on landscape tablets, with busy hands and varying light. The design must be clear, fast and undecorated.</p>
+<p><strong>Principles</strong></p>
+<ol>
+<li><strong>Keep the table technicians already know.</strong> The main screen stays a 24-hour grid like the paper form, but the current row opens into a large entry panel. That is the one deliberate focal point; everything else stays quiet and orderly.</li>
+<li><strong>Touch targets of 48 px or more.</strong> Numeric keypad for number fields; segmented buttons (not small dropdowns) for L/H and Niagara filter.</li>
+<li><strong>Colour carries meaning, not decoration.</strong> Red only for out-of-spec, green for completed slots, amber for overdue.</li>
+<li><strong>Plain-language copy.</strong> Buttons name the real action (&quot;Save slot&quot;, &quot;Submit for review&quot;); errors say what went wrong and how to fix it.</li>
+<li><strong>Avoid generic AI-looking design:</strong> no decorative gradients, no identical rounded cards everywhere, no cream-and-terracotta or black-and-neon-green palettes, no spaced ALL-CAPS label above every heading, no entrance animation on every section.</li>
+</ol>
+<p><strong>Starting tokens (adjustable)</strong></p>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Background</td>
+<td><code>#F5F6F4</code></td>
+</tr>
+<tr>
+<td>Ink / text</td>
+<td><code>#1B2A2E</code></td>
+</tr>
+<tr>
+<td>Primary accent (oil gold)</td>
+<td><code>#B8860B</code></td>
+</tr>
+<tr>
+<td>Lines and secondary</td>
+<td><code>#5E6E73</code></td>
+</tr>
+<tr>
+<td>In spec</td>
+<td><code>#2F7D52</code></td>
+</tr>
+<tr>
+<td>Out of spec</td>
+<td><code>#C0392B</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Typography:</strong> <em>Bricolage Grotesque</em> for headings; <em>Instrument Sans</em> for body and data, with <code>font-variant-numeric: tabular-nums</code> so number columns align.</p>
+<p><strong>Key screens</strong></p>
+<ul>
+<li><strong>Sheet list:</strong> filters on top, one row per sheet with status.</li>
+<li><strong>Sheet:</strong> collapsible header, a 24-slot rail showing done / overdue / out-of-spec, and the entry panel for the selected slot.</li>
+<li><strong>Review:</strong> read-only view with out-of-spec cells highlighted, plus Approve / Return buttons.</li>
+<li><strong>Admin:</strong> users and master data.</li>
+</ul>
+<p><strong>Quality floor:</strong> responsive on tablet and phone, visible keyboard focus, WCAG AA contrast, respects <code>prefers-reduced-motion</code>.</p>
+<h2>7. Technical architecture</h2>
+<ul>
+<li><strong>Frontend:</strong> Next.js (App Router), TypeScript, Tailwind, React Hook Form + Zod (validation rules shared with the server).</li>
+<li><strong>Backend:</strong> InsForge: PostgreSQL, Auth, Storage (exported PDFs), RLS.</li>
+<li><strong>PDF:</strong> generated server-side from sheet data in an A4 landscape layout matching RF-FR-003.</li>
+<li><strong>PWA:</strong> service worker and local queue for offline entry.</li>
+<li><strong>Environments:</strong> dev, staging, production; daily database backups.</li>
+</ul>
+<p><strong>Non-functional:</strong> slot save under 1 second; available 24/7; every change traceable; retention period to match company records policy (to be confirmed).</p>
+<h2>8. Open questions</h2>
+<ol>
+<li><strong>Acid block &quot;Mm / Cm/Hr / %&quot;:</strong> what does each measure (e.g. pump stroke length)? Is the acid on a sheet Citric or Phosphoric (a select)?</li>
+<li><strong>Bleaching earth &quot;Setting&quot; and &quot;Min&quot;:</strong> units for Setting, and the exact meaning of Min (shown on the form with a % and with Kgs/Day).</li>
+<li><strong>Colour (R/Y) and FFA:</strong> scale and spec limits, if any.</li>
+<li><strong>Master data:</strong> full valid lists of plants, products and tanks.</li>
+<li><strong>Approver and retention:</strong> who approves a sheet, and how long records must be kept.</li>
+<li><strong>Future:</strong> can any value (temperature, vacuum) come from the control system later?</li>
+</ol>
+<hr>
+<h1>Part B: Project Plan</h1>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Duration</th>
+<th>Deliverables</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>0. Discovery</strong></td>
+<td>1 week</td>
+<td>Open questions answered; shadow technicians; master data lists; wireframes</td>
+</tr>
+<tr>
+<td><strong>1. MVP</strong></td>
+<td>3 weeks</td>
+<td>Auth, master data, create sheet, 24-slot entry, validation, list and filters, submit</td>
+</tr>
+<tr>
+<td><strong>2. Review and export</strong></td>
+<td>2 weeks</td>
+<td>Supervisor review, sheet locking, RF-FR-003 PDF, audit log</td>
+</tr>
+<tr>
+<td><strong>3. Offline and pilot</strong></td>
+<td>2 weeks</td>
+<td>PWA offline mode; parallel run with paper on one plant; collect feedback</td>
+</tr>
+<tr>
+<td><strong>4. Rollout</strong></td>
+<td>1–2 weeks</td>
+<td>All plants, training, retire paper</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Roughly 9–10 weeks end to end.</strong></p>
+<p><strong>Risks and mitigations</strong></p>
+<ul>
+<li>Weak Wi-Fi on the plant floor → offline mode (P1) and per-slot auto-save.</li>
+<li>Technicians resist a new system → keep a paper-like layout, short training, pilot first.</li>
+<li>Form revised to Rev 04 → schema and PDF carry <code>form_rev</code>, so older sheets stay valid.</li>
+<li>Data entered late or in bulk → overdue indicators; timestamps show when each slot was actually entered.</li>
+</ul>
+<hr>
+<h1>Part C: Workflow</h1>
+<h2>C1. Sheet workflow</h2>
+<pre class="mermaid">flowchart TD
+    A[&#34;Technician logs in&#34;] --&gt; B[&#34;Open new sheet: date, plant, product, tanks&#34;]
+    B --&gt; C[&#34;Fill parameters: flowrate, acid, earth, filter aids&#34;]
+    C --&gt; D[&#34;Hourly entry: fill all fields for the current slot&#34;]
+    D --&gt; E{&#34;Within spec?&#34;}
+    E -- &#34;Yes&#34; --&gt; F[&#34;Save slot&#34;]
+    E -- &#34;No&#34; --&gt; G[&#34;Flag in red and require Remarks&#34;]
+    G --&gt; F
+    F --&gt; H{&#34;Shift ended?&#34;}
+    H -- &#34;No&#34; --&gt; D
+    H -- &#34;Yes&#34; --&gt; I[&#34;Hand over to next shift technician&#34;]
+    I --&gt; J{&#34;Slot 0700 done?&#34;}
+    J -- &#34;No&#34; --&gt; D
+    J -- &#34;Yes&#34; --&gt; K[&#34;Submit sheet for review&#34;]
+    K --&gt; L{&#34;Supervisor decision&#34;}
+    L -- &#34;Return with comment&#34; --&gt; D
+    L -- &#34;Approve&#34; --&gt; M[&#34;Sheet locked&#34;]
+    M --&gt; N[&#34;Export PDF in RF-FR-003 format&#34;]
+</pre>
+<h2>C2. Sheet status lifecycle</h2>
+<pre class="mermaid">stateDiagram-v2
+    [*] --&gt; Draft
+    Draft --&gt; InProgress : first slot saved
+    InProgress --&gt; Submitted : slot 0700 done and submitted
+    Submitted --&gt; Returned : supervisor returns with comment
+    Returned --&gt; InProgress : technician corrects
+    Submitted --&gt; Approved : supervisor approves
+    Approved --&gt; [*]
+</pre>
+<p>Approved sheets are locked. Only an Admin can change them, and every change is written to the audit log.</p>
+<h2>C3. Shift schedule</h2>
+<table>
+<thead>
+<tr>
+<th>Shift</th>
+<th>Slots</th>
+<th>Hours</th>
+<th>Technician field</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1st</td>
+<td>0–7</td>
+<td>0800–1500</td>
+<td>Tech 1st Shift</td>
+</tr>
+<tr>
+<td>2nd</td>
+<td>8–15</td>
+<td>1600–2300</td>
+<td>Tech 2nd Shift</td>
+</tr>
+<tr>
+<td>3rd</td>
+<td>16–23</td>
+<td>2400–0700</td>
+<td>Tech 3rd Shift</td>
+</tr>
+</tbody>
+</table>
+<p>Each technician edits only their own shift's slots. At handover, the incoming technician sees the previous shift's last readings and any flagged items first.</p>
+
+
+<!--claude-mermaid-runtime-begin:3477-->
+<style>.mermaid-diagram{margin-block:4px}.mermaid-diagram svg{display:block;margin:0 auto;max-width:100%;height:auto}</style>
+<script src="/_runtime/mermaid-11.16.1.min.js"></script>
+<script>(function(){
+var CFG={"palettes":{"light":{"surface":"#f4efe4","text":"#42392e","line":"#8a7f6d","border":"#7a6c52","bg":"#fffdf8"},"dark":{"surface":"#262b34","text":"#f2f3f5","line":"#a8adb8","border":"#9aa4b8","bg":"#1f232b"}}};
+if(typeof mermaid==='undefined')return;
+var pres=Array.prototype.slice.call(document.querySelectorAll('pre.mermaid')).filter(function(p){if(p.hasAttribute('data-claude-mermaid-claimed'))return false;p.setAttribute('data-claude-mermaid-claimed','1');return true;});
+if(!pres.length)return;
+var mq=window.matchMedia?window.matchMedia('(prefers-color-scheme: dark)'):null;
+var root=document.documentElement;
+var items=pres.map(function(pre){
+var mount=document.createElement('div');mount.className='mermaid-diagram';
+return {pre:pre,mount:mount,src:pre.textContent||''};
+});
+var seq=0;
+var renderGen=0;
+var lastKey='';
+function pageBg(fallback){
+var els=[document.body,document.documentElement];
+for(var i=0;i<els.length;i++){
+var c=els[i]&&getComputedStyle(els[i]).backgroundColor;
+if(c&&c!=='transparent'&&c!=='rgba(0, 0, 0, 0)')return c;
+}
+return fallback;
+}
+function render(){
+var theme=root.getAttribute('data-theme');
+var dark=theme==='dark'||(!!(mq&&mq.matches)&&theme!=='light');
+var pal=dark?CFG.palettes.dark:CFG.palettes.light;
+var bg=pageBg(pal.bg);
+var key=(dark?'d':'l')+'|'+bg;
+if(key===lastKey)return;
+lastKey=key;
+var gen=++renderGen;
+var font=getComputedStyle(document.body).fontFamily||'sans-serif';
+var nat={useMaxWidth:false};
+mermaid.initialize({
+startOnLoad:false,securityLevel:'strict',theme:'base',
+flowchart:nat,sequence:nat,er:nat,state:nat,class:nat,pie:nat,
+gantt:nat,journey:nat,timeline:nat,gitGraph:nat,mindmap:nat,xyChart:nat,
+quadrantChart:nat,sankey:nat,c4:nat,requirement:nat,block:nat,
+packet:nat,kanban:nat,architecture:nat,radar:nat,
+themeVariables:{background:bg,mainBkg:pal.surface,primaryColor:pal.surface,
+primaryTextColor:pal.text,lineColor:pal.line,primaryBorderColor:pal.border,
+nodeBorder:pal.border,clusterBorder:pal.border,edgeLabelBackground:bg,
+clusterBkg:'rgba(127,127,127,0.07)',titleColor:pal.text,
+darkMode:dark,rowOdd:bg,rowEven:'rgba(127,127,127,0.07)',
+attributeBackgroundColorOdd:bg,attributeBackgroundColorEven:'rgba(127,127,127,0.07)',
+fontSize:'16px',fontFamily:font},
+themeCSS:'.node rect, .node circle, .node polygon, .node path, .cluster rect { stroke-width: 2px; }'
+});
+items.forEach(function(it){
+var id='claude-mermaid-'+seq++;
+mermaid.render(id,it.src).then(function(r){
+if(gen!==renderGen)return;
+var prev=it.pre.previousElementSibling;
+if(prev&&prev.className==='mermaid-diagram'&&prev!==it.mount)return;
+it.mount.innerHTML=r.svg;
+if(!it.mount.parentNode)it.pre.parentNode.insertBefore(it.mount,it.pre);
+it.pre.style.display='none';
+},function(){
+var scratch=document.getElementById(id);
+if(scratch)scratch.parentNode.removeChild(scratch);
+scratch=document.getElementById('d'+id);
+if(scratch)scratch.parentNode.removeChild(scratch);
+if(gen!==renderGen)return;
+if(it.mount.parentNode)it.mount.parentNode.removeChild(it.mount);
+it.pre.style.display='';
+});
+});
+}
+render();
+if(mq&&mq.addEventListener)mq.addEventListener('change',render);
+if(typeof MutationObserver!=='undefined')new MutationObserver(render).observe(root,{attributes:true,attributeFilter:['data-theme']});
+})();</script>
+<!--claude-mermaid-runtime-end-->
+</body></html>

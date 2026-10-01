@@ -1,0 +1,113 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-primary: #F5F6F4;
+  --bg-card: #FFFFFF;
+  --text-main: #1B2A2E;
+  --text-muted: #5E6E73;
+  --border-color: #E2E8F0;
+  --oil-gold: #B8860B;
+  --inspec: #2F7D52;
+  --outofspec: #C0392B;
+  --overdue: #D97706;
+}
+
+.dark {
+  --bg-primary: #0F1012;
+  --bg-card: #18181B;
+  --text-main: #F4F4F5;
+  --text-muted: #A1A1AA;
+  --border-color: #27272A;
+  --oil-gold: #E5A93C;
+  --inspec: #10B981;
+  --outofspec: #EF4444;
+  --overdue: #F59E0B;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-main);
+  font-family: var(--font-sans), 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Solid high-contrast telemetry numbers for industrial visibility */
+.tabular-nums, .font-mono {
+  font-family: var(--font-mono), 'JetBrains Mono', monospace;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Touch Target Minimum 48px standard for plant floor use */
+.touch-target {
+  min-height: 48px;
+  min-width: 48px;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Plant Status Badges */
+.badge-inspec {
+  background-color: rgba(47, 125, 82, 0.12);
+  color: #2F7D52;
+  border: 1px solid rgba(47, 125, 82, 0.28);
+}
+
+.dark .badge-inspec {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: #34D399;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.badge-outofspec {
+  background-color: rgba(192, 57, 43, 0.12);
+  color: #C0392B;
+  border: 1px solid rgba(192, 57, 43, 0.35);
+}
+
+.dark .badge-outofspec {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #F87171;
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.badge-overdue {
+  background-color: rgba(217, 119, 6, 0.12);
+  color: #D97706;
+  border: 1px solid rgba(217, 119, 6, 0.3);
+}
+
+.dark .badge-overdue {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: #FBBF24;
+  border-color: rgba(245, 158, 11, 0.3);
+}

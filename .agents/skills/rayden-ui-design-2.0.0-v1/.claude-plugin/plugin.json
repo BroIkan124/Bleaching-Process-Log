@@ -1,0 +1,11 @@
+{
+  "name": "rayden-ui-design-skill",
+  "description": "Generate React code and build Figma designs with the Rayden UI component library. Includes full component API reference, design tokens, craft rules, anti-patterns, and layout patterns for the Rayna UI design system.",
+  "version": "2.0.0",
+  "author": {
+    "name": "Leslie Williams"
+  },
+  "homepage": "https://www.raynaui.com/",
+  "repository": "https://github.com/playbookTV/rayden-ui-design-skill",
+  "license": "MIT"
+}

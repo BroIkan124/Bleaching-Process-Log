@@ -1,0 +1,797 @@
+"use client";
+
+import React, { useState, useMemo } from "react";
+import { UserProfile, SampleReport, SampleResult, QCDecisionType, Disposition } from "@/types";
+import { QC_SNAPSHOT_DATA } from "@/lib/qcSampleData";
+import { 
+  FlaskConical, 
+  Search, 
+  Plus, 
+  CheckCircle2, 
+  XCircle, 
+  Clock, 
+  AlertTriangle, 
+  FileText, 
+  Printer, 
+  Eye, 
+  Edit3, 
+  Filter, 
+  Save, 
+  X, 
+  ShieldCheck, 
+  Calendar, 
+  Database,
+  Building2
+} from "lucide-react";
+
+interface QCManagementViewProps {
+  currentUser: UserProfile;
+  isDark: boolean;
+}
+
+export const QCManagementView: React.FC<QCManagementViewProps> = ({
+  currentUser,
+  isDark,
+}) => {
+  // Load sample reports from the real snapshot data
+  const [reports, setReports] = useState<SampleReport[]>(() => {
+    return (QC_SNAPSHOT_DATA.samples as any[]) || [];
+  });
+
+  // Search & Filter state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all"); // 'all' | 'accept' | 'reject' | 'pending'
+  const [selectedReport, setSelectedReport] = useState<SampleReport | null>(null);
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [isCertificateOpen, setIsCertificateOpen] = useState(false);
+  const [isNewSampleOpen, setIsNewSampleOpen] = useState(false);
+
+  // New sample form state
+  const [newSample, setNewSample] = useState({
+    product_name: "RBD Palm Oil",
+    feed_tank_code: "TK-101A",
+    discharge_tank_code: "TK-201A",
+    sampling_point_name: "Bleacher Outlet / Polishing Filter",
+    sample_date: new Date().toISOString().split("T")[0],
+    time_check: "14:00",
+    lot_no: `LOT-BPO-${new Date().toISOString().slice(2, 10).replace(/-/g, "")}-1400`,
+    remarks: "",
+  });
+
+  // Filtered reports
+  const filteredReports = useMemo(() => {
+    return reports.filter((r) => {
+      const q = searchQuery.toLowerCase();
+      const matchesSearch = 
+        r.lot_no.toLowerCase().includes(q) ||
+        r.report_no.toLowerCase().includes(q) ||
+        (r.product_name && r.product_name.toLowerCase().includes(q)) ||
+        (r.feed_tank_code && r.feed_tank_code.toLowerCase().includes(q)) ||
+        (r.discharge_tank_code && r.discharge_tank_code.toLowerCase().includes(q));
+
+      if (!matchesSearch) return false;
+
+      if (statusFilter === "all") return true;
+      if (statusFilter === "accept") return r.decision?.decision === "accept" || r.decision?.decision === "accept_concession";
+      if (statusFilter === "reject") return r.decision?.decision === "reject";
+      if (statusFilter === "pending") return !r.decision || r.status === "awaiting_results" || r.status === "draft";
+
+      return true;
+    });
+  }, [reports, searchQuery, statusFilter]);
+
+  // Statistics
+  const totalCount = reports.length;
+  const acceptedCount = reports.filter(r => r.decision?.decision === "accept" || r.decision?.decision === "accept_concession").length;
+  const rejectedCount = reports.filter(r => r.decision?.decision === "reject").length;
+  const pendingCount = totalCount - acceptedCount - rejectedCount;
+
+  // Handle Save Edited Test Results
+  const handleSaveResults = (updatedReport: SampleReport) => {
+    setReports(prev => prev.map(r => r.id === updatedReport.id ? updatedReport : r));
+    setSelectedReport(updatedReport);
+    setIsEditorOpen(false);
+  };
+
+  // Handle Create New Sample
+  const handleCreateSample = (e: React.FormEvent) => {
+    e.preventDefault();
+    const newId = `sample-${Date.now()}`;
+    const reportNo = `SAR-2026-${String(reports.length + 1).padStart(4, "0")}`;
+
+    const created: SampleReport = {
+      id: newId,
+      report_no: reportNo,
+      sample_date: newSample.sample_date,
+      time_check: newSample.time_check,
+      lot_no: newSample.lot_no,
+      product_name: newSample.product_name,
+      feed_tank_code: newSample.feed_tank_code,
+      discharge_tank_code: newSample.discharge_tank_code,
+      sampling_point_name: newSample.sampling_point_name,
+      submitted_by_name: currentUser.name,
+      status: "awaiting_results",
+      created_at: new Date().toISOString(),
+      remarks: newSample.remarks,
+      results: [
+        { id: `res-ffa-${newId}`, report_id: newId, parameter_code: "FFA", parameter_name: "Free Fatty Acid (% Palmitic)", unit: "%", value_numeric: 0.045, in_spec: true },
+        { id: `res-h2o-${newId}`, report_id: newId, parameter_code: "H2O", parameter_name: "Moisture & Impurities", unit: "%", value_numeric: 0.030, in_spec: true },
+        { id: `res-pv-${newId}`, report_id: newId, parameter_code: "PV", parameter_name: "Peroxide Value", unit: "meq/kg", value_numeric: 0.20, in_spec: true },
+        { id: `res-iv-${newId}`, report_id: newId, parameter_code: "IV", parameter_name: "Iodine Value (Wijs)", unit: "g I2/100g", value_numeric: 52.5, in_spec: true },
+        { id: `res-cr-${newId}`, report_id: newId, parameter_code: "COLOUR_R", parameter_name: "Colour Lovibond Red (5¼\" cell)", unit: "R", value_numeric: 2.1, in_spec: true },
+        { id: `res-cy-${newId}`, report_id: newId, parameter_code: "COLOUR_Y", parameter_name: "Colour Lovibond Yellow", unit: "Y", value_numeric: 18.0, in_spec: true },
+      ],
+      decision: {
+        id: `dec-${newId}`,
+        report_id: newId,
+        decision: "accept",
+        decided_by_name: currentUser.name,
+        decided_at: new Date().toISOString(),
+      },
+    };
+
+    setReports([created, ...reports]);
+    setIsNewSampleOpen(false);
+  };
+
+  // Helper to extract param result value
+  const getParamVal = (report: SampleReport, code: string): string => {
+    if (!report.results) return "-";
+    const res = report.results.find(r => r.parameter_code === code || r.parameter_name.toLowerCase().includes(code.toLowerCase()));
+    if (res && res.value_numeric !== null && res.value_numeric !== undefined) {
+      return String(res.value_numeric);
+    }
+    return "-";
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* 1. Header Metrics Banner */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        {/* Total Samples */}
+        <div className="bg-white dark:bg-[#18181B] p-4 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-sm flex items-center justify-between">
+          <div>
+            <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider block">
+              Total Lab Samples
+            </span>
+            <div className="text-2xl font-bold font-mono text-slate-900 dark:text-white mt-1">
+              {totalCount}
+            </div>
+            <span className="text-[11px] text-slate-400 dark:text-zinc-500">
+              Form RF-FR-001 (Rev 02/03)
+            </span>
+          </div>
+          <div className="p-3 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+            <FlaskConical className="w-6 h-6" />
+          </div>
+        </div>
+
+        {/* Accepted (In-Spec) */}
+        <div className="bg-white dark:bg-[#18181B] p-4 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-sm flex items-center justify-between">
+          <div>
+            <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">
+              In-Spec Accepted
+            </span>
+            <div className="text-2xl font-bold font-mono text-emerald-700 dark:text-emerald-300 mt-1">
+              {acceptedCount}
+            </div>
+            <span className="text-[11px] text-slate-400 dark:text-zinc-500">
+              {totalCount > 0 ? ((acceptedCount / totalCount) * 100).toFixed(1) : 0}% Pass Rate
+            </span>
+          </div>
+          <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+            <CheckCircle2 className="w-6 h-6" />
+          </div>
+        </div>
+
+        {/* Rejected / Out-of-Spec */}
+        <div className="bg-white dark:bg-[#18181B] p-4 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-sm flex items-center justify-between">
+          <div>
+            <span className="text-xs font-semibold text-rose-600 dark:text-rose-400 uppercase tracking-wider block">
+              Out-of-Spec Rejected
+            </span>
+            <div className="text-2xl font-bold font-mono text-rose-700 dark:text-rose-300 mt-1">
+              {rejectedCount}
+            </div>
+            <span className="text-[11px] text-slate-400 dark:text-zinc-500">
+              Hold / Rework required
+            </span>
+          </div>
+          <div className="p-3 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400">
+            <XCircle className="w-6 h-6" />
+          </div>
+        </div>
+
+        {/* Pending Analysis */}
+        <div className="bg-white dark:bg-[#18181B] p-4 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-sm flex items-center justify-between">
+          <div>
+            <span className="text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider block">
+              Pending QC Lab Test
+            </span>
+            <div className="text-2xl font-bold font-mono text-amber-700 dark:text-amber-300 mt-1">
+              {pendingCount}
+            </div>
+            <span className="text-[11px] text-slate-400 dark:text-zinc-500">
+              Awaiting QC decision
+            </span>
+          </div>
+          <div className="p-3 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+            <Clock className="w-6 h-6" />
+          </div>
+        </div>
+      </div>
+
+      {/* 2. Controls & Filter Bar */}
+      <div className="bg-white dark:bg-[#18181B] p-4 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-sm flex flex-wrap items-center justify-between gap-3">
+        {/* Search */}
+        <div className="relative flex-1 min-w-[240px] max-w-md">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Cari Lot No, Report No, Produk, atau Tangki..."
+            className="w-full pl-9 pr-4 py-2 rounded-lg bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs font-sans text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+          />
+        </div>
+
+        {/* Filters and New Sample Action */}
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <div className="flex items-center rounded-lg bg-slate-100 dark:bg-slate-800 p-1 border border-slate-200 dark:border-slate-700 text-xs font-medium">
+            <button
+              onClick={() => setStatusFilter("all")}
+              className={`px-3 py-1 rounded-md transition-colors ${
+                statusFilter === "all" ? "bg-white dark:bg-slate-700 font-bold shadow-sm" : "text-slate-600 dark:text-slate-400"
+              }`}
+            >
+              Semua ({totalCount})
+            </button>
+            <button
+              onClick={() => setStatusFilter("accept")}
+              className={`px-3 py-1 rounded-md transition-colors ${
+                statusFilter === "accept" ? "bg-white dark:bg-slate-700 text-emerald-600 font-bold shadow-sm" : "text-slate-600 dark:text-slate-400"
+              }`}
+            >
+              Accepted ({acceptedCount})
+            </button>
+            <button
+              onClick={() => setStatusFilter("reject")}
+              className={`px-3 py-1 rounded-md transition-colors ${
+                statusFilter === "reject" ? "bg-white dark:bg-slate-700 text-rose-600 font-bold shadow-sm" : "text-slate-600 dark:text-slate-400"
+              }`}
+            >
+              Rejected ({rejectedCount})
+            </button>
+            <button
+              onClick={() => setStatusFilter("pending")}
+              className={`px-3 py-1 rounded-md transition-colors ${
+                statusFilter === "pending" ? "bg-white dark:bg-slate-700 text-amber-600 font-bold shadow-sm" : "text-slate-600 dark:text-slate-400"
+              }`}
+            >
+              Pending ({pendingCount})
+            </button>
+          </div>
+
+          <button
+            onClick={() => setIsNewSampleOpen(true)}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold shadow-sm transition-all active:scale-95"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Register Sample</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 3. Main Samples Table (RF-FR-001) */}
+      <div className="bg-white dark:bg-[#18181B] rounded-xl border border-slate-200 dark:border-zinc-800 shadow-sm overflow-hidden">
+        <div className="px-4 py-3 bg-slate-50 dark:bg-zinc-900/60 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="font-display font-bold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+              QC Lab Sample Analysis Reports (Form RF-FR-001)
+            </span>
+            <span className="text-xs text-slate-500 font-mono">
+              [Showing {filteredReports.length} of {totalCount} Records]
+            </span>
+          </div>
+          <span className="text-xs text-slate-500 hidden sm:inline">
+            Data Sebenar Loji Penapis Minyak Lam Soon / Nisshin
+          </span>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse text-left text-xs">
+            <thead>
+              <tr className="bg-slate-100/90 dark:bg-zinc-900 text-slate-600 dark:text-zinc-300 font-semibold border-b border-slate-200 dark:border-zinc-800">
+                <th className="py-2.5 px-3">Report No / Lot No</th>
+                <th className="py-2.5 px-2">Sample Date / Time</th>
+                <th className="py-2.5 px-2">Product Name</th>
+                <th className="py-2.5 px-2">Tank (Feed → Disch)</th>
+                <th className="py-2.5 px-2 text-right">FFA (%)</th>
+                <th className="py-2.5 px-2 text-right">Moisture (%)</th>
+                <th className="py-2.5 px-2 text-right">PV (meq/kg)</th>
+                <th className="py-2.5 px-2 text-right">IV (Wijs)</th>
+                <th className="py-2.5 px-2 text-center">Colour (R / Y)</th>
+                <th className="py-2.5 px-3 text-center">QC Decision</th>
+                <th className="py-2.5 px-3 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-sans">
+              {filteredReports.map((report) => {
+                const isAccepted = report.decision?.decision === "accept" || report.decision?.decision === "accept_concession";
+                const isRejected = report.decision?.decision === "reject";
+
+                return (
+                  <tr
+                    key={report.id}
+                    className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                  >
+                    {/* Report & Lot No */}
+                    <td className="py-2.5 px-3">
+                      <div className="font-mono font-bold text-slate-900 dark:text-white">
+                        {report.report_no}
+                      </div>
+                      <div className="font-mono text-[10px] text-slate-500 truncate max-w-[190px]">
+                        {report.lot_no}
+                      </div>
+                    </td>
+
+                    {/* Date & Time */}
+                    <td className="py-2.5 px-2 font-mono text-[11px] text-slate-700 dark:text-slate-300">
+                      <div>{report.sample_date}</div>
+                      <div className="text-slate-400">{report.time_check} Hrs</div>
+                    </td>
+
+                    {/* Product Name */}
+                    <td className="py-2.5 px-2 font-medium text-slate-800 dark:text-slate-200">
+                      {report.product_name || "RBD Palm Oil"}
+                    </td>
+
+                    {/* Tanks */}
+                    <td className="py-2.5 px-2 font-mono text-[11px] text-slate-600 dark:text-slate-400">
+                      {report.feed_tank_code || "TK-101A"} → {report.discharge_tank_code || "TK-201A"}
+                    </td>
+
+                    {/* FFA (%) */}
+                    <td className="py-2.5 px-2 text-right font-mono tabular-nums text-slate-800 dark:text-slate-200">
+                      {getParamVal(report, "FFA")}
+                    </td>
+
+                    {/* Moisture (%) */}
+                    <td className="py-2.5 px-2 text-right font-mono tabular-nums text-slate-800 dark:text-slate-200">
+                      {getParamVal(report, "H2O")}
+                    </td>
+
+                    {/* PV (meq/kg) */}
+                    <td className="py-2.5 px-2 text-right font-mono tabular-nums text-slate-800 dark:text-slate-200">
+                      {getParamVal(report, "PV")}
+                    </td>
+
+                    {/* IV */}
+                    <td className="py-2.5 px-2 text-right font-mono tabular-nums text-slate-800 dark:text-slate-200">
+                      {getParamVal(report, "IV")}
+                    </td>
+
+                    {/* Colour R/Y */}
+                    <td className="py-2.5 px-2 text-center font-mono tabular-nums text-slate-800 dark:text-slate-200">
+                      {getParamVal(report, "COLOUR_R")}R / {getParamVal(report, "COLOUR_Y")}Y
+                    </td>
+
+                    {/* Decision Badge */}
+                    <td className="py-2.5 px-3 text-center">
+                      {isAccepted ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
+                          <CheckCircle2 className="w-3 h-3" />
+                          <span>RELEASE</span>
+                        </span>
+                      ) : isRejected ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 dark:bg-rose-950/70 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-700" title={report.decision?.reason_label || "Reject"}>
+                          <XCircle className="w-3 h-3" />
+                          <span>REJECT</span>
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
+                          <Clock className="w-3 h-3" />
+                          <span>PENDING</span>
+                        </span>
+                      )}
+                    </td>
+
+                    {/* Actions */}
+                    <td className="py-2.5 px-3 text-center">
+                      <div className="flex items-center justify-center gap-1.5">
+                        <button
+                          onClick={() => {
+                            setSelectedReport(report);
+                            setIsEditorOpen(true);
+                          }}
+                          className="p-1.5 rounded-lg border border-slate-200 dark:border-zinc-700 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 transition-colors"
+                          title="Semak / Edit Keputusan Makmal"
+                        >
+                          <Edit3 className="w-3.5 h-3.5 text-zinc-700 dark:text-zinc-300" />
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            setSelectedReport(report);
+                            setIsCertificateOpen(true);
+                          }}
+                          className="p-1.5 rounded-lg border border-slate-200 dark:border-zinc-700 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 transition-colors"
+                          title="Lihat / Cetak Sijil Analisis (RF-FR-001)"
+                        >
+                          <FileText className="w-3.5 h-3.5 text-amber-600" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* 4. Modal: Edit Test Results & Submit Decision */}
+      {isEditorOpen && selectedReport && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-2xl bg-white dark:bg-[#18181B] rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="px-6 py-4 border-b border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900/60 flex items-center justify-between">
+              <div>
+                <h3 className="font-bold font-display text-base text-slate-900 dark:text-white flex items-center gap-2">
+                  <span>QC Lab Results & Disposition Decision</span>
+                  <span className="text-xs font-mono font-normal text-zinc-500 dark:text-zinc-400">
+                    ({selectedReport.report_no})
+                  </span>
+                </h3>
+                <p className="text-xs text-slate-500 font-mono">
+                  {selectedReport.product_name} · Lot: {selectedReport.lot_no}
+                </p>
+              </div>
+              <button onClick={() => setIsEditorOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto space-y-4 text-xs">
+              {/* Parameters Inputs */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {selectedReport.results?.map((res, idx) => (
+                  <div key={res.id || idx} className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40">
+                    <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1 truncate" title={res.parameter_name}>
+                      {res.parameter_code} ({res.unit || "-"})
+                    </label>
+                    <input
+                      type="number"
+                      step="0.001"
+                      value={res.value_numeric ?? ""}
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value) || null;
+                        const updatedResults = selectedReport.results.map((r, i) => i === idx ? { ...r, value_numeric: val } : r);
+                        setSelectedReport({ ...selectedReport, results: updatedResults });
+                      }}
+                      className="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-mono text-sm font-bold text-slate-900 dark:text-white"
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {/* Disposition Action Selector */}
+              <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 space-y-3">
+                <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">
+                  QC Final Decision & Release Authorization
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedReport({
+                        ...selectedReport,
+                        decision: {
+                          id: `dec-${Date.now()}`,
+                          report_id: selectedReport.id,
+                          decision: "accept",
+                          decided_by_name: currentUser.name,
+                          decided_at: new Date().toISOString(),
+                        }
+                      });
+                    }}
+                    className={`py-2 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                      selectedReport.decision?.decision === "accept"
+                        ? "bg-emerald-600 text-white border-emerald-600 shadow-sm"
+                        : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:border-slate-400"
+                    }`}
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Accept (Release)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedReport({
+                        ...selectedReport,
+                        decision: {
+                          id: `dec-${Date.now()}`,
+                          report_id: selectedReport.id,
+                          decision: "reject",
+                          reason_label: "Out of specification parameter",
+                          disposition: "rework",
+                          decided_by_name: currentUser.name,
+                          decided_at: new Date().toISOString(),
+                        }
+                      });
+                    }}
+                    className={`py-2 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                      selectedReport.decision?.decision === "reject"
+                        ? "bg-rose-600 text-white border-rose-600 shadow-sm"
+                        : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:border-slate-400"
+                    }`}
+                  >
+                    <XCircle className="w-4 h-4" />
+                    <span>Reject / Rework</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedReport({
+                        ...selectedReport,
+                        decision: {
+                          id: `dec-${Date.now()}`,
+                          report_id: selectedReport.id,
+                          decision: "accept_concession",
+                          reason_label: "Concession approval by QC Manager",
+                          decided_by_name: currentUser.name,
+                          decided_at: new Date().toISOString(),
+                        }
+                      });
+                    }}
+                    className={`py-2 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                      selectedReport.decision?.decision === "accept_concession"
+                        ? "bg-amber-600 text-white border-amber-600 shadow-sm"
+                        : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:border-slate-400"
+                    }`}
+                  >
+                    <AlertTriangle className="w-4 h-4" />
+                    <span>Concession</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setIsEditorOpen(false)}
+                className="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSaveResults(selectedReport)}
+                className="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow flex items-center gap-1.5 transition-colors"
+              >
+                <Save className="w-4 h-4" />
+                <span>Simpan Keputusan QC</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 5. Modal: Register New QC Sample (RF-FR-001) */}
+      {isNewSampleOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-lg bg-white dark:bg-[#18181B] rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-2xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900/60 flex items-center justify-between">
+              <h3 className="font-bold font-display text-base text-slate-900 dark:text-white flex items-center gap-2">
+                <FlaskConical className="w-5 h-5 text-amber-600" />
+                <span>Pendaftaran Sampel Makmal Baharu (RF-FR-001)</span>
+              </h3>
+              <button onClick={() => setIsNewSampleOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateSample} className="p-6 space-y-3.5 text-xs">
+              <div>
+                <label className="block text-slate-600 dark:text-slate-400 font-semibold mb-1">Lot Number</label>
+                <input
+                  type="text"
+                  required
+                  value={newSample.lot_no}
+                  onChange={(e) => setNewSample({ ...newSample, lot_no: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-mono text-sm text-slate-900 dark:text-white"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-600 dark:text-slate-400 font-semibold mb-1">Tarikh Sampel</label>
+                  <input
+                    type="date"
+                    required
+                    value={newSample.sample_date}
+                    onChange={(e) => setNewSample({ ...newSample, sample_date: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-mono text-xs text-slate-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-600 dark:text-slate-400 font-semibold mb-1">Masa Ambilan</label>
+                  <input
+                    type="text"
+                    required
+                    value={newSample.time_check}
+                    onChange={(e) => setNewSample({ ...newSample, time_check: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-mono text-xs text-slate-900 dark:text-white"
+                    placeholder="14:00"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-600 dark:text-slate-400 font-semibold mb-1">Produk</label>
+                <select
+                  value={newSample.product_name}
+                  onChange={(e) => setNewSample({ ...newSample, product_name: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
+                >
+                  <option value="RBD Palm Oil">RBD Palm Oil</option>
+                  <option value="PL 65 Matsuyama">PL 65 Matsuyama</option>
+                  <option value="Chocohi 357A NPHO">Chocohi 357A NPHO</option>
+                  <option value="Daisy Soft PM180602 I2">Daisy Soft PM180602 I2</option>
+                  <option value="DF 20">DF 20</option>
+                  <option value="Farm Cow R2">Farm Cow R2</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-600 dark:text-slate-400 font-semibold mb-1">Feed Tank</label>
+                  <input
+                    type="text"
+                    value={newSample.feed_tank_code}
+                    onChange={(e) => setNewSample({ ...newSample, feed_tank_code: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-600 dark:text-slate-400 font-semibold mb-1">Discharge Tank</label>
+                  <input
+                    type="text"
+                    value={newSample.discharge_tank_code}
+                    onChange={(e) => setNewSample({ ...newSample, discharge_tank_code: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-600 dark:text-slate-400 font-semibold mb-1">Titik Pensampelan (Sampling Point)</label>
+                <input
+                  type="text"
+                  value={newSample.sampling_point_name}
+                  onChange={(e) => setNewSample({ ...newSample, sampling_point_name: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
+                />
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setIsNewSampleOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow transition-colors"
+                >
+                  Daftar Sampel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 6. Modal: Print-Ready Official QC Certificate (RF-FR-001) */}
+      {isCertificateOpen && selectedReport && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in overflow-y-auto">
+          <div className="w-full max-w-4xl bg-white dark:bg-[#18181B] rounded-2xl shadow-2xl border border-slate-300 dark:border-zinc-800 flex flex-col my-auto max-h-[95vh] overflow-hidden">
+            <div className="px-6 py-3 border-b border-slate-200 dark:border-zinc-800 bg-slate-100 dark:bg-zinc-900 flex items-center justify-between print:hidden">
+              <span className="font-bold text-sm text-slate-800 dark:text-slate-200 font-display">
+                Official QC Laboratory Analysis Certificate (RF-FR-001)
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => window.print()}
+                  className="px-4 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white dark:text-zinc-900 text-white font-bold text-xs shadow flex items-center gap-1.5 transition-colors"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Print Certificate</span>
+                </button>
+                <button onClick={() => setIsCertificateOpen(false)} className="text-slate-400 hover:text-slate-600 p-1">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Certificate Body */}
+            <div className="p-8 overflow-y-auto bg-white text-black font-sans print:p-0">
+              <div className="border-2 border-black p-6 space-y-4">
+                {/* Header */}
+                <div className="flex justify-between items-center border-b-2 border-black pb-3">
+                  <div>
+                    <h1 className="font-extrabold text-lg uppercase tracking-wider">
+                      LAM SOON EDIBLE OILS SDN. BHD.
+                    </h1>
+                    <h2 className="text-xs font-semibold text-gray-700 uppercase">
+                      Quality Control Department · Refinery Testing Laboratory
+                    </h2>
+                  </div>
+                  <div className="text-right font-mono text-xs">
+                    <div><strong>Form:</strong> RF-FR-001 Rev 02</div>
+                    <div><strong>Certificate No:</strong> {selectedReport.report_no}</div>
+                    <div><strong>Date:</strong> {selectedReport.sample_date}</div>
+                  </div>
+                </div>
+
+                {/* Sample metadata */}
+                <div className="grid grid-cols-3 gap-3 text-xs border-b border-gray-400 pb-3">
+                  <div><strong>Product:</strong> {selectedReport.product_name}</div>
+                  <div><strong>Lot Number:</strong> <span className="font-mono">{selectedReport.lot_no}</span></div>
+                  <div><strong>Sampling Time:</strong> {selectedReport.time_check} Hrs</div>
+                  <div><strong>Feed Tank:</strong> {selectedReport.feed_tank_code}</div>
+                  <div><strong>Discharge Tank:</strong> {selectedReport.discharge_tank_code}</div>
+                  <div><strong>Sampling Location:</strong> {selectedReport.sampling_point_name}</div>
+                </div>
+
+                {/* Results Table */}
+                <table className="w-full border-collapse border border-black text-xs text-center my-3">
+                  <thead>
+                    <tr className="bg-gray-100 border-b border-black font-bold">
+                      <th className="border border-black py-1.5 px-3 text-left">Test Parameter</th>
+                      <th className="border border-black py-1.5 px-2">Unit</th>
+                      <th className="border border-black py-1.5 px-2 text-right">Result</th>
+                      <th className="border border-black py-1.5 px-2">Compliance Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedReport.results?.map((res, i) => (
+                      <tr key={i} className="border-b border-gray-300">
+                        <td className="border border-black py-1 px-3 text-left font-medium">{res.parameter_name}</td>
+                        <td className="border border-black py-1 px-2 font-mono">{res.unit || "-"}</td>
+                        <td className="border border-black py-1 px-2 text-right font-mono font-bold">{res.value_numeric ?? "-"}</td>
+                        <td className="border border-black py-1 px-2 font-bold text-emerald-800">PASS (IN SPEC)</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                {/* Final Decision and Signatures */}
+                <div className="border border-black p-3 text-xs flex justify-between items-center mt-4">
+                  <div>
+                    <span className="font-bold">QC Status: </span>
+                    <span className="font-mono font-extrabold uppercase px-2 py-0.5 border border-black inline-block">
+                      {selectedReport.decision?.decision || "RELEASED"}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-bold">Authorized By: </span>
+                    <span className="font-mono underline">{selectedReport.decision?.decided_by_name || currentUser.name}</span>
+                  </div>
+                  <div>
+                    <span className="font-bold">Date Verified: </span>
+                    <span className="font-mono">{new Date().toLocaleDateString()}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};

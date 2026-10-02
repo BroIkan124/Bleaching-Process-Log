@@ -82,7 +82,7 @@ export const FloatingBottomDock: React.FC<FloatingBottomDockProps> = ({
           }`}
         >
           <FlaskConical className="w-4 h-4 shrink-0" />
-          <span className="whitespace-nowrap">Makmal QC</span>
+          <span className="whitespace-nowrap">QC Lab</span>
 
           <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full font-bold ml-0.5 ${
             activeTab === 'qc'
@@ -107,7 +107,7 @@ export const FloatingBottomDock: React.FC<FloatingBottomDockProps> = ({
           }`}
         >
           <BarChart3 className="w-4 h-4 shrink-0" />
-          <span className="whitespace-nowrap">Laporan</span>
+          <span className="whitespace-nowrap">Reports</span>
         </button>
 
         {/* Tab 4: Supervisor Hub */}
@@ -125,7 +125,7 @@ export const FloatingBottomDock: React.FC<FloatingBottomDockProps> = ({
             }`}
           >
             <ShieldCheck className="w-4 h-4 shrink-0" />
-            <span className="whitespace-nowrap">Penyelia</span>
+            <span className="whitespace-nowrap">Supervisor</span>
 
             {unacknowledgedAlertsCount > 0 && (
               <span className="px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[10px] font-bold font-mono animate-pulse">
@@ -150,7 +150,7 @@ export const FloatingBottomDock: React.FC<FloatingBottomDockProps> = ({
             }`}
           >
             <Users className="w-4 h-4 shrink-0" />
-            <span className="whitespace-nowrap">Pengguna</span>
+            <span className="whitespace-nowrap">Users</span>
           </button>
         )}
 
@@ -162,8 +162,8 @@ export const FloatingBottomDock: React.FC<FloatingBottomDockProps> = ({
           type="button"
           onClick={onOpenPdf}
           className="p-2 rounded-xl text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors shrink-0"
-          title="Pratonton & Cetak PDF A4 Rasmi"
-          aria-label="Cetak PDF Rasmi"
+          title="Preview & Print Official A4 PDF"
+          aria-label="Print Official PDF"
         >
           <Printer className="w-4 h-4 text-amber-600 dark:text-amber-400" />
         </button>

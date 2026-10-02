@@ -25,10 +25,10 @@ export const SlotRail: React.FC<SlotRailProps> = ({
         <div className="flex items-center gap-2">
           <Clock className="w-4 h-4 text-amber-500" />
           <span className="text-xs font-bold font-display uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
-            Garis Masa Operasi 24-Jam (Timeline Rail)
+            24-Hour Operations Timeline Rail
           </span>
           <span className="text-[11px] text-zinc-500 font-mono hidden md:inline">
-            · Klik mana-mana slot jam untuk mengisi atau melihat log
+            · Click any hourly slot to log or view entries
           </span>
         </div>
 
@@ -40,15 +40,15 @@ export const SlotRail: React.FC<SlotRailProps> = ({
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-rose-500" />
-            <span>Luar Had</span>
+            <span>Out of Spec</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-zinc-300 dark:bg-zinc-700" />
-            <span>Kosong</span>
+            <span>Empty</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full ring-2 ring-amber-500 bg-amber-400" />
-            <span className="text-amber-600 dark:text-amber-400 font-bold">Jam Semasa</span>
+            <span className="text-amber-600 dark:text-amber-400 font-bold">Current Hour</span>
           </div>
         </div>
       </div>
@@ -93,7 +93,7 @@ export const SlotRail: React.FC<SlotRailProps> = ({
                     type="button"
                     onClick={() => onSelectSlot(slotIdx)}
                     className={`h-11 rounded-lg flex flex-col items-center justify-center p-0.5 border transition-all text-center select-none relative ${stateClass}`}
-                    title={`Slot ${entry.time_label} (${shift.name}) - ${hasOutOfSpec ? 'Amaran Luar Had' : isDone ? 'Disimpan' : 'Belum Diisi'}`}
+                    title={`Slot ${entry.time_label} (${shift.name}) - ${hasOutOfSpec ? 'Out of Spec Alert' : isDone ? 'Saved' : 'Not Logged'}`}
                   >
                     <span className="font-mono text-[11px] leading-tight font-bold">
                       {entry.time_label}

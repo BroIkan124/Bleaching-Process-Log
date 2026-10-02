@@ -85,31 +85,31 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
       case "admin":
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800 dark:bg-purple-950/70 dark:text-purple-300 border border-purple-300 dark:border-purple-800">
-            <Shield className="w-3 h-3" /> Pentadbir Sistem
+            <Shield className="w-3 h-3" /> System Administrator
           </span>
         );
       case "supervisor":
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
-            <ShieldCheck className="w-3 h-3" /> Penyelia Loji
+            <ShieldCheck className="w-3 h-3" /> Plant Supervisor
           </span>
         );
       case "manager_qa":
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
-            <ShieldCheck className="w-3 h-3" /> Pengurus QA
+            <ShieldCheck className="w-3 h-3" /> QA Manager
           </span>
         );
       case "chemist":
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-sky-100 text-sky-800 dark:bg-sky-950/70 dark:text-sky-300 border border-sky-300 dark:border-sky-800">
-            <FlaskConical className="w-3 h-3" /> Ahli Kimia / QC
+            <FlaskConical className="w-3 h-3" /> QC Chemist
           </span>
         );
       case "technician":
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-zinc-200 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200 border border-zinc-300 dark:border-zinc-700">
-            <Wrench className="w-3 h-3" /> Juruteknik Operasi
+            <Wrench className="w-3 h-3" /> Operations Technician
           </span>
         );
     }
@@ -168,7 +168,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
       const newUser: UserProfile = {
         id: `usr-${Date.now()}`,
         ...formData,
-        last_login: "Belum pernah log masuk",
+        last_login: "Never logged in",
       };
       onUpdateUsers([...users, newUser]);
     }
@@ -183,18 +183,18 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
           <Lock className="w-8 h-8" />
         </div>
         <h2 className="text-xl font-bold font-display text-zinc-900 dark:text-zinc-100">
-          Akses Terhad: Pengurusan Pengguna (Admin Sahaja)
+          Restricted Access: User Management (Admin Only)
         </h2>
         <p className="text-sm text-zinc-600 dark:text-zinc-400 max-w-md mx-auto">
-          Anda kini log masuk sebagai <strong className="text-amber-500 font-bold">{currentUser.name} ({currentUser.role})</strong>.
-          Modul ini dikhaskan untuk Pentadbir Sistem (Admin) bagi mengurus akaun staf, hak akses, dan jadual syif loji.
+          You are currently signed in as <strong className="text-amber-500 font-bold">{currentUser.name} ({currentUser.role})</strong>.
+          This module is restricted to System Administrators to manage staff accounts, permissions, and shift schedules.
         </p>
         <div className="pt-2">
           <button
             onClick={onRequestLoginModal}
             className="px-5 py-2.5 rounded-xl font-bold text-xs bg-amber-600 hover:bg-amber-700 text-white shadow-md transition-all active:scale-95"
           >
-            Tukar / Log Masuk Sebagai Pentadbir (Admin)
+            Switch / Sign In as Administrator
           </button>
         </div>
       </div>
@@ -218,11 +218,11 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
               <Users className="w-5 h-5" />
             </span>
             <h1 className="text-xl font-bold font-display text-zinc-900 dark:text-zinc-100">
-              Pengurusan Pengguna &amp; Hak Akses Staf
+              User Management &amp; Access Control
             </h1>
           </div>
           <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1 font-medium">
-            Urus profil juruteknik, penyelia syif, ahli kimia QC, dan kawalan keselamatan berasaskan peranan (RBAC).
+            Manage operations technicians, shift supervisors, QC chemists, and Role-Based Access Control (RBAC).
           </p>
         </div>
 
@@ -231,30 +231,30 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
           className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 shrink-0"
         >
           <UserPlus className="w-4 h-4" />
-          <span>Daftar Pengguna Baharu</span>
+          <span>Register New Staff</span>
         </button>
       </div>
 
       {/* 2. Top Statistic KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         <div className="p-3.5 rounded-xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm">
-          <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider block">Jumlah Staf</span>
+          <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider block">Total Staff</span>
           <div className="flex items-baseline gap-2 mt-1">
             <span className="text-2xl font-bold font-display text-zinc-900 dark:text-zinc-100">{totalCount}</span>
-            <span className="text-xs text-emerald-500 font-bold">{activeCount} Aktif</span>
+            <span className="text-xs text-emerald-500 font-bold">{activeCount} Active</span>
           </div>
         </div>
 
         <div className="p-3.5 rounded-xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm">
-          <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider block">Juruteknik Operasi</span>
+          <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider block">Operations Technicians</span>
           <div className="flex items-baseline gap-2 mt-1">
             <span className="text-2xl font-bold font-display text-amber-500">{techCount}</span>
-            <span className="text-xs text-zinc-500 font-mono">Syif 1-3</span>
+            <span className="text-xs text-zinc-500 font-mono">Shift 1-3</span>
           </div>
         </div>
 
         <div className="p-3.5 rounded-xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm">
-          <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider block">Makmal &amp; QA</span>
+          <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider block">QC Lab &amp; QA</span>
           <div className="flex items-baseline gap-2 mt-1">
             <span className="text-2xl font-bold font-display text-sky-500">{qcCount}</span>
             <span className="text-xs text-zinc-500 font-mono">RF-FR-001</span>
@@ -262,18 +262,18 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
         </div>
 
         <div className="p-3.5 rounded-xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm">
-          <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider block">Penyelia &amp; Admin</span>
+          <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider block">Supervisors &amp; Admin</span>
           <div className="flex items-baseline gap-2 mt-1">
             <span className="text-2xl font-bold font-display text-purple-500">{supCount}</span>
-            <span className="text-xs text-zinc-500 font-mono">Kawalan</span>
+            <span className="text-xs text-zinc-500 font-mono">Control</span>
           </div>
         </div>
 
         <div className="p-3.5 rounded-xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm col-span-2 sm:col-span-1">
-          <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider block">Status Pengesahan</span>
+          <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider block">Authentication Status</span>
           <div className="flex items-center gap-1.5 mt-2 text-xs font-bold text-emerald-500">
             <CheckCircle2 className="w-4 h-4" />
-            <span>2FA &amp; Audit Aktif</span>
+            <span>2FA &amp; Audit Active</span>
           </div>
         </div>
       </div>
@@ -286,7 +286,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari mengikut nama, emel, no. telefon atau jabatan..."
+            placeholder="Search by name, email, phone or department..."
             className="w-full pl-9 pr-4 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500"
           />
         </div>
@@ -299,12 +299,12 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
               onChange={(e) => setRoleFilter(e.target.value)}
               className="px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-xs font-bold text-zinc-800 dark:text-zinc-200 focus:outline-none"
             >
-              <option value="ALL">Semua Peranan</option>
-              <option value="technician">Juruteknik Operasi</option>
-              <option value="supervisor">Penyelia Loji</option>
-              <option value="chemist">Ahli Kimia / QC</option>
-              <option value="manager_qa">Pengurus QA</option>
-              <option value="admin">Pentadbir (Admin)</option>
+              <option value="ALL">All Roles</option>
+              <option value="technician">Operations Technician</option>
+              <option value="supervisor">Plant Supervisor</option>
+              <option value="chemist">QC Chemist</option>
+              <option value="manager_qa">QA Manager</option>
+              <option value="admin">System Administrator</option>
             </select>
           </div>
 
@@ -313,10 +313,10 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
             onChange={(e) => setShiftFilter(e.target.value)}
             className="px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-xs font-bold text-zinc-800 dark:text-zinc-200 focus:outline-none"
           >
-            <option value="ALL">Semua Syif</option>
-            <option value="1">Syif 1 (0800–1500)</option>
-            <option value="2">Syif 2 (1600–2300)</option>
-            <option value="3">Syif 3 (2400–0700)</option>
+            <option value="ALL">All Shifts</option>
+            <option value="1">Shift 1 (0800–1500)</option>
+            <option value="2">Shift 2 (1600–2300)</option>
+            <option value="3">Shift 3 (2400–0700)</option>
           </select>
         </div>
       </div>
@@ -327,20 +327,20 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-[#131416] text-[11px] font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
-                <th className="py-3 px-4">Nama Staf &amp; Maklumat</th>
-                <th className="py-3 px-4">Peranan (RBAC)</th>
-                <th className="py-3 px-4">Jabatan</th>
-                <th className="py-3 px-4">Syif Tugasan</th>
-                <th className="py-3 px-4">Log Masuk Terakhir</th>
+                <th className="py-3 px-4">Staff Name &amp; Contact</th>
+                <th className="py-3 px-4">Role (RBAC)</th>
+                <th className="py-3 px-4">Department</th>
+                <th className="py-3 px-4">Assigned Shift</th>
+                <th className="py-3 px-4">Last Login</th>
                 <th className="py-3 px-4 text-center">Status</th>
-                <th className="py-3 px-4 text-right">Tindakan</th>
+                <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800 text-xs">
               {filteredUsers.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-8 text-center text-zinc-400">
-                    Tiada pengguna dijumpai sepadan dengan carian ini.
+                    No users found matching this search.
                   </td>
                 </tr>
               ) : (
@@ -360,7 +360,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
                             <span>{user.name}</span>
                             {user.id === currentUser.id && (
                               <span className="text-[10px] font-mono px-1.5 py-0.2 bg-amber-500 text-white rounded font-bold">
-                                ANDA
+                                YOU
                               </span>
                             )}
                           </div>
@@ -388,18 +388,18 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
                     <td className="py-3 px-4 whitespace-nowrap">
                       {user.shift === "ALL" ? (
                         <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
-                          Semua Syif
+                          All Shifts
                         </span>
                       ) : (
                         <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 font-mono">
-                          Syif {user.shift}
+                          Shift {user.shift}
                         </span>
                       )}
                     </td>
 
                     {/* Last Login */}
                     <td className="py-3 px-4 text-zinc-500 font-mono text-[11px] whitespace-nowrap">
-                      {user.last_login || "Belum log"}
+                      {user.last_login || "No login"}
                     </td>
 
                     {/* Status Toggle */}
@@ -416,12 +416,12 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
                         {user.active ? (
                           <>
                             <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                            <span>Aktif</span>
+                            <span>Active</span>
                           </>
                         ) : (
                           <>
                             <XCircle className="w-3 h-3 text-rose-600" />
-                            <span>Dinyahaktif</span>
+                            <span>Inactive</span>
                           </>
                         )}
                       </button>
@@ -434,7 +434,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
                           type="button"
                           onClick={() => handleOpenEditModal(user)}
                           className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300"
-                          title="Sunting Pengguna"
+                          title="Edit User"
                         >
                           <Edit3 className="w-3.5 h-3.5" />
                         </button>
@@ -462,7 +462,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
                   <UserPlus className="w-5 h-5" />
                 </div>
                 <h3 className="font-bold text-base font-display">
-                  {editingUser ? "Sunting Profil Staf" : "Daftar Staf Baharu"}
+                  {editingUser ? "Edit Staff Profile" : "Register New Staff"}
                 </h3>
               </div>
               <button
@@ -476,14 +476,14 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
             <form onSubmit={handleSaveUser} className="p-6 space-y-4">
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1">
-                  Nama Penuh Staf
+                  Full Staff Name
                 </label>
                 <input
                   type="text"
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="cth: Muhammad Haziq"
+                  placeholder="e.g. Muhammad Haziq"
                   className="w-full px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500"
                 />
               </div>
@@ -491,24 +491,24 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1">
-                    Peranan (Role)
+                    Role (RBAC)
                   </label>
                   <select
                     value={formData.role}
                     onChange={(e) => setFormData({ ...formData, role: e.target.value as UserRole })}
                     className="w-full px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-xs font-bold focus:outline-none"
                   >
-                    <option value="technician">Juruteknik Operasi</option>
-                    <option value="supervisor">Penyelia Loji</option>
-                    <option value="chemist">Ahli Kimia / QC</option>
-                    <option value="manager_qa">Pengurus QA</option>
-                    <option value="admin">Pentadbir (Admin)</option>
+                    <option value="technician">Operations Technician</option>
+                    <option value="supervisor">Plant Supervisor</option>
+                    <option value="chemist">QC Chemist</option>
+                    <option value="manager_qa">QA Manager</option>
+                    <option value="admin">System Administrator</option>
                   </select>
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1">
-                    Syif
+                    Shift
                   </label>
                   <select
                     value={String(formData.shift)}
@@ -521,24 +521,24 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
                     }}
                     className="w-full px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-xs font-bold focus:outline-none"
                   >
-                    <option value="1">Syif 1 (0800–1500)</option>
-                    <option value="2">Syif 2 (1600–2300)</option>
-                    <option value="3">Syif 3 (2400–0700)</option>
-                    <option value="ALL">Semua Syif (Fleksibel)</option>
+                    <option value="1">Shift 1 (0800–1500)</option>
+                    <option value="2">Shift 2 (1600–2300)</option>
+                    <option value="3">Shift 3 (2400–0700)</option>
+                    <option value="ALL">All Shifts (Flexible)</option>
                   </select>
                 </div>
               </div>
 
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1">
-                  Emel Rasmi
+                  Official Email
                 </label>
                 <input
                   type="email"
                   required
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="cth: haziq@lamsoon.com.my"
+                  placeholder="e.g. haziq@lamsoon.com.my"
                   className="w-full px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500"
                 />
               </div>
@@ -546,7 +546,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1">
-                    Jabatan
+                    Department
                   </label>
                   <input
                     type="text"
@@ -560,7 +560,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
 
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1">
-                    No. Telefon
+                    Phone Number
                   </label>
                   <input
                     type="text"
@@ -574,7 +574,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
 
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1">
-                  Kata Laluan
+                  Password
                 </label>
                 <input
                   type="password"
@@ -594,7 +594,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
                   className="w-4 h-4 rounded text-amber-600 focus:ring-amber-500 border-zinc-300 dark:border-zinc-700"
                 />
                 <label htmlFor="active-checkbox" className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 cursor-pointer">
-                  Akaun Aktif &amp; Boleh Log Masuk
+                  Active Account &amp; Can Sign In
                 </label>
               </div>
 
@@ -604,13 +604,13 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
                   onClick={() => setIsAddModalOpen(false)}
                   className="px-4 py-2 rounded-xl text-xs font-bold border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                 >
-                  Batal
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-md transition-all"
                 >
-                  {editingUser ? "Simpan Perubahan" : "Daftar Staf"}
+                  {editingUser ? "Save Changes" : "Register Staff"}
                 </button>
               </div>
             </form>

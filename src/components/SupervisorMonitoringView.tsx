@@ -72,19 +72,19 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
       case "alert":
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300 border border-rose-300 dark:border-rose-800">
-            <AlertCircle className="w-3 h-3" /> Amaran Luar Had
+            <AlertCircle className="w-3 h-3" /> Out of Spec Alert
           </span>
         );
       case "warning":
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
-            <AlertTriangle className="w-3 h-3" /> Perlu Perhatian
+            <AlertTriangle className="w-3 h-3" /> Attention Required
           </span>
         );
       case "success":
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
-            <CheckCircle2 className="w-3 h-3" /> Selesai / In-Spec
+            <CheckCircle2 className="w-3 h-3" /> Completed / In-Spec
           </span>
         );
       default:
@@ -119,11 +119,11 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
               <ShieldCheck className="w-5 h-5" />
             </span>
             <h1 className="text-xl font-bold font-display text-zinc-900 dark:text-zinc-100">
-              Pusat Pemantauan &amp; Audit Penyelia (Live Supervisor Monitor)
+              Supervisor Monitoring &amp; Audit Hub (Live Supervisor Monitor)
             </h1>
           </div>
           <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1 font-medium">
-            Pantau setiap kemasukan log proses, pelanggaran spesifikasi (out-of-spec), keputusan QC, dan pengesahan syif masa-nyata.
+            Monitor process entries, out-of-spec deviations, QC laboratory results, and real-time shift verification.
           </p>
         </div>
 
@@ -133,7 +133,7 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 shrink-0"
           >
             <ShieldCheck className="w-4 h-4" />
-            <span>Semak &amp; Luluskan Borang</span>
+            <span>Review &amp; Approve Sheet</span>
           </button>
 
           <button
@@ -141,7 +141,7 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
             className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-bold text-zinc-700 dark:text-zinc-300"
           >
             <FileText className="w-4 h-4 text-amber-500" />
-            <span>Pratonton PDF</span>
+            <span>Preview PDF</span>
           </button>
         </div>
       </div>
@@ -154,7 +154,7 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
               <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
-                Syif 1 (0800 – 1500)
+                Shift 1 (0800 – 1500)
               </h2>
             </div>
             <span className="text-xs font-mono font-bold text-amber-500">
@@ -170,8 +170,8 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
           </div>
 
           <div className="flex items-center justify-between text-xs text-zinc-500 pt-1">
-            <span>Staf: <strong className="text-zinc-800 dark:text-zinc-200">Ahmad Razif</strong></span>
-            <span className="font-mono">{s1Completed} / 8 Jam Direkod</span>
+            <span>Staff: <strong className="text-zinc-800 dark:text-zinc-200">Ahmad Razif</strong></span>
+            <span className="font-mono">{s1Completed} / 8 Hours Logged</span>
           </div>
         </div>
 
@@ -181,7 +181,7 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-zinc-400" />
               <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
-                Syif 2 (1600 – 2300)
+                Shift 2 (1600 – 2300)
               </h2>
             </div>
             <span className="text-xs font-mono font-bold text-zinc-400">
@@ -197,8 +197,8 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
           </div>
 
           <div className="flex items-center justify-between text-xs text-zinc-500 pt-1">
-            <span>Staf: <strong className="text-zinc-800 dark:text-zinc-200">Mohd Danial</strong></span>
-            <span className="font-mono">{s2Completed} / 8 Jam Direkod</span>
+            <span>Staff: <strong className="text-zinc-800 dark:text-zinc-200">Mohd Danial</strong></span>
+            <span className="font-mono">{s2Completed} / 8 Hours Logged</span>
           </div>
         </div>
 
@@ -208,7 +208,7 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-zinc-400" />
               <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
-                Syif 3 (2400 – 0700)
+                Shift 3 (2400 – 0700)
               </h2>
             </div>
             <span className="text-xs font-mono font-bold text-zinc-400">
@@ -224,8 +224,8 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
           </div>
 
           <div className="flex items-center justify-between text-xs text-zinc-500 pt-1">
-            <span>Staf: <strong className="text-zinc-800 dark:text-zinc-200">K. Subramaniam</strong></span>
-            <span className="font-mono">{s3Completed} / 8 Jam Direkod</span>
+            <span>Staff: <strong className="text-zinc-800 dark:text-zinc-200">K. Subramaniam</strong></span>
+            <span className="font-mono">{s3Completed} / 8 Hours Logged</span>
           </div>
         </div>
       </div>
@@ -238,7 +238,7 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari log aktiviti, slot jam, nama staf, atau jenis amaran..."
+            placeholder="Search audit trail, hourly slot, staff name, or alert type..."
             className="w-full pl-9 pr-4 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500"
           />
         </div>
@@ -251,10 +251,10 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
               onChange={(e) => setFilterSeverity(e.target.value)}
               className="px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-xs font-bold text-zinc-800 dark:text-zinc-200 focus:outline-none"
             >
-              <option value="ALL">Semua Tahap Amaran</option>
-              <option value="alert">Amaran Had (Alert)</option>
-              <option value="warning">Perhatian (Warning)</option>
-              <option value="success">Berjaya (Success)</option>
+              <option value="ALL">All Severity Levels</option>
+              <option value="alert">Alert (Critical)</option>
+              <option value="warning">Warning (Attention)</option>
+              <option value="success">Success (In-Spec)</option>
               <option value="info">Info</option>
             </select>
           </div>
@@ -264,10 +264,10 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
             onChange={(e) => setFilterSource(e.target.value)}
             className="px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-xs font-bold text-zinc-800 dark:text-zinc-200 focus:outline-none"
           >
-            <option value="ALL">Semua Sumber</option>
+            <option value="ALL">All Sources</option>
             <option value="Bleaching Log">Bleaching Log (RF-FR-003)</option>
             <option value="QC Lab">QC Lab (RF-FR-001)</option>
-            <option value="Operating Parameters">Parameter Operasi</option>
+            <option value="Operating Parameters">Operating Parameters</option>
           </select>
         </div>
       </div>
@@ -278,16 +278,16 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-emerald-500 animate-ping" />
             <h2 className="text-sm font-bold font-display uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
-              Audit Trail &amp; Kemas Kini Terkini
+              Audit Trail &amp; Recent Updates
             </h2>
             <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
-              {filteredEvents.length} Acara
+              {filteredEvents.length} Events
             </span>
           </div>
 
           {pendingAlertCount > 0 && (
             <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
-              {pendingAlertCount} Perlu Perakuan Penyelia
+              {pendingAlertCount} Requires Supervisor Acknowledgment
             </span>
           )}
         </div>
@@ -295,7 +295,7 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
         <div className="space-y-3">
           {filteredEvents.length === 0 ? (
             <div className="py-12 text-center text-zinc-400">
-              Tiada kemas kini dijumpai untuk kriteria tapisan ini.
+              No activity found matching these filter criteria.
             </div>
           ) : (
             filteredEvents.map((evt) => {
@@ -338,8 +338,8 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
                         </p>
 
                         <div className="flex items-center gap-3 text-[11px] text-zinc-500 font-medium pt-1 flex-wrap">
-                          <span>Direkod oleh: <strong className="text-zinc-800 dark:text-zinc-200">{evt.author_name}</strong> ({evt.author_role})</span>
-                          {evt.shift && <span>· Syif {evt.shift}</span>}
+                          <span>Recorded by: <strong className="text-zinc-800 dark:text-zinc-200">{evt.author_name}</strong> ({evt.author_role})</span>
+                          {evt.shift && <span>· Shift {evt.shift}</span>}
                           {evt.slot_time && <span className="font-mono">· Slot {evt.slot_time} Hrs</span>}
                           {evt.lot_no && <span className="font-mono">· Lot {evt.lot_no}</span>}
                         </div>
@@ -352,7 +352,7 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
                         evt.acknowledged ? (
                           <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
                             <Check className="w-3.5 h-3.5" />
-                            <span>Diperakui ({evt.acknowledged_by || currentUser.name})</span>
+                            <span>Acknowledged ({evt.acknowledged_by || currentUser.name})</span>
                           </div>
                         ) : (
                           <button
@@ -361,7 +361,7 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
                             className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-sm transition-all active:scale-95"
                           >
                             <Check className="w-3.5 h-3.5" />
-                            <span>Perakui Catatan</span>
+                            <span>Acknowledge Entry</span>
                           </button>
                         )
                       ) : (

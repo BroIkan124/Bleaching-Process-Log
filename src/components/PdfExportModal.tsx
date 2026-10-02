@@ -197,17 +197,17 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
           {/* Supervisor Approval Stamp & Signatures */}
           <div className="border border-black p-2 text-xs flex justify-between items-center">
             <div>
-              <span className="font-bold">Status Borang: </span>
+              <span className="font-bold">Sheet Status: </span>
               <span className="uppercase font-semibold">{sheet.status}</span>
             </div>
 
             <div className="flex gap-8">
               <div>
-                <span className="font-bold">Disemak / Diluluskan Oleh: </span>
+                <span className="font-bold">Reviewed / Approved By: </span>
                 <span className="underline font-mono">{sheet.reviewed_by_name || (sheet.status === 'Approved' ? 'Ir. Roslan Zakaria (Supervisor)' : 'Pending Review')}</span>
               </div>
               <div>
-                <span className="font-bold">Tarikh Kelulusan: </span>
+                <span className="font-bold">Approval Date: </span>
                 <span className="font-mono">{sheet.reviewed_at ? new Date(sheet.reviewed_at).toLocaleDateString() : '-'}</span>
               </div>
             </div>

@@ -38,10 +38,10 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
           </div>
           <div>
             <h2 className="font-display font-bold text-sm text-zinc-900 dark:text-zinc-100 uppercase tracking-wider">
-              Borang Log Proses Pelunturan (RF-FR-003 Rev 03)
+              Bleaching Process Log Sheet (RF-FR-003 Rev 03)
             </h2>
             <p className="text-[11px] text-zinc-500 font-medium">
-              24 Slot Jam Lengkap · Klik mana-mana baris untuk mengisi entri pantas
+              Complete 24-Hour Slots · Click any row for fast slot entry
             </p>
           </div>
         </div>
@@ -50,7 +50,7 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
           <span className="inline-block w-2 h-2 rounded-full bg-emerald-500" />
           <span>In-Spec</span>
           <span className="inline-block w-2 h-2 rounded-full bg-rose-500 ml-2" />
-          <span>Luar Had</span>
+          <span>Out of Spec</span>
         </div>
       </div>
 
@@ -60,24 +60,24 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
           <thead>
             {/* Unified Clean Header */}
             <tr className="bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 font-bold border-b border-zinc-200 dark:border-zinc-800 text-[11px] uppercase tracking-wider select-none">
-              <th className="py-3 px-3 text-center border-r border-zinc-200 dark:border-zinc-800 w-20">Jam (Hrs)</th>
+              <th className="py-3 px-3 text-center border-r border-zinc-200 dark:border-zinc-800 w-20">Time (Hrs)</th>
               <th className="py-3 px-3 text-right border-r border-zinc-200 dark:border-zinc-800">Flow (MT/HR)</th>
-              <th className="py-3 px-2 text-center border-r border-zinc-200 dark:border-zinc-800">Dos Asid</th>
+              <th className="py-3 px-2 text-center border-r border-zinc-200 dark:border-zinc-800">Acid Dose</th>
               <th className="py-3 px-3 text-right border-r border-zinc-200 dark:border-zinc-800 text-amber-600 dark:text-amber-400">
-                Suhu HE (°C)
+                HE Temp (°C)
               </th>
-              <th className="py-3 px-2 text-center border-r border-zinc-200 dark:border-zinc-800">Dos BE</th>
-              <th className="py-3 px-2 text-center border-r border-zinc-200 dark:border-zinc-800">Paras</th>
+              <th className="py-3 px-2 text-center border-r border-zinc-200 dark:border-zinc-800">BE Dose</th>
+              <th className="py-3 px-2 text-center border-r border-zinc-200 dark:border-zinc-800">Level</th>
               <th className="py-3 px-3 text-right border-r border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300">
-                Vakum (mmHg)
+                Vacuum (mmHg)
               </th>
               <th className="py-3 px-2 text-center border-r border-zinc-200 dark:border-zinc-800">Niagara</th>
-              <th className="py-3 px-2 text-center border-r border-zinc-200 dark:border-zinc-800">Tukar</th>
+              <th className="py-3 px-2 text-center border-r border-zinc-200 dark:border-zinc-800">Filter Cut</th>
               <th className="py-3 px-2 text-right border-r border-zinc-200 dark:border-zinc-800">FFA (%)</th>
               <th className="py-3 px-2 text-right border-r border-zinc-200 dark:border-zinc-800">Red (R)</th>
               <th className="py-3 px-2 text-right border-r border-zinc-200 dark:border-zinc-800">Yel (Y)</th>
-              <th className="py-3 px-3 border-r border-zinc-200 dark:border-zinc-800 min-w-[200px]">Catatan / Remarks</th>
-              <th className="py-3 px-2 text-center w-24">Tindakan</th>
+              <th className="py-3 px-3 border-r border-zinc-200 dark:border-zinc-800 min-w-[200px]">Remarks</th>
+              <th className="py-3 px-2 text-center w-24">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/80 font-sans">
@@ -99,21 +99,21 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
                   {isShift1Start && (
                     <tr className="bg-zinc-50 dark:bg-zinc-900/90 text-zinc-700 dark:text-zinc-300 border-y border-zinc-200 dark:border-zinc-800 select-none">
                       <td colSpan={14} className="py-1.5 px-4 font-bold text-[11px] tracking-wide">
-                        <span className="text-amber-600 dark:text-amber-400">SYIF 1 (0800 – 1500 HRS)</span> · Juruteknik Bertugas: <strong className="text-zinc-900 dark:text-white">Ahmad Razif</strong>
+                        <span className="text-amber-600 dark:text-amber-400">SHIFT 1 (0800 – 1500 HRS)</span> · On-Duty Technician: <strong className="text-zinc-900 dark:text-white">Ahmad Razif</strong>
                       </td>
                     </tr>
                   )}
                   {isShift2Start && (
                     <tr className="bg-zinc-50 dark:bg-zinc-900/90 text-zinc-700 dark:text-zinc-300 border-y border-zinc-200 dark:border-zinc-800 select-none">
                       <td colSpan={14} className="py-1.5 px-4 font-bold text-[11px] tracking-wide">
-                        <span className="text-zinc-500">SYIF 2 (1600 – 2300 HRS)</span> · Juruteknik Bertugas: <strong className="text-zinc-900 dark:text-white">Mohd Danial</strong>
+                        <span className="text-zinc-500">SHIFT 2 (1600 – 2300 HRS)</span> · On-Duty Technician: <strong className="text-zinc-900 dark:text-white">Mohd Danial</strong>
                       </td>
                     </tr>
                   )}
                   {isShift3Start && (
                     <tr className="bg-zinc-50 dark:bg-zinc-900/90 text-zinc-700 dark:text-zinc-300 border-y border-zinc-200 dark:border-zinc-800 select-none">
                       <td colSpan={14} className="py-1.5 px-4 font-bold text-[11px] tracking-wide">
-                        <span className="text-zinc-500">SYIF 3 (2400 – 0700 HRS)</span> · Juruteknik Bertugas: <strong className="text-zinc-900 dark:text-white">K. Subramaniam</strong>
+                        <span className="text-zinc-500">SHIFT 3 (2400 – 0700 HRS)</span> · On-Duty Technician: <strong className="text-zinc-900 dark:text-white">K. Subramaniam</strong>
                       </td>
                     </tr>
                   )}
@@ -226,7 +226,7 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
 
                     {/* Remarks */}
                     <td className="py-2.5 px-3 border-r border-zinc-200/70 dark:border-zinc-800/70 text-zinc-600 dark:text-zinc-300 truncate max-w-[220px]">
-                      {entry.remarks || <span className="text-zinc-400 dark:text-zinc-600 italic">Tiada catatan khas</span>}
+                      {entry.remarks || <span className="text-zinc-400 dark:text-zinc-600 italic">No remarks</span>}
                     </td>
 
                     {/* Actions */}
@@ -239,7 +239,7 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
                         }}
                         className="px-2.5 py-1 rounded-lg text-xs font-bold border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-amber-500 hover:text-white hover:border-amber-500 transition-colors shadow-2xs"
                       >
-                        {isSaved ? "Semak" : "Isi"}
+                        {isSaved ? "Review" : "Log"}
                       </button>
                     </td>
                   </tr>

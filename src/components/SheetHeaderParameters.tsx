@@ -58,7 +58,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                 {currentPlant}
               </span>
               <span className="text-[11px] text-zinc-500 font-medium block leading-none mt-0.5">
-                {currentProduct} · Tarikh: <span className="font-mono text-zinc-700 dark:text-zinc-300 font-semibold">{sheet.sheet_date}</span>
+                {currentProduct} · Date: <span className="font-mono text-zinc-700 dark:text-zinc-300 font-semibold">{sheet.sheet_date}</span>
               </span>
             </div>
           </div>
@@ -74,7 +74,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
               Discharge: <strong className="text-zinc-900 dark:text-zinc-100">{currentDischarge.split(" ")[0]}</strong>
             </span>
             <span className="px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 font-mono font-bold">
-              Sasaran: {sheet.input_mt_hr ?? 45.0} MT/HR
+              Target: {sheet.input_mt_hr ?? 45.0} MT/HR
             </span>
           </div>
         </div>
@@ -91,7 +91,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
             }`}
           >
             <Settings2 className="w-3.5 h-3.5" />
-            <span>{isExpanded ? "Tutup Tetapan" : "Konfigurasi Parameter"}</span>
+            <span>{isExpanded ? "Close Settings" : "Configure Parameters"}</span>
             {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </button>
         </div>
@@ -103,13 +103,13 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
           {/* Group 1: Plant & Tank Logistics */}
           <div className="space-y-2">
             <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500 flex items-center gap-1.5">
-              <span>1. Konfigurasi Loji &amp; Tangki (Master Logistics)</span>
+              <span>1. Plant &amp; Tank Logistics</span>
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <div>
                 <label className="block text-[11px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">
-                  Loji / Laluan (Plant Line)
+                  Plant / Production Line
                 </label>
                 <select
                   disabled={isLocked}
@@ -125,7 +125,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
 
               <div>
                 <label className="block text-[11px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">
-                  Jenis Produk Minyak
+                  Oil Product Type
                 </label>
                 <select
                   disabled={isLocked}
@@ -141,7 +141,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
 
               <div>
                 <label className="block text-[11px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">
-                  Tangki Suapan (Feed Tank)
+                  Feed Tank
                 </label>
                 <select
                   disabled={isLocked}
@@ -157,7 +157,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
 
               <div>
                 <label className="block text-[11px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">
-                  Tangki Pelepasan (Discharge Tank)
+                  Discharge Tank
                 </label>
                 <select
                   disabled={isLocked}
@@ -176,7 +176,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
           {/* Group 2: Operational Target Parameters */}
           <div className="space-y-2 pt-2 border-t border-zinc-200/70 dark:border-zinc-800/80">
             <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500 flex items-center gap-1.5">
-              <span>2. Parameter Operasi &amp; Dos Bahan Kimia (Operating Specs)</span>
+              <span>2. Operating Specs &amp; Chemical Dosing</span>
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -185,12 +185,12 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                 <div className="flex items-center justify-between font-bold text-zinc-900 dark:text-zinc-100">
                   <span className="flex items-center gap-1.5">
                     <Factory className="w-3.5 h-3.5 text-amber-500" />
-                    <span>Kadar Aliran (Flowrate)</span>
+                    <span>Flowrate Targets</span>
                   </span>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <span className="text-[10px] font-bold uppercase text-zinc-500 block mb-0.5">MT / Jam</span>
+                    <span className="text-[10px] font-bold uppercase text-zinc-500 block mb-0.5">MT / Hour</span>
                     <input
                       type="number"
                       step="0.1"
@@ -202,7 +202,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                     />
                   </div>
                   <div>
-                    <span className="text-[10px] font-bold uppercase text-zinc-500 block mb-0.5">MT / Hari</span>
+                    <span className="text-[10px] font-bold uppercase text-zinc-500 block mb-0.5">MT / Day</span>
                     <input
                       type="number"
                       step="1"
@@ -221,7 +221,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                 <div className="flex items-center justify-between font-bold text-zinc-900 dark:text-zinc-100">
                   <span className="flex items-center gap-1.5">
                     <Beaker className="w-3.5 h-3.5 text-sky-500" />
-                    <span>Asid Degumming</span>
+                    <span>Degumming Acid</span>
                   </span>
                   <select
                     disabled={isLocked}
@@ -276,7 +276,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                 <div className="flex items-center justify-between font-bold text-zinc-900 dark:text-zinc-100">
                   <span className="flex items-center gap-1.5">
                     <Droplet className="w-3.5 h-3.5 text-amber-500" />
-                    <span>Tanah Peluntur (BE)</span>
+                    <span>Bleaching Earth (BE)</span>
                   </span>
                 </div>
                 <div className="grid grid-cols-3 gap-1.5">
@@ -328,7 +328,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <span className="text-[10px] font-bold uppercase text-zinc-500 block mb-0.5">Aid 1 (Jenis / Qty)</span>
+                    <span className="text-[10px] font-bold uppercase text-zinc-500 block mb-0.5">Aid 1 (Type / Qty)</span>
                     <div className="flex gap-1">
                       <input
                         type="text"
@@ -336,7 +336,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                         value={sheet.aid1_type}
                         onChange={(e) => onUpdateHeader({ aid1_type: e.target.value })}
                         className="w-1/2 px-1.5 py-1.5 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-xs font-medium"
-                        placeholder="Jenis"
+                        placeholder="Type"
                       />
                       <input
                         type="number"
@@ -349,7 +349,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                     </div>
                   </div>
                   <div>
-                    <span className="text-[10px] font-bold uppercase text-zinc-500 block mb-0.5">Aid 2 (Jenis / Qty)</span>
+                    <span className="text-[10px] font-bold uppercase text-zinc-500 block mb-0.5">Aid 2 (Type / Qty)</span>
                     <div className="flex gap-1">
                       <input
                         type="text"
@@ -357,7 +357,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                         value={sheet.aid2_type}
                         onChange={(e) => onUpdateHeader({ aid2_type: e.target.value })}
                         className="w-1/2 px-1.5 py-1.5 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-xs font-medium"
-                        placeholder="Jenis"
+                        placeholder="Type"
                       />
                       <input
                         type="number"

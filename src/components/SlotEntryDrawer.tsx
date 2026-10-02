@@ -96,7 +96,7 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
 
     const flags = validateReadingSpecs(formData);
     if (flags.length > 0 && (!formData.remarks || formData.remarks.trim() === '')) {
-      setRemarksError("Wajib isi Remarks: Terangkan sebab bacaan luar had dan tindakan pembetulan.");
+      setRemarksError("Mandatory Remarks: State reason for out-of-spec deviation and corrective action taken.");
       return;
     }
 
@@ -502,10 +502,10 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                 hasOutOfSpec ? 'text-rose-700 dark:text-rose-400' : 'text-slate-700 dark:text-slate-300'
               }`}>
                 <span>Remarks</span>
-                {hasOutOfSpec && <span className="text-rose-600 font-bold">* (Wajib diisi kerana out-of-spec)</span>}
+                {hasOutOfSpec && <span className="text-rose-600 font-bold">* (Mandatory due to out-of-spec)</span>}
               </label>
               <span className="text-[11px] text-slate-500">
-                Catatan tindakan / perubahan loji
+                Action taken / plant changes notes
               </span>
             </div>
             <textarea
@@ -518,7 +518,7 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                   ? 'border-rose-400 bg-rose-50/30 dark:bg-rose-950/20 text-slate-900 dark:text-white ring-2 ring-rose-400/20'
                   : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white'
               }`}
-              placeholder={hasOutOfSpec ? "Nyatakan punca sisihan proses dan tindakan pembetulan (cth: Injap stim dilaraskan)..." : "Catatan pilihan..."}
+              placeholder={hasOutOfSpec ? "State cause of process deviation and corrective action taken (e.g., steam valve adjusted)..." : "Optional remarks..."}
             />
             {remarksError && (
               <p className="text-xs text-rose-600 font-semibold mt-1 flex items-center gap-1">
@@ -562,10 +562,10 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
           <div className="text-xs text-slate-500">
             {formData.is_saved ? (
               <span className="text-emerald-600 font-medium flex items-center gap-1">
-                <Check className="w-4 h-4" /> Disimpan oleh {formData.entered_by_name || currentUser.name}
+                <Check className="w-4 h-4" /> Saved by {formData.entered_by_name || currentUser.name}
               </span>
             ) : (
-              <span>Slot belum disimpan</span>
+              <span>Slot not yet saved</span>
             )}
           </div>
 

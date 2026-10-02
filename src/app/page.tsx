@@ -68,11 +68,11 @@ export default function BleachingProcessLogApp() {
   useEffect(() => {
     const handleOnline = () => {
       setIsOffline(false);
-      showNotice("Sambungan rangkaian dipulihkan. Menyelaraskan barisan menunggu tempatan...", "success");
+      showNotice("Network connection restored. Synchronizing local queue...", "success");
     };
     const handleOffline = () => {
       setIsOffline(true);
-      showNotice("Rangkaian terputus (Offline). Semua data disimpan dalam memori tablet.", "info");
+      showNotice("Network disconnected (Offline). All data saved to tablet local storage.", "info");
     };
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
@@ -139,9 +139,9 @@ export default function BleachingProcessLogApp() {
       timestamp: new Date().toISOString(),
       source: 'Bleaching Log',
       title: hasAlert 
-        ? `AMARAN: Parameter Luar Had Direkodkan (Slot ${updatedEntry.time_label} Hrs)`
-        : `Slot ${updatedEntry.time_label} Hrs Berjaya Disimpan`,
-      description: `${currentUser.name} merekodkan Slot ${updatedEntry.time_label} (Flow ${updatedEntry.flowrate_set ?? '-'} MT/HR, Vac ${updatedEntry.vacuum_mmhg ?? '-'} mmHg, Temp ${updatedEntry.he_temp_c ?? '-'}°C). Catatan: ${updatedEntry.remarks || 'Tiada catatan khas.'}`,
+        ? `ALERT: Out-of-Spec Parameter Logged (Slot ${updatedEntry.time_label} Hrs)`
+        : `Slot ${updatedEntry.time_label} Hrs Successfully Saved`,
+      description: `${currentUser.name} recorded Slot ${updatedEntry.time_label} (Flow ${updatedEntry.flowrate_set ?? '-'} MT/HR, Vac ${updatedEntry.vacuum_mmhg ?? '-'} mmHg, Temp ${updatedEntry.he_temp_c ?? '-'}°C). Remarks: ${updatedEntry.remarks || 'No special remarks.'}`,
       severity: hasAlert ? 'alert' : 'success',
       author_name: currentUser.name,
       author_role: currentUser.role,
@@ -154,7 +154,7 @@ export default function BleachingProcessLogApp() {
     setSupervisorEvents(prev => [newEvent, ...prev]);
 
     setIsDrawerOpen(false);
-    showNotice(`Slot ${updatedEntry.time_label} Hrs berjaya disimpan oleh ${currentUser.name}.`, 'success');
+    showNotice(`Slot ${updatedEntry.time_label} Hrs successfully saved by ${currentUser.name}.`, 'success');
   };
 
   // Update Header Parameter
@@ -169,8 +169,8 @@ export default function BleachingProcessLogApp() {
       id: `evt-${Date.now()}`,
       timestamp: new Date().toISOString(),
       source: 'Operating Parameters',
-      title: 'Parameter Operasi Borang Dikemas kini',
-      description: `${currentUser.name} telah mengemas kini parameter sasaran loji (RF-FR-003).`,
+      title: 'Sheet Operating Parameters Updated',
+      description: `${currentUser.name} updated the plant target parameters (RF-FR-003).`,
       severity: 'info',
       author_name: currentUser.name,
       author_role: currentUser.role,
@@ -179,7 +179,7 @@ export default function BleachingProcessLogApp() {
     };
     setSupervisorEvents(prev => [newEvent, ...prev]);
 
-    showNotice("Parameter operasi lembaran dikemas kini.", "info");
+    showNotice("Sheet operating parameters updated.", "info");
   };
 
   // Submit Sheet for Review
@@ -195,8 +195,8 @@ export default function BleachingProcessLogApp() {
       id: `evt-${Date.now()}`,
       timestamp: new Date().toISOString(),
       source: 'Bleaching Log',
-      title: 'Lembaran Dihantar untuk Semakan Penyelia',
-      description: `${currentUser.name} telah menghantar lembaran proses RF-FR-003 untuk semakan kualiti akhir.`,
+      title: 'Sheet Submitted for Supervisor Review',
+      description: `${currentUser.name} submitted process sheet RF-FR-003 for final quality review.`,
       severity: 'warning',
       author_name: currentUser.name,
       author_role: currentUser.role,
@@ -205,7 +205,7 @@ export default function BleachingProcessLogApp() {
     };
     setSupervisorEvents(prev => [newEvent, ...prev]);
 
-    showNotice("Lembaran RF-FR-003 telah dihantar kepada Penyelia untuk semakan kualiti.", "success");
+    showNotice("Sheet RF-FR-003 submitted to Supervisor for quality review.", "success");
   };
 
   // Supervisor Approval
@@ -224,8 +224,8 @@ export default function BleachingProcessLogApp() {
       id: `evt-${Date.now()}`,
       timestamp: new Date().toISOString(),
       source: 'Bleaching Log',
-      title: 'Lembaran Rasmi DILULUSKAN & DIKUNCI',
-      description: `${currentUser.name} telah meluluskan lembaran proses RF-FR-003. Ulasan: ${reviewNote}`,
+      title: 'Process Sheet APPROVED & LOCKED',
+      description: `${currentUser.name} approved process sheet RF-FR-003. Review notes: ${reviewNote}`,
       severity: 'success',
       author_name: currentUser.name,
       author_role: currentUser.role,
@@ -234,7 +234,7 @@ export default function BleachingProcessLogApp() {
     };
     setSupervisorEvents(prev => [newEvent, ...prev]);
 
-    showNotice("Borang telah DILULUSKAN dan DIKUNCI secara rasmi.", "success");
+    showNotice("Sheet has been officially APPROVED and LOCKED.", "success");
   };
 
   // Supervisor Return
@@ -253,8 +253,8 @@ export default function BleachingProcessLogApp() {
       id: `evt-${Date.now()}`,
       timestamp: new Date().toISOString(),
       source: 'Bleaching Log',
-      title: 'Lembaran DIKEMBALIKAN oleh Penyelia',
-      description: `${currentUser.name} mengembalikan lembaran kepada juruteknik untuk pembetulan. Catatan: ${reviewNote}`,
+      title: 'Sheet RETURNED by Supervisor',
+      description: `${currentUser.name} returned sheet to technician for corrective actions. Notes: ${reviewNote}`,
       severity: 'alert',
       author_name: currentUser.name,
       author_role: currentUser.role,
@@ -263,7 +263,7 @@ export default function BleachingProcessLogApp() {
     };
     setSupervisorEvents(prev => [newEvent, ...prev]);
 
-    showNotice("Borang telah DIKEMBALIKAN kepada juruteknik berserta catatan ulasan.", "info");
+    showNotice("Sheet RETURNED to technician with supervisor review notes.", "info");
   };
 
   // Supervisor Acknowledge Event
@@ -273,18 +273,18 @@ export default function BleachingProcessLogApp() {
         ? { ...e, acknowledged: true, acknowledged_by: acknowledgedBy, acknowledged_at: new Date().toISOString() }
         : e
     ));
-    showNotice(`Catatan amaran telah disahkan dan diperakui oleh ${acknowledgedBy}.`, 'success');
+    showNotice(`Alert entry verified and acknowledged by ${acknowledgedBy}.`, 'success');
   };
 
   // Login handler
   const handleLoginSuccess = (user: UserProfile) => {
     setCurrentUser(user);
-    showNotice(`Selamat kembali, ${user.name} (${user.role}). Sesi aktif dimulakan.`, 'success');
+    showNotice(`Welcome back, ${user.name} (${user.role}). Active session started.`, 'success');
   };
 
   // Logout handler
   const handleLogout = () => {
-    showNotice("Anda telah log keluar daripada sistem.", "info");
+    showNotice("You have logged out of the system.", "info");
   };
 
   // Unacknowledged alerts count for supervisor badge
@@ -336,7 +336,7 @@ export default function BleachingProcessLogApp() {
               <div className="mb-4 p-4 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-200 flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
                 <div>
-                  <span className="font-bold">Borang Dikembalikan oleh Penyelia ({sheet.reviewed_by_name}):</span>
+                  <span className="font-bold">Sheet Returned by Supervisor ({sheet.reviewed_by_name}):</span>
                   <p className="text-xs mt-1 font-mono">{sheet.review_note}</p>
                 </div>
               </div>

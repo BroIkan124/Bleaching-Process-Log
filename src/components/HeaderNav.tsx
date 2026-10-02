@@ -49,15 +49,15 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   const getStatusBadge = () => {
     switch (sheetStatus) {
       case "Draft":
-        return <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">Draf</span>;
+        return <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">Draft</span>;
       case "InProgress":
-        return <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-300 dark:border-amber-700 animate-pulse">Sedang Berjalan</span>;
+        return <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-300 dark:border-amber-700 animate-pulse">In Progress</span>;
       case "Submitted":
-        return <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-zinc-200 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">Dihantar</span>;
+        return <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-zinc-200 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">Submitted</span>;
       case "Returned":
-        return <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300 border border-rose-300 dark:border-rose-700">Dikembalikan</span>;
+        return <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300 border border-rose-300 dark:border-rose-700">Returned</span>;
       case "Approved":
-        return <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">Diluluskan</span>;
+        return <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">Approved</span>;
     }
   };
 
@@ -66,13 +66,13 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
       case "bleaching":
         return "Auto Bleaching Log (RF-FR-003 Rev 03)";
       case "qc":
-        return "QC Management & Ujian Makmal (RF-FR-001)";
+        return "QC Management & Lab Tests (RF-FR-001)";
       case "reports":
-        return "Laporan & Analisis Prestasi Loji";
+        return "Plant Performance Reports & Analytics";
       case "supervisor":
-        return "Pusat Pemantauan & Audit Penyelia";
+        return "Supervisor Live Monitoring & Audit Hub";
       case "users":
-        return "Pengurusan Pengguna & Hak Akses (Admin)";
+        return "User Management & Access Control (Admin)";
     }
   };
 
@@ -105,9 +105,9 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
         <div className="hidden md:flex items-center gap-2.5 bg-zinc-100 dark:bg-zinc-800/80 px-3 py-1 rounded-xl border border-zinc-200 dark:border-zinc-700/80 text-xs">
           <div className="flex items-center gap-1.5 font-medium">
             <Clock className="w-3.5 h-3.5 text-amber-500" />
-            <span className="text-zinc-500">Syif:</span>
+            <span className="text-zinc-500">Shift:</span>
             <span className="font-bold text-zinc-800 dark:text-zinc-200 font-mono">
-              Syif {currentShift} {currentShift === 1 ? '(0800–1500)' : currentShift === 2 ? '(1600–2300)' : '(2400–0700)'}
+              Shift {currentShift} {currentShift === 1 ? '(0800–1500)' : currentShift === 2 ? '(1600–2300)' : '(2400–0700)'}
             </span>
           </div>
 
@@ -116,11 +116,11 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
           <div className="flex items-center gap-1.5">
             {isOffline ? (
               <span className="flex items-center gap-1 text-amber-500 font-medium">
-                <WifiOff className="w-3.5 h-3.5" /> Luar Talian
+                <WifiOff className="w-3.5 h-3.5" /> Offline
               </span>
             ) : (
               <span className="flex items-center gap-1 text-emerald-500 font-medium">
-                <Wifi className="w-3.5 h-3.5" /> Diselaraskan
+                <Wifi className="w-3.5 h-3.5" /> Synced
               </span>
             )}
           </div>
@@ -135,10 +135,10 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
                 type="button"
                 onClick={onOpenPdf}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 transition-colors"
-                title="Eksport / Cetak PDF A4 Format RF-FR-003"
+                title="Export / Print Official A4 Format RF-FR-003"
               >
                 <Printer className="w-3.5 h-3.5 text-amber-500" />
-                <span className="hidden sm:inline">Cetak PDF</span>
+                <span className="hidden sm:inline">Print PDF</span>
               </button>
 
               {currentRole.role === 'technician' && sheetStatus === 'InProgress' && (
@@ -148,7 +148,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
                   className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl bg-amber-600 hover:bg-amber-700 text-white shadow-sm transition-all active:scale-95"
                 >
                   <Send className="w-3.5 h-3.5" />
-                  <span>Hantar Borang</span>
+                  <span>Submit Sheet</span>
                 </button>
               )}
 
@@ -159,7 +159,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
                   className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition-all active:scale-95"
                 >
                   <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>Semak &amp; Lulus</span>
+                  <span>Review &amp; Approve</span>
                 </button>
               )}
             </>
@@ -170,7 +170,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
             type="button"
             onClick={onOpenLoginModal}
             className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200/80 dark:hover:bg-zinc-700/80 pl-1.5 pr-2.5 py-1 rounded-xl border border-zinc-200 dark:border-zinc-700 transition-colors text-left"
-            title="Klik untuk Log Masuk / Tukar Pengguna"
+            title="Click to Sign In / Switch User"
           >
             <div className="h-6 w-6 rounded-lg bg-amber-600 text-white flex items-center justify-center font-bold text-[10px] uppercase shrink-0">
               {currentRole.name.slice(0, 2)}
@@ -191,8 +191,8 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
             type="button"
             onClick={onToggleDark}
             className="p-2 rounded-xl border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-            title="Tukar Mod Cerah / Gelap"
-            aria-label="Tukar Mod Gelap"
+            title="Toggle Light / Dark Mode"
+            aria-label="Toggle Dark Mode"
           >
             {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
           </button>

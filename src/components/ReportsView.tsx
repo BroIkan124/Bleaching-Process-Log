@@ -111,25 +111,25 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
   // Export to CSV function
   const handleExportCSV = () => {
     const headers = [
-      "Slot Jam",
-      "Syif",
-      "Kadar Alir Flowrate (MT/HR)",
-      "Dos Asid Sitrik/PA",
-      "Suhu HE (°C)",
-      "Dos Tanah Bleaching Earth",
-      "Paras Bleacher",
-      "Vakum Bleacher (mmHg)",
-      "Penapis Niagara",
-      "Waktu Tukar Penapis",
+      "Hourly Slot",
+      "Shift",
+      "Flowrate (MT/HR)",
+      "Acid Dose (Citric/PA)",
+      "HE Temp (°C)",
+      "Bleaching Earth Dose",
+      "Bleacher Level",
+      "Bleacher Vacuum (mmHg)",
+      "Niagara Filter",
+      "Filter Cut Time",
       "FFA (%)",
-      "Warna Lovibond Red (R)",
-      "Warna Lovibond Yellow (Y)",
-      "Catatan Operator"
+      "Lovibond Red (R)",
+      "Lovibond Yellow (Y)",
+      "Operator Remarks"
     ];
 
     const rows = entries.map((e) => [
       e.time_label,
-      `Syif ${e.shift}`,
+      `Shift ${e.shift}`,
       e.flowrate_set !== null && e.flowrate_set !== undefined ? e.flowrate_set : "",
       e.acid_dosage_ok ? "OK" : "-",
       e.he_temp_c !== null && e.he_temp_c !== undefined ? e.he_temp_c : "",
@@ -150,7 +150,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `Laporan_Bleaching_RF-FR-003_${sheet.sheet_date || "Hari_Ini"}.csv`);
+    link.setAttribute("download", `Bleaching_Report_RF-FR-003_${sheet.sheet_date || "Today"}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -170,11 +170,11 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
               <BarChart3 className="w-5 h-5" />
             </span>
             <h1 className="text-xl font-bold font-display text-zinc-900 dark:text-zinc-100">
-              Laporan &amp; Analisis Prestasi Loji (RF-FR-003)
+              Plant Performance Reports &amp; Analytics (RF-FR-003)
             </h1>
           </div>
           <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1 font-medium">
-            Analisis volum pengeluaran, kestabilan parameter suhu &amp; vakum, serta kualiti ujian minyak luntur.
+            Production volume analysis, temperature &amp; vacuum stability, and bleached oil QC parameters.
           </p>
         </div>
 
@@ -186,19 +186,19 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
               onChange={(e) => setTimeRange(e.target.value)}
               className="bg-transparent focus:outline-none cursor-pointer text-zinc-800 dark:text-zinc-200"
             >
-              <option value="today">Hari Ini ({sheet?.sheet_date || "2026-10-01"})</option>
-              <option value="7days">7 Hari Lepas (Mingguan)</option>
-              <option value="month">Bulan Ini (Oktober 2026)</option>
+              <option value="today">Today ({sheet?.sheet_date || "2026-10-01"})</option>
+              <option value="7days">Past 7 Days (Weekly)</option>
+              <option value="month">This Month (October 2026)</option>
             </select>
           </div>
 
           <button
             onClick={handleExportCSV}
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-white text-xs font-bold shadow-sm transition-all"
-            title="Eksport data penuh dalam format CSV"
+            title="Export full data in CSV format"
           >
             <Download className="w-4 h-4" />
-            <span>Eksport CSV</span>
+            <span>Export CSV</span>
           </button>
 
           <button
@@ -206,7 +206,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-md transition-all active:scale-95"
           >
             <Printer className="w-4 h-4" />
-            <span>Cetak Laporan</span>
+            <span>Print Report</span>
           </button>
         </div>
       </div>
@@ -215,7 +215,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="p-4 rounded-xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm">
           <div className="flex items-center justify-between text-zinc-500 mb-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Jumlah Minyak Diproses</span>
+            <span className="text-[11px] font-bold uppercase tracking-wider">Total Oil Processed</span>
             <Droplet className="w-4 h-4 text-amber-500" />
           </div>
           <div className="flex items-baseline gap-1.5">
@@ -225,13 +225,13 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
             <span className="text-xs text-zinc-500 font-bold">MT</span>
           </div>
           <span className="text-[11px] text-zinc-400 font-medium block mt-1">
-            Purata Alir: {avgFlowrate} MT/Jam
+            Avg Flow: {avgFlowrate} MT/HR
           </span>
         </div>
 
         <div className="p-4 rounded-xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm">
           <div className="flex items-center justify-between text-zinc-500 mb-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Pematuhan Spesifikasi</span>
+            <span className="text-[11px] font-bold uppercase tracking-wider">Specification Compliance</span>
             <Gauge className="w-4 h-4 text-emerald-500" />
           </div>
           <div className="flex items-baseline gap-1.5">
@@ -241,13 +241,13 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
             <span className="text-xs text-zinc-500 font-bold">In-Spec</span>
           </div>
           <span className="text-[11px] text-zinc-400 font-medium block mt-1">
-            {totalIncidents === 0 ? "100% Parameter Normal" : `${totalIncidents} bacaan luar had dikesan`}
+            {totalIncidents === 0 ? "100% Normal Parameters" : `${totalIncidents} out-of-spec readings detected`}
           </span>
         </div>
 
         <div className="p-4 rounded-xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm">
           <div className="flex items-center justify-between text-zinc-500 mb-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Purata Vakum Loji</span>
+            <span className="text-[11px] font-bold uppercase tracking-wider">Average Plant Vacuum</span>
             <TrendingUp className="w-4 h-4 text-sky-500" />
           </div>
           <div className="flex items-baseline gap-1.5">
@@ -257,13 +257,13 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
             <span className="text-xs text-zinc-500 font-bold">mmHg</span>
           </div>
           <span className="text-[11px] text-emerald-500 font-semibold block mt-1">
-            Had Min: ≥ 600.0 mmHg
+            Min Spec: ≥ 600.0 mmHg
           </span>
         </div>
 
         <div className="p-4 rounded-xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm">
           <div className="flex items-center justify-between text-zinc-500 mb-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Purata Suhu HE</span>
+            <span className="text-[11px] font-bold uppercase tracking-wider">Average HE Temp</span>
             <Sparkles className="w-4 h-4 text-purple-500" />
           </div>
           <div className="flex items-baseline gap-1.5">
@@ -273,7 +273,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
             <span className="text-xs text-zinc-500 font-bold">°C</span>
           </div>
           <span className="text-[11px] text-zinc-400 font-medium block mt-1">
-            Had Dibenarkan: 70.0°C – 115.0°C
+            Operating Spec: 70.0°C – 115.0°C
           </span>
         </div>
       </div>
@@ -283,7 +283,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         <div className="p-4 rounded-xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
-              Asid Lemak Bebas (FFA %)
+              Free Fatty Acids (FFA %)
             </span>
             <FlaskConical className="w-4 h-4 text-amber-500" />
           </div>
@@ -301,7 +301,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         <div className="p-4 rounded-xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
-              Warna Lovibond Red (R)
+              Lovibond Colour Red (R)
             </span>
             <span className="w-3 h-3 rounded-full bg-rose-500" />
           </div>
@@ -319,7 +319,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         <div className="p-4 rounded-xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
-              Warna Lovibond Yellow (Y)
+              Lovibond Colour Yellow (Y)
             </span>
             <span className="w-3 h-3 rounded-full bg-amber-400" />
           </div>
@@ -339,7 +339,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
       <div className="rounded-2xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm p-5 space-y-4">
         <h2 className="text-sm font-bold font-display uppercase tracking-wider text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
           <Clock className="w-4 h-4 text-amber-500" />
-          <span>Prestasi Mengikut Syif Operasi (Shift Comparison)</span>
+          <span>Operations by Shift (Shift Comparison)</span>
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -347,24 +347,24 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
           <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wide">
-                Syif 1 (0800 – 1500)
+                Shift 1 (0800 – 1500)
               </span>
               <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-                Aktif ({s1Saved.length}/8 Jam)
+                Active ({s1Saved.length}/8 Hrs)
               </span>
             </div>
-            <p className="text-xs text-zinc-500">Juruteknik: <strong>{sheet.tech_s1_name || "Ahmad Razif"}</strong></p>
+            <p className="text-xs text-zinc-500">Technician: <strong>{sheet.tech_s1_name || "Ahmad Razif"}</strong></p>
             <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800 flex justify-between text-xs">
-              <span className="text-zinc-500">Volum Direkod:</span>
+              <span className="text-zinc-500">Logged Volume:</span>
               <span className="font-mono font-bold">{s1MT > 0 ? s1MT.toFixed(1) : "229.2"} MT</span>
             </div>
             <div className="flex justify-between text-xs">
-              <span className="text-zinc-500">Kadar Purata:</span>
+              <span className="text-zinc-500">Avg Rate:</span>
               <span className="font-mono font-bold">45.8 MT/HR</span>
             </div>
             <div className="flex justify-between text-xs">
-              <span className="text-zinc-500">Pematuhan:</span>
-              <span className="text-emerald-500 font-bold">In-Spec Selesai</span>
+              <span className="text-zinc-500">Compliance:</span>
+              <span className="text-emerald-500 font-bold">In-Spec Completed</span>
             </div>
           </div>
 
@@ -372,24 +372,24 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
           <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wide">
-                Syif 2 (1600 – 2300)
+                Shift 2 (1600 – 2300)
               </span>
               <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-200 dark:bg-zinc-800 text-zinc-500">
-                Menunggu Giliran
+                Pending Handover
               </span>
             </div>
-            <p className="text-xs text-zinc-500">Juruteknik: <strong>{sheet.tech_s2_name || "Mohd Danial"}</strong></p>
+            <p className="text-xs text-zinc-500">Technician: <strong>{sheet.tech_s2_name || "Mohd Danial"}</strong></p>
             <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800 flex justify-between text-xs">
-              <span className="text-zinc-500">Sasaran Volum:</span>
+              <span className="text-zinc-500">Target Volume:</span>
               <span className="font-mono font-bold">360.0 MT</span>
             </div>
             <div className="flex justify-between text-xs">
-              <span className="text-zinc-500">Sasaran Flow:</span>
+              <span className="text-zinc-500">Target Flow:</span>
               <span className="font-mono font-bold">45.0 MT/HR</span>
             </div>
             <div className="flex justify-between text-xs">
               <span className="text-zinc-500">Status:</span>
-              <span className="text-zinc-400 font-bold">Belum Bermula</span>
+              <span className="text-zinc-400 font-bold">Not Started</span>
             </div>
           </div>
 
@@ -397,24 +397,24 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
           <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wide">
-                Syif 3 (2400 – 0700)
+                Shift 3 (2400 – 0700)
               </span>
               <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-200 dark:bg-zinc-800 text-zinc-500">
-                Menunggu Giliran
+                Pending Handover
               </span>
             </div>
-            <p className="text-xs text-zinc-500">Juruteknik: <strong>{sheet.tech_s3_name || "K. Subramaniam"}</strong></p>
+            <p className="text-xs text-zinc-500">Technician: <strong>{sheet.tech_s3_name || "K. Subramaniam"}</strong></p>
             <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800 flex justify-between text-xs">
-              <span className="text-zinc-500">Sasaran Volum:</span>
+              <span className="text-zinc-500">Target Volume:</span>
               <span className="font-mono font-bold">360.0 MT</span>
             </div>
             <div className="flex justify-between text-xs">
-              <span className="text-zinc-500">Sasaran Flow:</span>
+              <span className="text-zinc-500">Target Flow:</span>
               <span className="font-mono font-bold">45.0 MT/HR</span>
             </div>
             <div className="flex justify-between text-xs">
               <span className="text-zinc-500">Status:</span>
-              <span className="text-zinc-400 font-bold">Belum Bermula</span>
+              <span className="text-zinc-400 font-bold">Not Started</span>
             </div>
           </div>
         </div>
@@ -425,20 +425,20 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <h2 className="text-sm font-bold font-display uppercase tracking-wider text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
             <FileSpreadsheet className="w-4 h-4 text-amber-500" />
-            <span>Jadual Log Lengkap 24-Jam (RF-FR-003 Rev 03)</span>
+            <span>Complete 24-Hour Log Sheet (RF-FR-003 Rev 03)</span>
           </h2>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs text-zinc-500 font-bold">Pilih Syif:</span>
+            <span className="text-xs text-zinc-500 font-bold">Filter Shift:</span>
             <select
               value={selectedShift}
               onChange={(e) => setSelectedShift(e.target.value)}
               className="px-3 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-xs font-bold"
             >
-              <option value="ALL">Semua 24 Jam</option>
-              <option value="1">Syif 1 (0800–1500)</option>
-              <option value="2">Syif 2 (1600–2300)</option>
-              <option value="3">Syif 3 (2400–0700)</option>
+              <option value="ALL">All 24 Hours</option>
+              <option value="1">Shift 1 (0800–1500)</option>
+              <option value="2">Shift 2 (1600–2300)</option>
+              <option value="3">Shift 3 (2400–0700)</option>
             </select>
           </div>
         </div>
@@ -447,18 +447,18 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
           <table className="w-full text-left border-collapse text-xs">
             <thead>
               <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-[#131416] text-[11px] font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
-                <th className="py-2.5 px-3">Slot Jam</th>
-                <th className="py-2.5 px-3">Syif</th>
+                <th className="py-2.5 px-3">Time (Hrs)</th>
+                <th className="py-2.5 px-3">Shift</th>
                 <th className="py-2.5 px-3 text-right">Flow (MT/HR)</th>
-                <th className="py-2.5 px-3 text-center">Dos Asid</th>
-                <th className="py-2.5 px-3 text-right">Suhu HE (°C)</th>
-                <th className="py-2.5 px-3 text-center">Dos Tanah</th>
-                <th className="py-2.5 px-3 text-center">Paras</th>
-                <th className="py-2.5 px-3 text-right">Vakum (mmHg)</th>
+                <th className="py-2.5 px-3 text-center">Acid Dose</th>
+                <th className="py-2.5 px-3 text-right">HE Temp (°C)</th>
+                <th className="py-2.5 px-3 text-center">Earth Dose</th>
+                <th className="py-2.5 px-3 text-center">Level</th>
+                <th className="py-2.5 px-3 text-right">Vacuum (mmHg)</th>
                 <th className="py-2.5 px-3 text-center">Niagara</th>
                 <th className="py-2.5 px-3 text-right">FFA (%)</th>
                 <th className="py-2.5 px-3 text-right">R / Y</th>
-                <th className="py-2.5 px-3">Catatan / Remarks</th>
+                <th className="py-2.5 px-3">Remarks</th>
                 <th className="py-2.5 px-3 text-center">Status</th>
               </tr>
             </thead>
@@ -476,7 +476,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
                       {e.time_label}
                     </td>
                     <td className="py-2 px-3 text-zinc-500 font-sans">
-                      Syif {e.shift}
+                      Shift {e.shift}
                     </td>
                     <td className="py-2 px-3 text-right font-medium">
                       {typeof e.flowrate_set === 'number' ? e.flowrate_set.toFixed(1) : "-"}
@@ -521,11 +521,11 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
                     <td className="py-2 px-3 text-center font-sans">
                       {e.is_saved ? (
                         <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-                          Disimpan
+                          Saved
                         </span>
                       ) : (
                         <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-400">
-                          Kosong
+                          Empty
                         </span>
                       )}
                     </td>

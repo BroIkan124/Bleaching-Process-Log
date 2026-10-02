@@ -55,7 +55,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
 
     if (user) {
       if (!user.active) {
-        setErrorMessage("Akaun pengguna ini telah dinyahaktifkan oleh Pentadbir Sistem.");
+        setErrorMessage("This user account has been deactivated by the System Administrator.");
         return;
       }
       setSuccessAnimation(true);
@@ -71,7 +71,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
         onClose();
       }, 500);
     } else {
-      setErrorMessage("Emel / ID Staf atau kata laluan tidak sah. (Cuba 'password123' atau klik Butang Demo di bawah)");
+      setErrorMessage("Invalid Email / Staff ID or password. (Try 'password123' or click Demo Buttons below)");
     }
   };
 
@@ -82,8 +82,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({
       onLoginSuccess({
         ...user,
         last_login: new Date().toLocaleString("en-MY", { 
-          year: "numeric", month: "2-digit", day: "2-digit", 
-          hour: "2-digit", minute: "2-digit", hour12: true 
+            year: "numeric", month: "2-digit", day: "2-digit", 
+            hour: "2-digit", minute: "2-digit", hour12: true 
         })
       });
       setSuccessAnimation(false);
@@ -117,10 +117,10 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             </div>
             <div>
               <h2 id="login-modal-title" className="text-base font-bold tracking-tight">
-                Log Masuk Sistem Kawalan Nisshin
+                Nisshin Refinery Process Sign In
               </h2>
               <p className="text-xs text-zinc-600 dark:text-zinc-400 font-medium">
-                Lam Soon Edible Oils · Kawalan Akses Berperingkat (RBAC)
+                Lam Soon Edible Oils · Role-Based Access Control (RBAC)
               </p>
             </div>
           </div>
@@ -128,7 +128,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
-            aria-label="Tutup"
+            aria-label="Close"
           >
             <X className="w-5 h-5" />
           </button>
@@ -161,7 +161,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                 }}
                 className="px-3 py-1.5 text-xs font-bold rounded-lg border border-rose-300 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/60 transition-colors"
               >
-                Log Keluar
+                Sign Out
               </button>
             </div>
           )}
@@ -170,7 +170,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           <form onSubmit={handleManualLogin} className="space-y-4">
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1.5">
-                Emel Staf / Nama Pengguna
+                Staff Email / Username
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
@@ -178,7 +178,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                   type="text"
                   value={emailInput}
                   onChange={(e) => setEmailInput(e.target.value)}
-                  placeholder="cth: ahmad.razif@lamsoon.com.my atau admin"
+                  placeholder="e.g. ahmad.razif@lamsoon.com.my or admin"
                   className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500"
                   required
                 />
@@ -188,9 +188,9 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
-                  Kata Laluan
+                  Password
                 </label>
-                <span className="text-[11px] text-zinc-500 font-mono">Lalai: password123</span>
+                <span className="text-[11px] text-zinc-500 font-mono">Default: password123</span>
               </div>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
@@ -198,7 +198,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                   type="password"
                   value={passwordInput}
                   onChange={(e) => setPasswordInput(e.target.value)}
-                  placeholder="Masukkan kata laluan"
+                  placeholder="Enter password"
                   className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500"
                   required
                 />
@@ -215,7 +215,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             {successAnimation && (
               <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 shrink-0" />
-                <span>Pengesahan berjaya! Sedang memuatkan profil stesen...</span>
+                <span>Authentication successful! Loading station profile...</span>
               </div>
             )}
 
@@ -224,7 +224,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
               disabled={successAnimation}
               className="w-full py-2.5 px-4 rounded-xl font-bold text-xs sm:text-sm bg-amber-600 hover:bg-amber-700 text-white shadow-md transition-all active:scale-[0.99] flex items-center justify-center gap-2"
             >
-              <span>Log Masuk</span>
+              <span>Sign In</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
@@ -233,9 +233,9 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800">
             <div className="flex items-center justify-between mb-2.5">
               <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">
-                Pilih Peranan Pantas (1-Click Switch Demo):
+                Quick Role Selection (1-Click Demo Switch):
               </span>
-              <span className="text-[10px] text-amber-500 font-mono">Simulasi Staf Sahih</span>
+              <span className="text-[10px] text-amber-500 font-mono">Simulated Staff Profiles</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -265,7 +265,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                     </div>
                     {isCurrent && (
                       <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 bg-amber-500 text-white rounded">
-                        Aktif
+                        Active
                       </span>
                     )}
                   </button>
@@ -278,7 +278,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
         {/* Footer info */}
         <div className="px-6 py-3 bg-zinc-100 dark:bg-[#101113] border-t border-zinc-200 dark:border-zinc-800 text-center">
           <p className="text-[11px] text-zinc-500 font-mono">
-            Sistem mematuhi piawaian ISO 9001:2015 &amp; Halal Audit Trail. Setiap log masuk direkodkan.
+            System complies with ISO 9001:2015 &amp; Halal Audit Trail standards. All logins are logged.
           </p>
         </div>
       </div>

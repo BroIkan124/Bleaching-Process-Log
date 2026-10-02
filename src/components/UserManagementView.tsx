@@ -22,7 +22,8 @@ import {
   Lock, 
   X,
   AlertTriangle,
-  UserCheck
+  UserCheck,
+  LogOut
 } from "lucide-react";
 
 interface UserManagementViewProps {
@@ -192,9 +193,10 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
         <div className="pt-2">
           <button
             onClick={onRequestLoginModal}
-            className="px-5 py-2.5 rounded-xl font-bold text-xs bg-amber-600 hover:bg-amber-700 text-white shadow-md transition-all active:scale-95"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs bg-amber-600 hover:bg-amber-700 text-white shadow-md transition-all active:scale-95"
           >
-            Switch / Sign In as Administrator
+            <LogOut className="w-3.5 h-3.5" />
+            <span>Sign Out to Log In as Administrator</span>
           </button>
         </div>
       </div>

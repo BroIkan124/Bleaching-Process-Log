@@ -21,7 +21,6 @@ import { SupervisorReviewModal } from "@/components/SupervisorReviewModal";
 import { PdfExportModal } from "@/components/PdfExportModal";
 import { QCManagementView } from "@/components/QCManagementView";
 import { FloatingBottomDock } from "@/components/FloatingBottomDock";
-import { LoginModal } from "@/components/LoginModal";
 import { UserManagementView } from "@/components/UserManagementView";
 import { SupervisorMonitoringView } from "@/components/SupervisorMonitoringView";
 import { ReportsView } from "@/components/ReportsView";
@@ -36,7 +35,6 @@ export default function BleachingProcessLogApp() {
   const [allUsers, setAllUsers] = useState<UserProfile[]>(MOCK_USERS);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   // Check saved session on mount
   useEffect(() => {
@@ -349,7 +347,7 @@ export default function BleachingProcessLogApp() {
         currentShift={currentShift}
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        onOpenLoginModal={() => setIsLoginModalOpen(true)}
+        onLogout={handleLogout}
       />
 
       {/* Notification Toast */}
@@ -448,7 +446,7 @@ export default function BleachingProcessLogApp() {
             currentUser={currentUser}
             users={allUsers}
             onUpdateUsers={setAllUsers}
-            onRequestLoginModal={() => setIsLoginModalOpen(true)}
+            onRequestLoginModal={handleLogout}
           />
         )}
       </main>
@@ -487,16 +485,6 @@ export default function BleachingProcessLogApp() {
         sheet={sheet}
         isOpen={isPdfOpen}
         onClose={() => setIsPdfOpen(false)}
-      />
-
-      {/* User Login & Authentication Modal */}
-      <LoginModal
-        isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
-        currentUser={currentUser}
-        allUsers={allUsers}
-        onLoginSuccess={handleLoginSuccess}
-        onLogout={handleLogout}
       />
 
       {/* Floating Bottom Dock Navigation */}

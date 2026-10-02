@@ -12,7 +12,7 @@ import {
   Sun, 
   Send, 
   Printer,
-  ChevronDown
+  LogOut
 } from "lucide-react";
 
 interface HeaderNavProps {
@@ -30,7 +30,7 @@ interface HeaderNavProps {
   activeTab: DashboardTab;
   onTabChange?: (tab: DashboardTab) => void;
   qcSampleCount?: number;
-  onOpenLoginModal: () => void;
+  onLogout: () => void;
 }
 
 export const HeaderNav: React.FC<HeaderNavProps> = ({
@@ -44,7 +44,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   onOpenReview,
   currentShift,
   activeTab,
-  onOpenLoginModal,
+  onLogout,
 }) => {
   const getStatusBadge = () => {
     switch (sheetStatus) {
@@ -165,25 +165,33 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
             </>
           )}
 
-          {/* User Profile Pill */}
-          <button
-            type="button"
-            onClick={onOpenLoginModal}
-            className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200/80 dark:hover:bg-zinc-700/80 pl-1.5 pr-2.5 py-1 rounded-xl border border-zinc-200 dark:border-zinc-700 transition-colors text-left"
-            title="Click to Sign In / Switch User"
+          {/* User Identity Chip */}
+          <div
+            className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-800/90 pl-1.5 pr-2.5 py-1 rounded-xl border border-zinc-200 dark:border-zinc-700/80 text-left select-none"
+            title={`Active User: ${currentRole.name} (${currentRole.role})`}
           >
             <div className="h-6 w-6 rounded-lg bg-amber-600 text-white flex items-center justify-center font-bold text-[10px] uppercase shrink-0">
               {currentRole.name.slice(0, 2)}
             </div>
             <div className="hidden sm:block leading-tight">
-              <span className="block text-xs font-bold text-zinc-900 dark:text-zinc-100 max-w-[110px] truncate">
+              <span className="block text-xs font-bold text-zinc-900 dark:text-zinc-100 max-w-[120px] truncate">
                 {currentRole.name}
               </span>
               <span className="block text-[10px] font-mono text-zinc-500 capitalize leading-none mt-0.5">
                 {currentRole.role.replace("_", " ")}
               </span>
             </div>
-            <ChevronDown className="w-3.5 h-3.5 text-zinc-400 hidden sm:block" />
+          </div>
+
+          {/* Direct Sign Out Button */}
+          <button
+            type="button"
+            onClick={onLogout}
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-bold rounded-xl text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200 dark:border-rose-900/60 transition-all hover:shadow-xs active:scale-95 cursor-pointer"
+            title="Sign out of active session"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Sign Out</span>
           </button>
 
           {/* Dark / Light Toggle */}

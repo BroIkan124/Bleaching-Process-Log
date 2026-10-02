@@ -25,6 +25,7 @@ import {
   UserCheck,
   LogOut
 } from "lucide-react";
+import { syncUserToInsForge, logActivityToInsForge } from "@/lib/dbService";
 
 interface UserManagementViewProps {
   currentUser: UserProfile;
@@ -117,13 +118,22 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
   };
 
   const handleToggleStatus = (userId: string) => {
+    let changedUser: UserProfile | undefined;
     const updated = users.map((u) => {
       if (u.id === userId) {
-        return { ...u, active: !u.active };
+        changedUser = { ...u, active: !u.active };
+        return changedUser;
       }
       return u;
     });
     onUpdateUsers(updated);
+    if (changedUser) {
+      syncUserToInsForge(changedUser);
+      logActivityToInsForge(currentUser, "TOGGLE_USER_STATUS", "USER", changedUser.id, {
+        name: changedUser.name,
+        active: changedUser.active,
+      });
+    }
   };
 
   const handleOpenAddModal = () => {
@@ -160,18 +170,46 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
     e.preventDefault();
     if (editingUser) {
       // Update
+      const updatedUser: UserProfile = {
+        ...editingUser,
+        ...formData,
+      };
       const updated = users.map((u) => 
-        u.id === editingUser.id ? { ...u, ...formData } : u
+        u.id === editingUser.id ? updatedUser : u
       );
       onUpdateUsers(updated);
+      syncUserToInsForge(updatedUser);
+      logActivityToInsForge(currentUser, "UPDATE_USER_ACCOUNT", "USER", updatedUser.id, {
+        name: updatedUser.name,
+        role: updatedUser.role,
+        department: updatedUser.department,
+      });
     } else {
-      // Add
+      // Add - Generate prefix matching InsForge standard
+      const prefixMap: Record<string, string> = {
+        admin: "ADM",
+        supervisor: "SUP",
+        technician: "OPR",
+        chemist: "QCS",
+        manager_qa: "MGR",
+      };
+      const prefix = prefixMap[formData.role] || "USR";
+      const sameRoleUsers = users.filter((u) => u.id.startsWith(prefix));
+      const nextNum = sameRoleUsers.length + 1;
+      const formattedId = `${prefix}${String(nextNum).padStart(3, "0")}`;
+
       const newUser: UserProfile = {
-        id: `usr-${Date.now()}`,
+        id: formattedId,
         ...formData,
         last_login: "Never logged in",
       };
       onUpdateUsers([...users, newUser]);
+      syncUserToInsForge(newUser);
+      logActivityToInsForge(currentUser, "CREATE_USER_ACCOUNT", "USER", newUser.id, {
+        name: newUser.name,
+        role: newUser.role,
+        department: newUser.department,
+      });
     }
     setIsAddModalOpen(false);
   };

@@ -23,6 +23,7 @@ import {
   Database,
   Building2
 } from "lucide-react";
+import { syncQcSampleToInsForge, logActivityToInsForge } from "@/lib/dbService";
 
 interface QCManagementViewProps {
   currentUser: UserProfile;
@@ -91,6 +92,12 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
     setReports(prev => prev.map(r => r.id === updatedReport.id ? updatedReport : r));
     setSelectedReport(updatedReport);
     setIsEditorOpen(false);
+    syncQcSampleToInsForge(updatedReport, currentUser);
+    logActivityToInsForge(currentUser, "UPDATE_QC_TEST_RESULTS", "SAMPLE_REPORT", updatedReport.id, {
+      lot_no: updatedReport.lot_no,
+      report_no: updatedReport.report_no,
+      decision: updatedReport.decision?.decision,
+    });
   };
 
   // Handle Create New Sample
@@ -132,6 +139,12 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
 
     setReports([created, ...reports]);
     setIsNewSampleOpen(false);
+    syncQcSampleToInsForge(created, currentUser);
+    logActivityToInsForge(currentUser, "REGISTER_NEW_SAMPLE", "SAMPLE_REPORT", created.id, {
+      lot_no: created.lot_no,
+      report_no: created.report_no,
+      point: created.sampling_point_name,
+    });
   };
 
   // Helper to extract param result value

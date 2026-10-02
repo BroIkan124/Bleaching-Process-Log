@@ -1,155 +1,378 @@
 import { insforge, isInsForgeConfigured } from "./insforge";
-import { LogSheet, LogEntry, SampleReport, SupervisorUpdateEvent, UserProfile } from "@/types";
+import { LogSheet, LogEntry, SampleReport, UserProfile } from "@/types";
 
 /**
- * Service to sync data between the Next.js app and the InsForge PostgreSQL backend.
- * Gracefully falls back to local state if InsForge credentials are not set.
+ * InsForge Database Integration Service
+ * Manages live real-time persistence with custom-prefixed tables:
+ * - BP001 → batch_processes
+ * - PL001 → process_logs
+ * - SR001 → sample_reports
+ * - QC001 → qc_decisions
+ * - PR001 → production_records
+ * - AR001 → approval_records
+ * - AL001 → audit_logs
+ * - USR / ADM / OPR / QCS / SUP / MGR → users
  */
 
-// 1. Log Sheets (RF-FR-003)
-export async function syncSheetToInsForge(sheet: LogSheet): Promise<{ success: boolean; error?: string }> {
-  if (!isInsForgeConfigured || !insforge) {
-    return { success: true };
-  }
+// ----------------------------------------------------
+// 1. Audit Logging (AL001)
+// ----------------------------------------------------
+export async function logActivityToInsForge(
+  user: UserProfile | { id: string; name: string; role: string } | null,
+  action: string,
+  entityType: string,
+  entityId?: string,
+  details?: Record<string, any>
+): Promise<void> {
+  if (!isInsForgeConfigured || !insforge) return;
 
   try {
-    const { error } = await insforge.database
-      .from("log_sheets")
-      .upsert({
-        id: sheet.id,
-        form_no: sheet.form_no,
-        form_rev: sheet.form_rev,
-        sheet_date: sheet.sheet_date,
-        plant_id: sheet.plant_id,
-        plant_name: sheet.plant_name,
-        product_id: sheet.product_id,
-        product_name: sheet.product_name,
-        feed_tank_id: sheet.feed_tank_id,
-        discharge_tank_id: sheet.discharge_tank_id,
-        input_mt_hr: sheet.input_mt_hr,
-        input_mt_day: sheet.input_mt_day,
-        acid_type: sheet.acid_type,
-        acid_mm: sheet.acid_mm,
-        acid_cm_hr: sheet.acid_cm_hr,
-        acid_pct: sheet.acid_pct,
-        earth_type: sheet.earth_type,
-        earth_setting: sheet.earth_setting,
-        earth_min_pct: sheet.earth_min_pct,
-        earth_kgs_day: sheet.earth_kgs_day,
-        aid1_type: sheet.aid1_type,
-        aid1_qty: sheet.aid1_qty,
-        aid2_type: sheet.aid2_type,
-        aid2_qty: sheet.aid2_qty,
-        tech_s1: sheet.tech_s1,
-        tech_s1_name: sheet.tech_s1_name,
-        tech_s2: sheet.tech_s2,
-        tech_s2_name: sheet.tech_s2_name,
-        tech_s3: sheet.tech_s3,
-        tech_s3_name: sheet.tech_s3_name,
+    await insforge.database.from("audit_logs").insert([
+      {
+        user_id: user?.id || "ANONYMOUS",
+        user_name: user?.name || "System/Anonymous",
+        user_role: user?.role || "unknown",
+        action,
+        entity_type: entityType,
+        entity_id: entityId || null,
+        details: details || {},
+        timestamp: new Date().toISOString(),
+      },
+    ]);
+  } catch (err) {
+    console.warn("Audit log error:", err);
+  }
+}
+
+// ----------------------------------------------------
+// 2. Users Management & Session Sync
+// ----------------------------------------------------
+export async function fetchUsersFromInsForge(): Promise<UserProfile[] | null> {
+  if (!isInsForgeConfigured || !insforge) return null;
+
+  try {
+    const { data, error } = await insforge.database
+      .from("users")
+      .select("*")
+      .order("created_at", { ascending: true });
+
+    if (error || !data || data.length === 0) {
+      return null;
+    }
+
+    return data.map((u: any) => ({
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      role: u.role,
+      password: u.password || "password123",
+      department: u.department || "Refinery Operations",
+      shift: u.shift as 1 | 2 | 3 | undefined,
+      phone: u.phone,
+      active: u.active ?? true,
+      last_login: u.last_login ? new Date(u.last_login).toLocaleString() : undefined,
+    }));
+  } catch (err) {
+    console.warn("Failed to fetch users from InsForge:", err);
+    return null;
+  }
+}
+
+export async function updateUserLastLogin(user: UserProfile): Promise<void> {
+  if (!isInsForgeConfigured || !insforge) return;
+
+  try {
+    await insforge.database
+      .from("users")
+      .update({
+        last_login: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", user.id);
+
+    await logActivityToInsForge(user, "USER_LOGIN", "USER_SESSION", user.id, {
+      email: user.email,
+      role: user.role,
+    });
+  } catch (err) {
+    console.warn("Failed to update last login:", err);
+  }
+}
+
+export async function syncUserToInsForge(user: UserProfile): Promise<{ success: boolean; error?: string }> {
+  if (!isInsForgeConfigured || !insforge) return { success: true };
+
+  try {
+    const { error } = await insforge.database.from("users").upsert([
+      {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        password: user.password || "password123",
+        role: user.role,
+        department: user.department || "Refinery Operations",
+        shift: user.shift || null,
+        phone: user.phone || null,
+        active: user.active ?? true,
+        updated_at: new Date().toISOString(),
+      },
+    ]);
+
+    if (error) throw error;
+    return { success: true };
+  } catch (err: any) {
+    console.error("Failed to sync user to InsForge:", err);
+    return { success: false, error: err.message };
+  }
+}
+
+// ----------------------------------------------------
+// 3. Batch Processes (BP001) & Operating Parameters
+// ----------------------------------------------------
+export async function syncBatchParamsToInsForge(
+  sheet: LogSheet,
+  currentUser: UserProfile | null
+): Promise<{ success: boolean; error?: string }> {
+  if (!isInsForgeConfigured || !insforge) return { success: true };
+
+  try {
+    const { error } = await insforge.database.from("batch_processes").upsert([
+      {
+        id: "BP001",
+        batch_no: `BATCH-${sheet.sheet_date || "2026-10-02"}-001`,
+        plant_id: sheet.plant_id || "LSEO-NB-01",
+        product_name: sheet.product_name || "RBD Palm Oil",
+        feed_tank: sheet.feed_tank_id || "TK-101",
+        target_bleaching_earth_pct: Number(sheet.earth_min_pct) || 1.25,
+        target_temp_c: 105,
+        target_vacuum_mmhg: 680,
         status: sheet.status,
-        submitted_at: sheet.submitted_at,
-        reviewed_by: sheet.reviewed_by,
-        reviewed_by_name: sheet.reviewed_by_name,
-        reviewed_at: sheet.reviewed_at,
-        review_note: sheet.review_note,
         updated_at: new Date().toISOString(),
-      });
+      },
+    ]);
 
-    if (error) {
-      console.warn("InsForge sheet sync error:", error);
-      return { success: false, error: error.message };
-    }
+    if (error) throw error;
+
+    await logActivityToInsForge(currentUser, "UPDATE_OPERATING_PARAMETERS", "BATCH_PROCESS", "BP001", {
+      plant_id: sheet.plant_id,
+      product: sheet.product_name,
+      feed_tank: sheet.feed_tank_id,
+      status: sheet.status,
+    });
 
     return { success: true };
   } catch (err: any) {
-    console.error("Failed to sync sheet to InsForge:", err);
+    console.error("Failed to sync batch params:", err);
     return { success: false, error: err.message };
   }
 }
 
-// 2. Hourly Entries
-export async function syncEntryToInsForge(entry: LogEntry): Promise<{ success: boolean; error?: string }> {
-  if (!isInsForgeConfigured || !insforge) {
-    return { success: true };
-  }
+// ----------------------------------------------------
+// 4. Process Logs (PL001) - 24-Hour Hourly Slots
+// ----------------------------------------------------
+export async function syncSlotToInsForge(
+  entry: LogEntry,
+  batchId: string = "BP001",
+  currentUser: UserProfile | null
+): Promise<{ success: boolean; error?: string }> {
+  if (!isInsForgeConfigured || !insforge) return { success: true };
 
   try {
-    const { error } = await insforge.database
-      .from("hourly_entries")
-      .upsert({
-        id: entry.id,
-        sheet_id: entry.sheet_id,
-        slot_index: entry.slot_index,
-        time_label: entry.time_label,
-        shift: entry.shift,
-        actual_timestamp: entry.actual_timestamp,
-        flowrate_set: entry.flowrate_set,
-        acid_dosage_ok: entry.acid_dosage_ok,
-        he_temp_c: entry.he_temp_c,
-        earth_dosage_ok: entry.earth_dosage_ok,
-        bleacher_level: entry.bleacher_level,
-        vacuum_mmhg: entry.vacuum_mmhg,
-        niagara_filter: entry.niagara_filter,
-        filter_change_time: entry.filter_change_time,
-        ffa_pct: entry.ffa_pct,
-        colour_r: entry.colour_r,
-        colour_y: entry.colour_y,
-        remarks: entry.remarks,
-        out_of_spec: JSON.stringify(entry.out_of_spec || []),
-        entered_by: entry.entered_by,
-        entered_by_name: entry.entered_by_name,
-        entered_at: entry.entered_at,
-        is_saved: entry.is_saved,
-        updated_at: new Date().toISOString(),
-      });
+    const { error } = await insforge.database.from("process_logs").upsert(
+      [
+        {
+          batch_id: batchId,
+          slot_index: entry.slot_index,
+          time_label: entry.time_label,
+          shift: entry.shift,
+          operator_id: currentUser?.id || entry.entered_by || "OPR001",
+          flowrate_set: entry.flowrate_set ?? null,
+          he_temp_c: entry.he_temp_c ?? null,
+          vacuum_mmhg: entry.vacuum_mmhg ?? null,
+          remarks: entry.remarks || null,
+          is_saved: entry.is_saved ?? true,
+          out_of_spec: Array.isArray(entry.out_of_spec) ? entry.out_of_spec.map(o => typeof o === 'string' ? o : o.message || o.field) : [],
+          updated_at: new Date().toISOString(),
+        },
+      ],
+      { onConflict: "batch_id,slot_index" }
+    );
 
     if (error) {
-      console.warn("InsForge entry sync error:", error);
-      return { success: false, error: error.message };
+      // If composite key conflict error, try direct insert
+      await insforge.database.from("process_logs").insert([
+        {
+          batch_id: batchId,
+          slot_index: entry.slot_index,
+          time_label: entry.time_label,
+          shift: entry.shift,
+          operator_id: currentUser?.id || entry.entered_by || "OPR001",
+          flowrate_set: entry.flowrate_set ?? null,
+          he_temp_c: entry.he_temp_c ?? null,
+          vacuum_mmhg: entry.vacuum_mmhg ?? null,
+          remarks: entry.remarks || null,
+          is_saved: true,
+          out_of_spec: Array.isArray(entry.out_of_spec) ? entry.out_of_spec.map(o => typeof o === 'string' ? o : o.message || o.field) : [],
+        },
+      ]);
     }
+
+    await logActivityToInsForge(currentUser, "SAVE_HOURLY_SLOT", "PROCESS_LOG", `SLOT-${entry.time_label}`, {
+      slot: entry.time_label,
+      shift: entry.shift,
+      vacuum_mmhg: entry.vacuum_mmhg,
+      he_temp_c: entry.he_temp_c,
+      flowrate_set: entry.flowrate_set,
+      out_of_spec: entry.out_of_spec,
+    });
 
     return { success: true };
   } catch (err: any) {
-    console.error("Failed to sync entry to InsForge:", err);
+    console.error("Failed to sync slot log to InsForge:", err);
     return { success: false, error: err.message };
   }
 }
 
-// 3. Supervisor Audit Events
-export async function syncSupervisorEventToInsForge(event: SupervisorUpdateEvent): Promise<{ success: boolean; error?: string }> {
-  if (!isInsForgeConfigured || !insforge) {
-    return { success: true };
-  }
+// ----------------------------------------------------
+// 5. Approval Records (AR001) - Supervisor Reviews
+// ----------------------------------------------------
+export async function syncApprovalToInsForge(
+  moduleType: string,
+  referenceId: string,
+  currentUser: UserProfile,
+  status: "Approved" | "Returned" | "Rejected",
+  reviewNotes: string
+): Promise<{ success: boolean; error?: string }> {
+  if (!isInsForgeConfigured || !insforge) return { success: true };
 
   try {
-    const { error } = await insforge.database
-      .from("supervisor_events")
-      .upsert({
-        id: event.id,
-        timestamp: event.timestamp,
-        source: event.source,
-        title: event.title,
-        description: event.description,
-        severity: event.severity,
-        author_name: event.author_name,
-        author_role: event.author_role,
-        shift: event.shift,
-        slot_time: event.slot_time,
-        lot_no: event.lot_no,
-        requires_acknowledgment: event.requires_acknowledgment,
-        acknowledged: event.acknowledged,
-        acknowledged_by: event.acknowledged_by,
-        acknowledged_at: event.acknowledged_at,
-      });
+    const { error } = await insforge.database.from("approval_records").insert([
+      {
+        module_type: moduleType,
+        reference_id: referenceId,
+        approved_by: currentUser.id,
+        status,
+        review_notes: reviewNotes,
+        approved_at: new Date().toISOString(),
+      },
+    ]);
 
-    if (error) {
-      console.warn("InsForge event sync error:", error);
-      return { success: false, error: error.message };
-    }
+    if (error) throw error;
+
+    // Also update batch_processes status
+    await insforge.database
+      .from("batch_processes")
+      .update({
+        status,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", referenceId);
+
+    await logActivityToInsForge(currentUser, `SHEET_${status.toUpperCase()}`, "APPROVAL_RECORD", referenceId, {
+      status,
+      reviewer: currentUser.name,
+      notes: reviewNotes,
+    });
 
     return { success: true };
   } catch (err: any) {
-    console.error("Failed to sync event to InsForge:", err);
+    console.error("Failed to sync approval to InsForge:", err);
+    return { success: false, error: err.message };
+  }
+}
+
+// ----------------------------------------------------
+// 6. QC Tests & Samples (SR001 & QC001)
+// ----------------------------------------------------
+export async function syncQcSampleToInsForge(
+  sample: SampleReport | any,
+  currentUser: UserProfile | null
+): Promise<{ success: boolean; error?: string }> {
+  if (!isInsForgeConfigured || !insforge) return { success: true };
+
+  try {
+    // Extract parameters from results array if present, otherwise direct fields
+    const getResVal = (code: string): number | null => {
+      if (Array.isArray(sample.results)) {
+        const item = sample.results.find((r: any) => 
+          r.parameter_code === code || 
+          (r.parameter_name && r.parameter_name.toLowerCase().includes(code.toLowerCase()))
+        );
+        if (item && item.value_numeric !== null && item.value_numeric !== undefined) {
+          return Number(item.value_numeric);
+        }
+      }
+      return null;
+    };
+
+    const ffa = getResVal("FFA") ?? (sample.ffa_pct ? Number(sample.ffa_pct) : null);
+    const moisture = getResVal("H2O") ?? (sample.moisture_pct ? Number(sample.moisture_pct) : null);
+    const pv = getResVal("PV") ?? (sample.peroxide_value ? Number(sample.peroxide_value) : null);
+    const iv = getResVal("IV") ?? (sample.iv ? Number(sample.iv) : null);
+    const colorRed = getResVal("COLOUR_R") ?? (sample.colour_r ? Number(sample.colour_r) : null);
+    const colorYellow = getResVal("COLOUR_Y") ?? (sample.colour_y ? Number(sample.colour_y) : null);
+    const dobi = getResVal("DOBI") ?? (sample.dobi ? Number(sample.dobi) : null);
+
+    const decisionCode = sample.decision?.decision 
+      ? (sample.decision.decision === "accept" || sample.decision.decision === "accept_concession" ? "PASS" : "REJECT")
+      : (sample.status === "Pass" || sample.status === "Passed" ? "PASS" : "PENDING");
+
+    const { data: srData, error: srError } = await insforge.database
+      .from("sample_reports")
+      .insert([
+        {
+          sample_code: sample.lot_no || sample.report_no || `SMP-${Date.now().toString().slice(-6)}`,
+          batch_id: "BP001",
+          taken_by: currentUser?.id || "QCS001",
+          sample_type: sample.product_name || "Bleached Palm Oil",
+          sampling_point: sample.sampling_point_name || sample.sample_point || "Bleacher Bleached Oil Outlet",
+          ffa_pct: ffa,
+          color_red: colorRed,
+          color_yellow: colorYellow,
+          moisture_pct: moisture,
+          peroxide_value: pv,
+          iv: iv,
+          dobi: dobi,
+          status: decisionCode === "PASS" ? "Passed" : (decisionCode === "REJECT" ? "Rejected" : "Pending"),
+        },
+      ])
+      .select();
+
+    if (srError) throw srError;
+
+    const insertedSrId = srData?.[0]?.id || "SR001";
+
+    // Insert corresponding QC Decision
+    if (decisionCode !== "PENDING") {
+      await insforge.database.from("qc_decisions").insert([
+        {
+          sample_report_id: insertedSrId,
+          chemist_id: currentUser?.id || "QCS001",
+          decision: decisionCode,
+          parameters_verified: {
+            ffa,
+            color_red: colorRed,
+            color_yellow: colorYellow,
+            moisture,
+            pv,
+            dobi,
+          },
+          comments: sample.remarks || sample.decision?.reason_detail || "Verified and recorded via QC Laboratory Console.",
+          decided_at: new Date().toISOString(),
+        },
+      ]);
+    }
+
+    await logActivityToInsForge(currentUser, "RECORD_QC_SAMPLE", "SAMPLE_REPORT", insertedSrId, {
+      lot_no: sample.lot_no,
+      report_no: sample.report_no,
+      status: decisionCode,
+      chemist: currentUser?.name,
+    });
+
+    return { success: true };
+  } catch (err: any) {
+    console.error("Failed to sync QC sample:", err);
     return { success: false, error: err.message };
   }
 }

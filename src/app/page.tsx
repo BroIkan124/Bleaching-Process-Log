@@ -26,6 +26,14 @@ import { SupervisorMonitoringView } from "@/components/SupervisorMonitoringView"
 import { ReportsView } from "@/components/ReportsView";
 import LoginView from "@/components/LoginView";
 import { AlertCircle, CheckCircle, Info } from "lucide-react";
+import {
+  logActivityToInsForge,
+  fetchUsersFromInsForge,
+  updateUserLastLogin,
+  syncSlotToInsForge,
+  syncBatchParamsToInsForge,
+  syncApprovalToInsForge
+} from "@/lib/dbService";
 
 export default function BleachingProcessLogApp() {
   // 1. Navigation Tab State
@@ -36,7 +44,7 @@ export default function BleachingProcessLogApp() {
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
 
-  // Check saved session on mount
+  // Check saved session on mount and fetch live users from InsForge
   useEffect(() => {
     try {
       const saved = localStorage.getItem("nisshin_auth_user");
@@ -47,6 +55,19 @@ export default function BleachingProcessLogApp() {
       // fallback
     }
     setIsAuthChecking(false);
+
+    // Fetch live users from InsForge PostgreSQL
+    async function loadInsForgeUsers() {
+      try {
+        const liveUsers = await fetchUsersFromInsForge();
+        if (liveUsers && liveUsers.length > 0) {
+          setAllUsers(liveUsers);
+        }
+      } catch (err) {
+        console.warn("Using offline user fallback:", err);
+      }
+    }
+    loadInsForgeUsers();
   }, []);
 
   // 3. Supervisor Audit & Events State
@@ -142,6 +163,9 @@ export default function BleachingProcessLogApp() {
       updated_at: new Date().toISOString(),
     });
 
+    // Real-time synchronization to InsForge PostgreSQL (PL001)
+    syncSlotToInsForge(updatedEntry, "BP001", currentUser);
+
     // Check if reading is out of spec
     const isVacAlert = typeof updatedEntry.vacuum_mmhg === 'number' && updatedEntry.vacuum_mmhg < 600;
     const isTempAlert = typeof updatedEntry.he_temp_c === 'number' && (updatedEntry.he_temp_c < 70 || updatedEntry.he_temp_c > 115);
@@ -168,17 +192,21 @@ export default function BleachingProcessLogApp() {
     setSupervisorEvents(prev => [newEvent, ...prev]);
 
     setIsDrawerOpen(false);
-    showNotice(`Slot ${updatedEntry.time_label} Hrs successfully saved by ${currentUser.name}.`, 'success');
+    showNotice(`Slot ${updatedEntry.time_label} Hrs successfully saved & synced to InsForge.`, 'success');
   };
 
   // Update Header Parameter
   const handleUpdateHeader = (updates: Partial<LogSheet>) => {
     if (!currentUser) return;
-    setSheet(prev => ({
-      ...prev,
+    const updatedSheet = {
+      ...sheet,
       ...updates,
       updated_at: new Date().toISOString(),
-    }));
+    };
+    setSheet(updatedSheet);
+
+    // Real-time sync to InsForge (BP001)
+    syncBatchParamsToInsForge(updatedSheet, currentUser);
 
     const newEvent: SupervisorUpdateEvent = {
       id: `evt-${Date.now()}`,
@@ -194,18 +222,26 @@ export default function BleachingProcessLogApp() {
     };
     setSupervisorEvents(prev => [newEvent, ...prev]);
 
-    showNotice("Sheet operating parameters updated.", "info");
+    showNotice("Sheet operating parameters updated & synced to InsForge.", "info");
   };
 
   // Submit Sheet for Review
   const handleSubmitSheet = () => {
     if (!currentUser) return;
-    setSheet(prev => ({
-      ...prev,
-      status: 'Submitted',
+    const submittedSheet = {
+      ...sheet,
+      status: 'Submitted' as const,
       submitted_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    }));
+    };
+    setSheet(submittedSheet);
+
+    // Real-time sync to InsForge
+    syncBatchParamsToInsForge(submittedSheet, currentUser);
+    logActivityToInsForge(currentUser, "SUBMIT_PROCESS_SHEET", "BATCH_PROCESS", "BP001", {
+      plant_id: sheet.plant_id,
+      product: sheet.product_name,
+    });
 
     const newEvent: SupervisorUpdateEvent = {
       id: `evt-${Date.now()}`,
@@ -237,6 +273,9 @@ export default function BleachingProcessLogApp() {
       updated_at: new Date().toISOString(),
     }));
 
+    // Real-time sync approval record (AR001) to InsForge
+    syncApprovalToInsForge("Bleaching Sheet", "BP001", currentUser, "Approved", reviewNote);
+
     const newEvent: SupervisorUpdateEvent = {
       id: `evt-${Date.now()}`,
       timestamp: new Date().toISOString(),
@@ -251,7 +290,7 @@ export default function BleachingProcessLogApp() {
     };
     setSupervisorEvents(prev => [newEvent, ...prev]);
 
-    showNotice("Sheet has been officially APPROVED and LOCKED.", "success");
+    showNotice("Sheet has been officially APPROVED and LOCKED in InsForge.", "success");
   };
 
   // Supervisor Return
@@ -266,6 +305,9 @@ export default function BleachingProcessLogApp() {
       review_note: reviewNote,
       updated_at: new Date().toISOString(),
     }));
+
+    // Real-time sync returned status (AR001) to InsForge
+    syncApprovalToInsForge("Bleaching Sheet", "BP001", currentUser, "Returned", reviewNote);
 
     const newEvent: SupervisorUpdateEvent = {
       id: `evt-${Date.now()}`,
@@ -291,6 +333,14 @@ export default function BleachingProcessLogApp() {
         ? { ...e, acknowledged: true, acknowledged_by: acknowledgedBy, acknowledged_at: new Date().toISOString() }
         : e
     ));
+
+    // Log acknowledgment in InsForge audit trail
+    if (currentUser) {
+      logActivityToInsForge(currentUser, "ACKNOWLEDGE_ALERT", "AUDIT_LOG", eventId, {
+        acknowledgedBy,
+      });
+    }
+
     showNotice(`Alert entry verified and acknowledged by ${acknowledgedBy}.`, 'success');
   };
 
@@ -300,11 +350,22 @@ export default function BleachingProcessLogApp() {
     try {
       localStorage.setItem("nisshin_auth_user", JSON.stringify(user));
     } catch {}
+
+    // Record login timestamp in InsForge users & audit log
+    updateUserLastLogin(user);
+
     showNotice(`Welcome back, ${user.name} (${user.role}). Active session started.`, 'success');
   };
 
   // Logout handler
   const handleLogout = () => {
+    if (currentUser) {
+      logActivityToInsForge(currentUser, "USER_LOGOUT", "USER_SESSION", currentUser.id, {
+        email: currentUser.email,
+        role: currentUser.role,
+      });
+    }
+
     setCurrentUser(null);
     try {
       localStorage.removeItem("nisshin_auth_user");

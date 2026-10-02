@@ -25,6 +25,7 @@ import { LoginModal } from "@/components/LoginModal";
 import { UserManagementView } from "@/components/UserManagementView";
 import { SupervisorMonitoringView } from "@/components/SupervisorMonitoringView";
 import { ReportsView } from "@/components/ReportsView";
+import LoginView from "@/components/LoginView";
 import { AlertCircle, CheckCircle, Info } from "lucide-react";
 
 export default function BleachingProcessLogApp() {
@@ -33,8 +34,22 @@ export default function BleachingProcessLogApp() {
 
   // 2. Authentication & Users State
   const [allUsers, setAllUsers] = useState<UserProfile[]>(MOCK_USERS);
-  const [currentUser, setCurrentUser] = useState<UserProfile>(MOCK_USERS[0]); // Ahmad Razif (Tech Shift 1)
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
+  // Check saved session on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("nisshin_auth_user");
+      if (saved) {
+        setCurrentUser(JSON.parse(saved));
+      }
+    } catch {
+      // fallback
+    }
+    setIsAuthChecking(false);
+  }, []);
 
   // 3. Supervisor Audit & Events State
   const [supervisorEvents, setSupervisorEvents] = useState<SupervisorUpdateEvent[]>(INITIAL_SUPERVISOR_EVENTS);
@@ -94,7 +109,7 @@ export default function BleachingProcessLogApp() {
   const slotShift = getShiftForSlot(selectedSlotIndex);
 
   let canEditSlot = false;
-  if (!isSheetLocked) {
+  if (!isSheetLocked && currentUser) {
     if (currentUser.role === 'admin' || currentUser.role === 'supervisor') {
       canEditSlot = true;
     } else if (currentUser.role === 'technician') {
@@ -114,6 +129,7 @@ export default function BleachingProcessLogApp() {
 
   // Handle Save Slot
   const handleSaveSlot = (updatedEntry: LogEntry) => {
+    if (!currentUser) return;
     const updatedEntries = sheet.entries.map((e, idx) => 
       idx === updatedEntry.slot_index ? updatedEntry : e
     );
@@ -159,6 +175,7 @@ export default function BleachingProcessLogApp() {
 
   // Update Header Parameter
   const handleUpdateHeader = (updates: Partial<LogSheet>) => {
+    if (!currentUser) return;
     setSheet(prev => ({
       ...prev,
       ...updates,
@@ -184,6 +201,7 @@ export default function BleachingProcessLogApp() {
 
   // Submit Sheet for Review
   const handleSubmitSheet = () => {
+    if (!currentUser) return;
     setSheet(prev => ({
       ...prev,
       status: 'Submitted',
@@ -210,6 +228,7 @@ export default function BleachingProcessLogApp() {
 
   // Supervisor Approval
   const handleApproveSheet = (reviewNote: string) => {
+    if (!currentUser) return;
     setSheet(prev => ({
       ...prev,
       status: 'Approved',
@@ -239,6 +258,7 @@ export default function BleachingProcessLogApp() {
 
   // Supervisor Return
   const handleReturnSheet = (reviewNote: string) => {
+    if (!currentUser) return;
     setSheet(prev => ({
       ...prev,
       status: 'Returned',
@@ -279,16 +299,38 @@ export default function BleachingProcessLogApp() {
   // Login handler
   const handleLoginSuccess = (user: UserProfile) => {
     setCurrentUser(user);
+    try {
+      localStorage.setItem("nisshin_auth_user", JSON.stringify(user));
+    } catch {}
     showNotice(`Welcome back, ${user.name} (${user.role}). Active session started.`, 'success');
   };
 
   // Logout handler
   const handleLogout = () => {
+    setCurrentUser(null);
+    try {
+      localStorage.removeItem("nisshin_auth_user");
+    } catch {}
     showNotice("You have logged out of the system.", "info");
   };
 
   // Unacknowledged alerts count for supervisor badge
   const unacknowledgedAlertsCount = supervisorEvents.filter(e => e.requires_acknowledgment && !e.acknowledged).length;
+
+  if (isAuthChecking) {
+    return (
+      <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
+        <div className="flex items-center gap-3 text-zinc-500 font-mono text-sm">
+          <div className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping" />
+          <span>Verifying plant workstation session...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!currentUser) {
+    return <LoginView onLogin={handleLoginSuccess} allUsers={allUsers} />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--bg-primary)] text-[var(--text-main)] transition-colors">

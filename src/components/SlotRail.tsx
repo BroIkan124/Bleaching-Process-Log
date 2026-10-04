@@ -78,13 +78,13 @@ export const SlotRail: React.FC<SlotRailProps> = ({
                 let stateClass = "bg-white dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:border-zinc-400";
 
                 if (hasOutOfSpec) {
-                  stateClass = "bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 font-bold";
+                  stateClass = "bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 font-bold shadow-2xs";
                 } else if (isDone) {
-                  stateClass = "bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 font-medium";
+                  stateClass = "bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 font-medium shadow-2xs";
                 }
 
                 if (isSelected) {
-                  stateClass += " ring-2 ring-amber-500 shadow-sm scale-105 z-10 font-bold text-zinc-900 dark:text-white";
+                  stateClass = "ring-2 ring-amber-500 shadow-md scale-105 z-10 font-bold bg-amber-50/90 dark:bg-amber-950/60 border-amber-400 dark:border-amber-600 text-zinc-900 dark:text-white";
                 }
 
                 return (
@@ -92,7 +92,7 @@ export const SlotRail: React.FC<SlotRailProps> = ({
                     key={slotIdx}
                     type="button"
                     onClick={() => onSelectSlot(slotIdx)}
-                    className={`h-11 rounded-lg flex flex-col items-center justify-center p-0.5 border transition-all text-center select-none relative ${stateClass}`}
+                    className={`slot-tile-btn h-11 rounded-lg flex flex-col items-center justify-center p-0.5 border text-center select-none relative cursor-pointer ${stateClass}`}
                     title={`Slot ${entry.time_label} (${shift.name}) - ${hasOutOfSpec ? 'Out of Spec Alert' : isDone ? 'Saved' : 'Not Logged'}`}
                   >
                     <span className="font-mono text-[11px] leading-tight font-bold">
@@ -103,12 +103,12 @@ export const SlotRail: React.FC<SlotRailProps> = ({
                       {hasOutOfSpec ? (
                         <AlertTriangle className="w-2.5 h-2.5 text-rose-500" />
                       ) : isDone ? (
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-xs" />
                       ) : null}
                     </div>
 
                     {isCurrent && (
-                      <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-500 ring-2 ring-white dark:ring-zinc-900" />
+                      <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-amber-500 ring-2 ring-white dark:ring-zinc-900 animate-pulse shadow-xs" />
                     )}
                   </button>
                 );

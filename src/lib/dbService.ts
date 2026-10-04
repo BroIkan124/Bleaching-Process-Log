@@ -376,3 +376,77 @@ export async function syncQcSampleToInsForge(
     return { success: false, error: err.message };
   }
 }
+
+// ----------------------------------------------------
+// 7. Document Generation & Export Logging (DOC001)
+// ----------------------------------------------------
+export async function recordDocumentExport(
+  docTitle: string,
+  docNumber: string,
+  category: string,
+  currentUser: UserProfile | null,
+  details?: Record<string, any>
+): Promise<void> {
+  if (!isInsForgeConfigured || !insforge) return;
+
+  try {
+    const docCode = `${docNumber}-${Date.now().toString().slice(-6)}`;
+    await insforge.database.from("documents").insert([
+      {
+        title: docTitle,
+        doc_number: docCode,
+        category,
+        current_revision: "Rev 03",
+        status: "Active",
+        created_by: currentUser?.id || "OPR001",
+      },
+    ]);
+
+    await logActivityToInsForge(currentUser, "EXPORT_DOCUMENT", "DOCUMENT", docCode, {
+      title: docTitle,
+      category,
+      ...details,
+    });
+  } catch (err) {
+    console.warn("Failed to record document export in InsForge:", err);
+  }
+}
+
+// ----------------------------------------------------
+// 8. Performance Reports & Analytics Activity Logging
+// ----------------------------------------------------
+export async function recordReportExport(
+  reportType: "CSV" | "PRINT" | "EXCEL",
+  currentUser: UserProfile | null,
+  details?: Record<string, any>
+): Promise<void> {
+  await logActivityToInsForge(currentUser, `EXPORT_REPORT_${reportType}`, "REPORTS", undefined, details);
+}
+
+// ----------------------------------------------------
+// 9. Failed Authentication Logging
+// ----------------------------------------------------
+export async function recordFailedLogin(
+  identifier: string,
+  reason: string
+): Promise<void> {
+  await logActivityToInsForge(null, "LOGIN_FAILED", "USER_SESSION", undefined, {
+    attempted_identifier: identifier,
+    reason,
+  });
+}
+
+// ----------------------------------------------------
+// 10. Dashboard Tab Navigation Tracking
+// ----------------------------------------------------
+export async function recordNavigationEvent(
+  fromTab: string,
+  toTab: string,
+  currentUser: UserProfile | null
+): Promise<void> {
+  await logActivityToInsForge(currentUser, "NAVIGATE_TAB", "DASHBOARD", toTab, {
+    from: fromTab,
+    to: toTab,
+  });
+}
+

@@ -60,11 +60,11 @@ export default function HelpSupportModal({ isOpen, onClose, currentUser }: HelpS
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-[#1A283C] transition-colors cursor-pointer"
+            className="btn-tactile p-2 rounded-lg text-slate-400 hover:text-white hover:bg-[#1A283C] transition-all duration-200 ease-spring active:scale-90 cursor-pointer group"
             title="Close Modal"
             aria-label="Close"
           >
-            <X className="h-5 w-5" />
+            <X className="h-5 w-5 transition-transform duration-200 group-hover:rotate-90" />
           </button>
         </div>
 
@@ -73,52 +73,52 @@ export default function HelpSupportModal({ isOpen, onClose, currentUser }: HelpS
           <button
             type="button"
             onClick={() => setActiveTab('sop')}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+            className={`btn-tactile flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-all duration-200 ease-spring active:scale-[0.97] cursor-pointer whitespace-nowrap group ${
               activeTab === 'sop'
-                ? 'border-amber-500 text-amber-400 bg-amber-500/10 rounded-t-lg font-bold'
+                ? 'border-amber-500 text-amber-400 bg-amber-500/10 rounded-t-lg font-bold shadow-[inset_0_1px_0_rgba(245,158,11,0.2)]'
                 : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-[#101927]'
             }`}
           >
-            <BookOpen className="h-4 w-4" />
+            <BookOpen className="h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
             <span>1. SOP &amp; Bleaching Workflow</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('specs')}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+            className={`btn-tactile flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-all duration-200 ease-spring active:scale-[0.97] cursor-pointer whitespace-nowrap group ${
               activeTab === 'specs'
-                ? 'border-amber-500 text-amber-400 bg-amber-500/10 rounded-t-lg font-bold'
+                ? 'border-amber-500 text-amber-400 bg-amber-500/10 rounded-t-lg font-bold shadow-[inset_0_1px_0_rgba(245,158,11,0.2)]'
                 : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-[#101927]'
             }`}
           >
-            <FileText className="h-4 w-4" />
+            <FileText className="h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
             <span>2. Quality Specs &amp; PORAM</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('directory')}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+            className={`btn-tactile flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-all duration-200 ease-spring active:scale-[0.97] cursor-pointer whitespace-nowrap group ${
               activeTab === 'directory'
-                ? 'border-amber-500 text-amber-400 bg-amber-500/10 rounded-t-lg font-bold'
+                ? 'border-amber-500 text-amber-400 bg-amber-500/10 rounded-t-lg font-bold shadow-[inset_0_1px_0_rgba(245,158,11,0.2)]'
                 : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-[#101927]'
             }`}
           >
-            <PhoneCall className="h-4 w-4" />
+            <PhoneCall className="h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
             <span>3. Plant Control Room Hotline</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('diagnostics')}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+            className={`btn-tactile flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-all duration-200 ease-spring active:scale-[0.97] cursor-pointer whitespace-nowrap group ${
               activeTab === 'diagnostics'
-                ? 'border-amber-500 text-amber-400 bg-amber-500/10 rounded-t-lg font-bold'
+                ? 'border-amber-500 text-amber-400 bg-amber-500/10 rounded-t-lg font-bold shadow-[inset_0_1px_0_rgba(245,158,11,0.2)]'
                 : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-[#101927]'
             }`}
           >
-            <Activity className="h-4 w-4" />
+            <Activity className="h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
             <span>4. System Diagnostics</span>
           </button>
         </div>
@@ -425,7 +425,7 @@ export default function HelpSupportModal({ isOpen, onClose, currentUser }: HelpS
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-1.5 rounded-lg bg-[#142032] hover:bg-[#1A283C] text-slate-200 font-mono text-xs border border-[#1F2E43] transition-colors cursor-pointer"
+            className="btn-tactile px-4 py-1.5 rounded-lg bg-[#142032] hover:bg-[#1A283C] text-slate-200 font-mono text-xs border border-[#1F2E43] shadow-sm hover:border-slate-500/50 transition-all duration-200 ease-spring active:scale-95 cursor-pointer"
           >
             Close
           </button>

@@ -166,7 +166,7 @@ export default function LoginView({ onLogin, allUsers = MOCK_USERS }: LoginViewP
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 px-2.5 py-1 text-xs font-semibold text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
+                  className="btn-tactile absolute right-2.5 top-1/2 -translate-y-1/2 px-2.5 py-1 text-xs font-semibold text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 cursor-pointer rounded-lg hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50"
                 >
                   {showPassword ? "Hide" : "Show"}
                 </button>
@@ -187,7 +187,7 @@ export default function LoginView({ onLogin, allUsers = MOCK_USERS }: LoginViewP
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full h-11 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm shadow-md transition-all active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              className="btn-premium-amber w-full h-11 rounded-xl font-bold text-sm shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 group animate-sheen"
             >
               {isLoading ? (
                 <span className="inline-flex items-center gap-2">
@@ -204,7 +204,7 @@ export default function LoginView({ onLogin, allUsers = MOCK_USERS }: LoginViewP
               <button
                 type="button"
                 onClick={() => setIsHelpOpen(true)}
-                className="text-xs font-semibold text-zinc-500 hover:text-amber-600 dark:hover:text-amber-400 transition-colors cursor-pointer"
+                className="btn-tactile text-xs font-semibold text-zinc-500 hover:text-amber-600 dark:hover:text-amber-400 cursor-pointer px-3 py-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800/60"
               >
                 Help and support
               </button>

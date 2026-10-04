@@ -42,12 +42,18 @@ export interface Plant {
 export interface Product {
   id: string;
   name: string;
+  code?: string;
+  category?: string;
+  sort_order?: number;
+  active?: boolean;
 }
 
 export interface Tank {
   id: string;
   name: string;
-  kind: 'feed' | 'discharge';
+  kind: 'feed' | 'discharge' | 'both';
+  code?: string;
+  active?: boolean;
 }
 
 export type SheetStatus = 'Draft' | 'InProgress' | 'Submitted' | 'Returned' | 'Approved';

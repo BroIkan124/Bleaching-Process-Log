@@ -134,10 +134,10 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
               <button
                 type="button"
                 onClick={onOpenPdf}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 transition-colors"
+                className="btn-tactile btn-premium-glass flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl cursor-pointer group"
                 title="Export / Print Official A4 Format RF-FR-003"
               >
-                <Printer className="w-3.5 h-3.5 text-amber-500" />
+                <Printer className="w-3.5 h-3.5 text-amber-500 transition-transform duration-200 group-hover:scale-110" />
                 <span className="hidden sm:inline">Print PDF</span>
               </button>
 
@@ -145,9 +145,9 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
                 <button
                   type="button"
                   onClick={onSubmitSheet}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl bg-amber-600 hover:bg-amber-700 text-white shadow-sm transition-all active:scale-95"
+                  className="btn-premium-amber flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-xl cursor-pointer group"
                 >
-                  <Send className="w-3.5 h-3.5" />
+                  <Send className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   <span>Submit Sheet</span>
                 </button>
               )}
@@ -156,9 +156,9 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
                 <button
                   type="button"
                   onClick={onOpenReview}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition-all active:scale-95"
+                  className="btn-premium-emerald flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-xl cursor-pointer group"
                 >
-                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <ShieldCheck className="w-3.5 h-3.5 transition-transform duration-200 group-hover:scale-110" />
                   <span>Review &amp; Approve</span>
                 </button>
               )}
@@ -167,10 +167,10 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
 
           {/* User Identity Chip */}
           <div
-            className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-800/90 pl-1.5 pr-2.5 py-1 rounded-xl border border-zinc-200 dark:border-zinc-700/80 text-left select-none"
+            className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-800/90 pl-1.5 pr-2.5 py-1 rounded-xl border border-zinc-200 dark:border-zinc-700/80 text-left select-none transition-all hover:border-zinc-300 dark:hover:border-zinc-600"
             title={`Active User: ${currentRole.name} (${currentRole.role})`}
           >
-            <div className="h-6 w-6 rounded-lg bg-amber-600 text-white flex items-center justify-center font-bold text-[10px] uppercase shrink-0">
+            <div className="h-6 w-6 rounded-lg bg-amber-600 text-white flex items-center justify-center font-bold text-[10px] uppercase shrink-0 shadow-2xs">
               {currentRole.name.slice(0, 2)}
             </div>
             <div className="hidden sm:block leading-tight">
@@ -187,10 +187,10 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
           <button
             type="button"
             onClick={onLogout}
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-bold rounded-xl text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200 dark:border-rose-900/60 transition-all hover:shadow-xs active:scale-95 cursor-pointer"
+            className="btn-tactile flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-bold rounded-xl text-rose-600 dark:text-rose-400 bg-rose-50/80 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200/80 dark:border-rose-900/60 hover:shadow-xs cursor-pointer group"
             title="Sign out of active session"
           >
-            <LogOut className="w-3.5 h-3.5" />
+            <LogOut className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
             <span className="hidden sm:inline">Sign Out</span>
           </button>
 
@@ -198,11 +198,15 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
           <button
             type="button"
             onClick={onToggleDark}
-            className="p-2 rounded-xl border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+            className="btn-tactile btn-premium-glass p-2 rounded-xl text-zinc-600 dark:text-zinc-300 cursor-pointer group"
             title="Toggle Light / Dark Mode"
             aria-label="Toggle Dark Mode"
           >
-            {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
+            {isDark ? (
+              <Sun className="w-4 h-4 text-amber-400 transition-transform duration-300 group-hover:rotate-45" />
+            ) : (
+              <Moon className="w-4 h-4 transition-transform duration-300 group-hover:-rotate-12" />
+            )}
           </button>
         </div>
       </div>

@@ -237,9 +237,14 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
                           e.stopPropagation();
                           onSelectSlot(idx);
                         }}
-                        className="px-2.5 py-1 rounded-lg text-xs font-bold border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-amber-500 hover:text-white hover:border-amber-500 transition-colors shadow-2xs"
+                        className="table-action-btn px-2.5 py-1 rounded-lg text-xs font-bold border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-amber-600 hover:text-white hover:border-amber-600 dark:hover:bg-amber-600 dark:hover:border-amber-600 dark:hover:text-white shadow-2xs cursor-pointer inline-flex items-center gap-1 group"
                       >
-                        {isSaved ? "Review" : "Log"}
+                        {isSaved ? (
+                          <Eye className="w-3 h-3 text-zinc-400 group-hover:text-white transition-colors" />
+                        ) : (
+                          <Edit3 className="w-3 h-3 text-amber-500 group-hover:text-white transition-colors" />
+                        )}
+                        <span>{isSaved ? "Review" : "Log"}</span>
                       </button>
                     </td>
                   </tr>

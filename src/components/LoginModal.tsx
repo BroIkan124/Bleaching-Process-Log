@@ -112,10 +112,10 @@ export const LoginModal: React.FC<LoginModalProps> = ({
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+            className="btn-tactile p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-all duration-200 ease-spring active:scale-90 cursor-pointer"
             aria-label="Close"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5 transition-transform duration-200 group-hover:rotate-90" />
           </button>
         </div>
 
@@ -124,7 +124,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           {currentUser && (
             <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="h-10 w-10 rounded-xl bg-amber-600 text-white flex items-center justify-center font-bold text-xs uppercase shrink-0">
+                <div className="h-10 w-10 rounded-xl bg-amber-600 text-white flex items-center justify-center font-bold text-xs uppercase shrink-0 shadow-sm">
                   {currentUser.name.slice(0, 2)}
                 </div>
                 <div className="min-w-0">
@@ -148,9 +148,9 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                   onLogout();
                   onClose();
                 }}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border border-rose-300 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/60 transition-colors shrink-0 cursor-pointer"
+                className="btn-tactile flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border border-rose-300 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/60 shadow-sm transition-all duration-200 ease-spring active:scale-95 shrink-0 cursor-pointer group"
               >
-                <LogOut className="w-3.5 h-3.5" />
+                <LogOut className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform duration-200" />
                 <span>Sign Out</span>
               </button>
             </div>
@@ -203,7 +203,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 px-2 py-0.5 text-xs font-semibold text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
+                  className="btn-tactile absolute right-2.5 top-1/2 -translate-y-1/2 px-2 py-0.5 text-xs font-semibold text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 transition-all duration-150 active:scale-95"
                 >
                   {showPassword ? "Hide" : "Show"}
                 </button>
@@ -224,15 +224,19 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full h-10 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              className="btn-tactile btn-premium-amber w-full h-11 rounded-xl text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:pointer-events-none group relative overflow-hidden"
             >
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none" />
               {isLoading ? (
                 <span className="inline-flex items-center gap-2">
                   <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
                   <span>Authenticating...</span>
                 </span>
               ) : (
-                "Access system"
+                <span className="flex items-center gap-2">
+                  <span>Access system</span>
+                  <CheckCircle2 className="w-4 h-4 opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all duration-200" />
+                </span>
               )}
             </button>
 
@@ -241,7 +245,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
               <button
                 type="button"
                 onClick={() => setIsHelpOpen(true)}
-                className="text-xs font-semibold text-zinc-500 hover:text-amber-600 dark:hover:text-amber-400 transition-colors cursor-pointer"
+                className="btn-tactile text-xs font-semibold text-zinc-500 hover:text-amber-600 dark:hover:text-amber-400 transition-all duration-200 active:scale-95 cursor-pointer hover:underline"
               >
                 Help and support
               </button>

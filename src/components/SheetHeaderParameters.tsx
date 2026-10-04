@@ -84,15 +84,19 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
           <button
             type="button"
             onClick={() => setIsExpanded(!isExpanded)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+            className={`btn-tactile flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer group ${
               isExpanded
-                ? "bg-amber-600 text-white shadow-sm"
-                : "bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700"
+                ? "btn-premium-amber text-white"
+                : "btn-premium-glass text-zinc-700 dark:text-zinc-300"
             }`}
           >
-            <Settings2 className="w-3.5 h-3.5" />
+            <Settings2 className="w-3.5 h-3.5 transition-transform duration-300 group-hover:rotate-45" />
             <span>{isExpanded ? "Close Settings" : "Configure Parameters"}</span>
-            {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            {isExpanded ? (
+              <ChevronUp className="w-3.5 h-3.5 transition-transform duration-200 group-hover:-translate-y-0.5" />
+            ) : (
+              <ChevronDown className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-y-0.5" />
+            )}
           </button>
         </div>
       </div>

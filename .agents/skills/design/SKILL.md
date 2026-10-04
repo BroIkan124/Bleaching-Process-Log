@@ -1,251 +1,333 @@
 ---
 name: design
-description: Use when designing product features, flows, pages, or screens using an existing design system or design language. Activates for /design, "design a feature", "build a page", "select components", "compose a flow", "what component should I use", "layout this screen", "is there a pattern for", "we're missing a component".
+description: "Comprehensive design skill: brand identity, design tokens, UI styling, logo generation (55 styles, Gemini, Atlas Cloud, or MuAPI AI), corporate identity program (50 deliverables, CIP mockups), HTML presentations (Chart.js), banner design (22 styles, social/ads/web/print), icon design (15 styles, SVG, Gemini 3.1 Pro), social photos (HTML→screenshot, multi-platform). Actions: design logo, create CIP, generate mockups, build slides, design banner, generate icon, create social photos, social media images, brand identity, design system. Platforms: Facebook, Twitter, LinkedIn, YouTube, Instagram, Pinterest, TikTok, Threads, Google Ads."
+argument-hint: "[design-type] [context]"
+license: MIT
+metadata:
+  author: claudekit
+  version: "2.1.0"
 ---
 
-# /design — Product Design with DS
+# Design
 
-Router for product design sub-agents. Composes interfaces from existing DS components and patterns. At L3 (Enterprise), delegates to `${CLAUDE_PLUGIN_ROOT}/skills/ds-consumer/SKILL.md`.
+Unified design skill: brand, tokens, UI, logo, CIP, slides, banners, social photos, icons.
 
-## Maturity Detection
+## When to Use
 
-Follow `${CLAUDE_PLUGIN_ROOT}/skills/shared/maturity-detection.md`. Run detection before routing.
+- Brand identity, voice, assets
+- Design system tokens and specs
+- UI styling with shadcn/ui + Tailwind
+- Logo design and AI generation
+- Corporate identity program (CIP) deliverables
+- Presentations and pitch decks
+- Banner design for social media, ads, web, print
+- Social photos for Instagram, Facebook, LinkedIn, Twitter, Pinterest, TikTok
 
-- **L0 (Greenfield):** No design language exists yet. Do **not** hard-block — offer both paths explicitly:
-  1. *Recommended:* "Run /creative to establish a visual direction, then /map-design to generate DESIGN.md — then I can compose against real tokens."
-  2. *Proceed now:* If the user wants to design immediately (or says "just design it, I'll do the DS later"), comply. Produce a **DS-agnostic, best-practice** design using concrete, sensible values (specific px, hex, spacing), but **explicitly flag every value as provisional/arbitrary** and note it will need reconciliation once a DS exists. Offer to scaffold DESIGN.md from the decisions you just made. Never silently invent a "system" — state that you are working without one.
-- **L1 (DESIGN.md exists):** Compose using DESIGN.md primitives (colors, type scale, spacing). There is **no `.ds-context.md`, so the Figma adapter is always unset** — do not imply a live Figma inspection of "existing patterns." Either pitch PluginOS (`/figma-setup`) to inspect for real, or proceed from DESIGN.md only and say so (per `${CLAUDE_PLUGIN_ROOT}/skills/shared/figma-adapter.md`). Work from documented values; route true gaps to /ds-make.
-- **L2 (DS exists):** Full DS-aware composition. Load `.ds-context.md` for library keys. Select from available components; flag gaps via Gap Detector.
-- **L3 (Enterprise DS):** Delegate to `${CLAUDE_PLUGIN_ROOT}/skills/ds-consumer/SKILL.md`. Sub-agents below are available for exploration and planning; final design execution goes through ds-consumer workflows.
+## Sub-skill Routing
 
-Always announce the detected level before routing.
+| Task | Sub-skill | Details |
+|------|-----------|---------|
+| Brand identity, voice, assets | `brand` | Bundled sibling skill |
+| Tokens, specs, CSS vars | `design-system` | Bundled sibling skill |
+| shadcn/ui, Tailwind, code | `ui-styling` | Bundled sibling skill |
+| Logo creation, AI generation | Logo (built-in) | `references/logo-design.md` |
+| CIP mockups, deliverables | CIP (built-in) | `references/cip-design.md` |
+| Presentations, pitch decks | Slides (built-in) | `references/slides.md` |
+| Banners, covers, headers | Banner (built-in) | `references/banner-sizes-and-styles.md` |
+| Social media images/photos | Social Photos (built-in) | `references/social-photos-design.md` |
+| SVG icons, icon sets | Icon (built-in) | `references/icon-design.md` |
 
-## Always Load
+## Script Paths
 
-- `${CLAUDE_PLUGIN_ROOT}/skills/shared/knowledge/core-principles.md` (L1 — always)
-- `${CLAUDE_PLUGIN_ROOT}/skills/shared/knowledge/component-patterns.md` (L2 — component selection)
-- `${CLAUDE_PLUGIN_ROOT}/skills/shared/knowledge/ux-heuristics.md` (L2 — evaluate compositions)
+Script paths in this skill and its `references/` are relative to the directory that contains this SKILL.md, not to the project: `scripts/<file>` is this skill's own `scripts/` folder, and `../<skill>/scripts/<file>` is a sibling sub-skill installed alongside it. Build the full path from that directory (Claude Code reports it as the skill's base directory when the skill loads) and keep the working directory at the project root — the scripts read and write project files such as `docs/brand-guidelines.md`, `assets/design-tokens.json` or `src/` relative to it.
 
-## Hard Rules (all maturity levels)
+## Logo Design (Built-in)
 
-- **NEVER propose creating new components here.** If a gap exists, use Gap Detector → route to /ds-make.
-- **NEVER apply overrides or detach components** at L2/L3. Flag violations as P1.
-- **Prefer existing patterns** over ad-hoc compositions. Check Pattern Matcher before composing from scratch.
-- **User is the approver** for gap requests — never submit without explicit sign-off.
+55+ styles, 30 color palettes, 25 industry guides. Gemini Nano Banana, Atlas
+Cloud, and MuAPI image generation.
 
-## Imagery in deliverables
+### Logo: Generate Design Brief
 
-If the composition includes photography, illustration, or hero imagery, load `${CLAUDE_PLUGIN_ROOT}/skills/shared/knowledge/art-direction.md` and offer the production path: generate/edit via available image tooling (ask first, label AI-drafted), or deliver an image brief plus an SVG/CSS placeholder that keeps layout review honest. Never leave silent gray boxes; never present placeholder or AI-drafted imagery as final.
-
-## Sub-Agent Router
-
-| Trigger | Sub-Agent |
-|---------|-----------|
-| "which component", "what should I use", "select", "best fit", "compare components" | Component Selector |
-| "compose", "layout", "page", "flow", "screen", "build a", "structure this" | Layout Composer |
-| "pattern", "is there a pattern", "template", "how do others do", "existing solution" | Pattern Matcher |
-| "gap", "missing", "nothing fits", "no component for", "request new" | Gap Detector |
-
-If the request spans multiple (e.g., "compose this page and flag any gaps"), run Pattern Matcher → Component Selector → Layout Composer → Gap Detector in sequence.
-
----
-
-## Sub-Agent: Component Selector
-
-**Load additionally:** None — `component-patterns.md` already covers component API, hierarchy, and variant strategies.
-
-**Optional L3 query:** `Grep pattern="<component type>" path="${CLAUDE_PLUGIN_ROOT}/skills/shared/data/design-principles.csv"` for principle backing on composition decisions.
-
-**L3 delegation:** If maturity is L3, delegate to **ds-consumer Workflow 3 (Component Selection)**. Use this sub-agent for exploration at L0/L1/L2.
-
-### Ask first
-
-1. What UI need are you trying to address? (one sentence — describe the user action or content, not the component name)
-2. What maturity level are we working at? (confirm from detection — L1 DESIGN.md, L2 DS library, L3 enterprise DS)
-3. Any constraints — viewport, density, or accessibility requirements?
-
-### Workflow
-
-1. **Understand the need**: Parse the user's described action/content. Do not anchor on a component name yet — stay problem-first.
-2. **Map to component hierarchy**: Using `component-patterns.md`, determine what level is needed: Primitive, Component, Pattern, or Template.
-3. **At L1**: Identify relevant primitives from DESIGN.md (colors, type roles, spacing tokens) that can compose the need. Describe the composition without naming DS components.
-4. **At L2/L3**: Search available components for best fit. Evaluate on: purpose match, variant coverage, state support, composition flexibility.
-5. **Rank options**: If multiple components could work, present a ranked table with rationale. Recommend one primary fit.
-6. **Check for override temptation**: If the best-fit component requires an override to work, that is a gap — route to Gap Detector instead of recommending the override.
-7. **Output** the recommendation with key variant to use and configuration note.
-
-### Output format
-
-```
-## Component Recommendation — <Need Description>
-
-**Best fit:** <ComponentName> — <one-line rationale>
-**Variant to use:** <variant name and key props>
-**State coverage:** <which states are handled>
-
-### Alternatives Considered
-| Component | Fit | Why not primary |
-|-----------|-----|----------------|
-...
-
-### Notes
-<Any composition or configuration caveats>
+```bash
+python3 scripts/logo/search.py "tech startup modern" --design-brief -p "BrandName"
 ```
 
-If no fit exists: "No suitable component found. Routing to Gap Detector."
+### Logo: Search Styles/Colors/Industries
 
----
-
-## Sub-Agent: Layout Composer
-
-**Load additionally:** `${CLAUDE_PLUGIN_ROOT}/skills/shared/knowledge/layout.md`
-
-**Optional L3 query:** `Grep pattern="navigation\|page\|grid" path="${CLAUDE_PLUGIN_ROOT}/skills/shared/data/usability.csv"` for layout usability anchors relevant to the page type.
-
-**L3 delegation:** If maturity is L3, delegate to **ds-consumer Workflow 1 (Design a New Feature/Page)**. Use this sub-agent for layout planning at L0/L1/L2.
-
-### Ask first
-
-1. What is the page or flow? (name + primary user goal in one sentence)
-2. What primary content type dominates — data-dense (tables, lists), form-heavy, content/reading, or dashboard?
-3. Desktop-first or mobile-first? Any fixed viewport constraints?
-
-### Workflow
-
-1. **Inventory the DS** (L2/L3): Identify layout tokens available — grid columns, spacing scale, breakpoints — from `.ds-context.md` or DESIGN.md at L1. Do not invent values not present in the design language.
-2. **Propose structure**: Select the primary composition pattern from `layout.md` (sidebar+main, card grid, list-detail, split-view, master-detail) based on content type. Justify the choice.
-3. **Map components to zones**: For each layout zone (nav, header, content, sidebar, footer), identify which DS components (or DESIGN.md primitives at L1) populate it. Flag any zone where no component fits.
-4. **Evaluate against ux-heuristics**: Apply `ux-heuristics.md` checks to the proposed structure:
-   - Visibility of system status (does the layout surface state?)
-   - Match between system and real world (mental model alignment)
-   - Recognition over recall (is navigation predictable?)
-   - Aesthetic and minimalist design (no surplus layout regions)
-   Flag any heuristic violations as P1 or P2 findings.
-5. **Refine**: Adjust based on heuristic findings. Offer 1–2 alternative structures if the primary has significant P1 issues.
-6. **Check responsive behavior**: Define how the layout adapts at key breakpoints from the spacing/grid system.
-7. Output the layout spec.
-
-### Output format
-
-```
-## Layout Proposal — <Page/Flow Name>
-
-**Pattern:** <Composition pattern name>
-**Grid:** <columns, gutter, margin>
-**Density:** <compact / default / comfortable>
-
-### Zone Map
-| Zone | Component(s) / Primitives | Notes |
-|------|--------------------------|-------|
-...
-
-### Responsive Behavior
-| Breakpoint | Layout change |
-|------------|--------------|
-...
-
-### Heuristic Findings
-| Heuristic | Finding | Severity | Adjustment |
-|-----------|---------|----------|-----------|
-...
+```bash
+python3 scripts/logo/search.py "minimalist clean" --domain style
+python3 scripts/logo/search.py "tech professional" --domain color
+python3 scripts/logo/search.py "healthcare medical" --domain industry
 ```
 
-Offer to pass to Gap Detector if any zone lacks a component fit.
+### Logo: Generate with AI
 
----
+**ALWAYS** generate output logo images with white background.
 
-## Sub-Agent: Pattern Matcher
-
-**Load additionally:** None — `component-patterns.md` covers composition hierarchy including Patterns and Templates.
-
-**Optional L3 query:** `Grep pattern="<flow type>" path="${CLAUDE_PLUGIN_ROOT}/skills/shared/data/usability.csv"` for domain-specific pattern precedent (commerce, forms, feedback).
-
-**L3 delegation:** If maturity is L3, consult **ds-consumer Workflow 1 step "Inventory"** for DS patterns (from `{{figma.libraries[role=patterns]}}`) and squad patterns lookup via the configured Figma adapter.
-
-### Ask first
-
-1. What is the user trying to accomplish? (describe the task or flow, not the UI element)
-2. Is this in the context of an existing product area, or a new surface?
-3. At L2/L3: should we search the DS library for existing patterns, or are you already certain none exist?
-
-### Workflow
-
-1. **Abstract the need**: Strip the request to its interaction primitive — form submission, item selection, bulk action, data exploration, wizard progression, etc.
-2. **Search for an exact pattern match**: At L2/L3, inspect Patterns and Squad Patterns files for this interaction type via the configured Figma adapter (see `${CLAUDE_PLUGIN_ROOT}/skills/shared/figma-adapter.md`). At L1, scan DESIGN.md for documented composition guidance.
-3. **Search for a partial match**: If no exact pattern exists, find the closest analog. Describe what matches and what diverges.
-4. **Assess the gap**: Is the divergence handleable by variant selection (no gap), by composition (no gap), or does it require a new component (gap)?
-5. **Recommend**: If a pattern exists → name it + provide usage guidance. If a near-match → describe adaptation using existing components. If no match → route to Gap Detector.
-6. **Verify no anti-pattern**: Check that the recommended pattern doesn't trigger any hard rules (override required, detach required). If it does, treat as a gap.
-
-### Output format
-
-```
-## Pattern Search — <Need Description>
-
-**Result:** Exact match / Near match / No match
-
-### Match Details
-**Pattern name:** <name or "none">
-**Source:** <DS Patterns / Squad Patterns / DESIGN.md / Not found>
-**Fits because:** <rationale>
-**Diverges at:** <what the pattern doesn't cover, if near match>
-
-### Recommendation
-<Use as-is / Adapt with these components / Route to Gap Detector>
+```bash
+python3 scripts/logo/generate.py --brand "TechFlow" --style minimalist --industry tech
+python3 scripts/logo/generate.py --prompt "coffee shop vintage badge" --style vintage
+python3 scripts/logo/generate.py --brand "TechFlow" --provider atlas
+python3 scripts/logo/generate.py --brand "TechFlow" --provider muapi
+python3 scripts/logo/generate.py --brand "TechFlow" --provider muapi --muapi-model nano-banana-pro
 ```
 
----
+**IMPORTANT:** When scripts fail, try to fix them directly.
 
-## Sub-Agent: Gap Detector
+After generation, **ALWAYS** ask user about HTML preview via `AskUserQuestion`. If yes, use the bundled `ui-ux-pro-max` skill for the gallery.
 
-**Load additionally:** `${CLAUDE_PLUGIN_ROOT}/skills/shared/knowledge/governance.md`
+## CIP Design (Built-in)
 
-**Optional L3 query:** Not applicable — gap requests follow governance process, not CSV lookups.
+50+ deliverables, 20 styles, 20 industries. Gemini Nano Banana (Flash/Pro).
 
-**L3 delegation:** If maturity is L3, delegate to **ds-consumer Workflow 4 (Component Gap Request)**. Use this sub-agent to draft and plan gap requests at L0/L1/L2.
+### CIP: Generate Brief
 
-### Ask first
-
-1. What were you trying to accomplish? (the original design need)
-2. What did you try? (which components or patterns were considered and why they didn't fit)
-3. How urgent is this — blocking a release, or for a future sprint?
-
-### Workflow
-
-1. **Confirm exhaustive search**: Verify that Component Selector and Pattern Matcher were run first. If not, run them before declaring a gap. A gap is only confirmed when no existing component or pattern can address the need (even with valid composition).
-2. **Document the gap precisely**: What is the need? What component or behavior is missing? Which product area and user flow does it affect?
-3. **Check governance rules** from `governance.md`: Is this a new component request, or an update to an existing one? Separate requests are tracked differently.
-4. **Draft the gap request** in structured format (see output below).
-5. **Present to user for approval**: The designer reviews and approves before any submission. Never submit without sign-off.
-6. **At L2**: Advise on submitting to the DS team via the contribution process from `governance.md`.
-7. **At L3**: Route to ds-consumer Workflow 4. Output the approved request in ds-consumer's required format.
-8. **Flag interim workaround** (if acceptable): Can the design proceed temporarily with a near-fit component? Only suggest this if it requires zero overrides and zero detaching.
-
-### Output format
-
-```
-## Gap Request — <Need Description>
-
-**Type:** New component / Update to existing component
-**Affected area:** <product area or flow>
-**Priority:** <Blocking / High / Medium>
-
-### Need Description
-<What the design requires — user action, content type, behavior>
-
-### Alternatives Attempted
-| Component/Pattern | Why it doesn't fit |
-|-------------------|-------------------|
-...
-
-### Proposed Solution
-<Brief description of what a new or updated component would look like>
-
-### Interim Workaround
-<Near-fit composition with zero overrides, OR "none — must block on DS delivery">
-
-### Next Step
-<Submit to DS team via governance process / Route to ds-consumer Workflow 4 at L3>
+```bash
+python3 scripts/cip/search.py "tech startup" --cip-brief -b "BrandName"
 ```
 
-Remind user: "This request requires your explicit approval before submission."
+### CIP: Search Domains
+
+```bash
+python3 scripts/cip/search.py "business card letterhead" --domain deliverable
+python3 scripts/cip/search.py "luxury premium elegant" --domain style
+python3 scripts/cip/search.py "hospitality hotel" --domain industry
+python3 scripts/cip/search.py "office reception" --domain mockup
+```
+
+### CIP: Generate Mockups
+
+```bash
+# With logo (RECOMMENDED)
+python3 scripts/cip/generate.py --brand "TopGroup" --logo /path/to/logo.png --deliverable "business card" --industry "consulting"
+
+# Full CIP set
+python3 scripts/cip/generate.py --brand "TopGroup" --logo /path/to/logo.png --industry "consulting" --set
+
+# Pro model (4K text)
+python3 scripts/cip/generate.py --brand "TopGroup" --logo logo.png --deliverable "business card" --model pro
+
+# Without logo
+python3 scripts/cip/generate.py --brand "TechFlow" --deliverable "business card" --no-logo-prompt
+```
+
+Models: `flash` (default, `gemini-2.5-flash-image`), `pro` (`gemini-3-pro-image-preview`)
+
+### CIP: Render HTML Presentation
+
+```bash
+python3 scripts/cip/render-html.py --brand "TopGroup" --industry "consulting" --images /path/to/cip-output
+```
+
+**Tip:** If no logo exists, use Logo Design section above first.
+
+## Slides (Built-in)
+
+Strategic HTML presentations with Chart.js, design tokens, copywriting formulas.
+
+Load `references/slides-create.md` for the creation workflow.
+
+### Slides: Knowledge Base
+
+| Topic | File |
+|-------|------|
+| Creation Guide | `references/slides-create.md` |
+| Layout Patterns | `references/slides-layout-patterns.md` |
+| HTML Template | `references/slides-html-template.md` |
+| Copywriting | `references/slides-copywriting-formulas.md` |
+| Strategies | `references/slides-strategies.md` |
+
+## Banner Design (Built-in)
+
+22 art direction styles across social, ads, web, print. This workflow needs nothing outside the bundle: `references/banner-sizes-and-styles.md` and the bundled `ui-ux-pro-max` skill for style and palette guidance. Browser research, image generation, and screenshot capture are optional runtime capabilities; when unavailable, use supplied assets, CSS-built visuals, and the runtime's standard preview or capture workflow.
+
+Load `references/banner-sizes-and-styles.md` for complete sizes and styles reference.
+
+### Banner: Workflow
+
+1. **Gather requirements** via `AskUserQuestion` — purpose, platform, content, brand, style, quantity
+2. **Research** — Read `references/banner-sizes-and-styles.md` and use the bundled `ui-ux-pro-max` skill for style and palette guidance; if browser research is available and permitted, collect 3–5 references
+3. **Design** — Create the HTML/CSS banner at exact platform dimensions; use supplied assets or CSS-built visuals, or an authorized image-generation capability if the runtime provides one
+4. **Export** — Capture PNG at exact dimensions with the runtime's browser or screenshot capability; if unavailable, deliver the HTML/CSS source and mark PNG export as pending
+5. **Present** — Show all options side-by-side, iterate on feedback
+
+### Banner: Quick Size Reference
+
+| Platform | Type | Size (px) |
+|----------|------|-----------|
+| Facebook | Cover | 820 x 312 |
+| Twitter/X | Header | 1500 x 500 |
+| LinkedIn | Personal | 1584 x 396 |
+| YouTube | Channel art | 2560 x 1440 |
+| Instagram | Story | 1080 x 1920 |
+| Instagram | Post | 1080 x 1080 |
+| Google Ads | Med Rectangle | 300 x 250 |
+| Website | Hero | 1920 x 600-1080 |
+
+### Banner: Top Art Styles
+
+| Style | Best For |
+|-------|----------|
+| Minimalist | SaaS, tech |
+| Bold Typography | Announcements |
+| Gradient | Modern brands |
+| Photo-Based | Lifestyle, e-com |
+| Geometric | Tech, fintech |
+| Glassmorphism | SaaS, apps |
+| Neon/Cyberpunk | Gaming, events |
+
+### Banner: Design Rules
+
+- Safe zones: critical content in central 70-80%
+- One CTA per banner, bottom-right, min 44px height
+- Max 2 fonts, min 16px body, ≥32px headline
+- Text under 20% for ads (Meta penalizes)
+- Print: 300 DPI, CMYK, 3-5mm bleed
+
+## Icon Design (Built-in)
+
+15 styles, 12 categories. Gemini 3.1 Pro Preview generates SVG text output.
+
+### Icon: Generate Single Icon
+
+```bash
+python3 scripts/icon/generate.py --prompt "settings gear" --style outlined
+python3 scripts/icon/generate.py --prompt "shopping cart" --style filled --color "#6366F1"
+python3 scripts/icon/generate.py --name "dashboard" --category navigation --style duotone
+```
+
+### Icon: Generate Batch Variations
+
+```bash
+python3 scripts/icon/generate.py --prompt "cloud upload" --batch 4 --output-dir ./icons
+```
+
+### Icon: Multi-size Export
+
+```bash
+python3 scripts/icon/generate.py --prompt "user profile" --sizes "16,24,32,48" --output-dir ./icons
+```
+
+### Icon: Top Styles
+
+| Style | Best For |
+|-------|----------|
+| outlined | UI interfaces, web apps |
+| filled | Mobile apps, nav bars |
+| duotone | Marketing, landing pages |
+| rounded | Friendly apps, health |
+| sharp | Tech, fintech, enterprise |
+| flat | Material design, Google-style |
+| gradient | Modern brands, SaaS |
+
+**Model:** `gemini-3.1-pro-preview` — text-only output (SVG is XML text). No image generation API needed.
+
+## Social Photos (Built-in)
+
+Multi-platform social image design: HTML/CSS → screenshot export. Uses the bundled `ui-ux-pro-max`, `brand`, and `design-system` skills; screenshot export runs through Chrome headless, Playwright, or Puppeteer (see the reference).
+
+Load `references/social-photos-design.md` for sizes, templates, best practices.
+
+### Social Photos: Workflow
+
+1. **Orchestrate** — Track the steps below with the runtime's native task list; parallel subagents for independent work
+2. **Analyze** — Parse prompt: subject, platforms, style, brand context, content elements
+3. **Ideate** — 3-5 concepts, present via `AskUserQuestion`
+4. **Design** — bundled `brand` → `design-system` → `ui-ux-pro-max` skills; HTML per idea × size
+5. **Export** — Chrome headless, Playwright, or Puppeteer screenshot at exact px (2x device scale factor where the tool supports it; see the reference)
+6. **Verify** — Open the exported PNGs in an available browser or image viewer and inspect them; fix layout/styling issues and re-export
+7. **Report** — Summary to `plans/reports/` with design decisions
+8. **Organize** — Sort output files and reports into the project's asset directories
+
+### Social Photos: Key Sizes
+
+| Platform | Size (px) | Platform | Size (px) |
+|----------|-----------|----------|-----------|
+| IG Post | 1080×1080 | FB Post | 1200×630 |
+| IG Story | 1080×1920 | X Post | 1200×675 |
+| IG Carousel | 1080×1350 | LinkedIn | 1200×627 |
+| YT Thumb | 1280×720 | Pinterest | 1000×1500 |
+
+## Workflows
+
+### Complete Brand Package
+
+1. **Logo** → `scripts/logo/generate.py` → Generate logo variants
+2. **CIP** → `scripts/cip/generate.py --logo ...` → Create deliverable mockups
+3. **Presentation** → Load `references/slides-create.md` → Build pitch deck
+
+### New Design System
+
+1. **Brand** (brand skill) → Define colors, typography, voice
+2. **Tokens** (design-system skill) → Create semantic token layers
+3. **Implement** (ui-styling skill) → Configure Tailwind, shadcn/ui
+
+## References
+
+| Topic | File |
+|-------|------|
+| Design Routing | `references/design-routing.md` |
+| Logo Design Guide | `references/logo-design.md` |
+| Logo Styles | `references/logo-style-guide.md` |
+| Logo Colors | `references/logo-color-psychology.md` |
+| Logo Prompts | `references/logo-prompt-engineering.md` |
+| CIP Design Guide | `references/cip-design.md` |
+| CIP Deliverables | `references/cip-deliverable-guide.md` |
+| CIP Styles | `references/cip-style-guide.md` |
+| CIP Prompts | `references/cip-prompt-engineering.md` |
+| Slides Create | `references/slides-create.md` |
+| Slides Layouts | `references/slides-layout-patterns.md` |
+| Slides Template | `references/slides-html-template.md` |
+| Slides Copy | `references/slides-copywriting-formulas.md` |
+| Slides Strategy | `references/slides-strategies.md` |
+| Banner Sizes & Styles | `references/banner-sizes-and-styles.md` |
+| Social Photos Guide | `references/social-photos-design.md` |
+| Icon Design Guide | `references/icon-design.md` |
+
+## Scripts
+
+| Script | Purpose |
+|--------|---------|
+| `scripts/logo/search.py` | Search logo styles, colors, industries |
+| `scripts/logo/generate.py` | Generate logos with Gemini AI |
+| `scripts/logo/core.py` | BM25 search engine for logo data |
+| `scripts/cip/search.py` | Search CIP deliverables, styles, industries |
+| `scripts/cip/generate.py` | Generate CIP mockups with Gemini |
+| `scripts/cip/render-html.py` | Render HTML presentation from CIP mockups |
+| `scripts/cip/core.py` | BM25 search engine for CIP data |
+| `scripts/icon/generate.py` | Generate SVG icons with Gemini 3.1 Pro |
+
+## Prerequisites
+
+**Python:** This skill uses Python scripts. On Windows, use `python` instead of `python3` (e.g., `python scripts/logo/search.py` instead of `python3 scripts/logo/search.py`).
+
+Check if Python is installed:
+```bash
+python3 --version || python --version
+```
+
+## Setup
+
+```bash
+export GEMINI_API_KEY="your-key"  # https://aistudio.google.com/apikey
+pip install google-genai pillow
+
+# Optional MuAPI provider (no extra Python package required)
+export MUAPI_API_KEY="your-key"
+```
+
+MuAPI uses the asynchronous model endpoint and prediction result API. See the
+[MuAPI API reference](https://muapi.ai/docs/api-reference) for authentication
+and the [nano-banana model contract](https://api.muapi.ai/api/v1/models/nano-banana)
+or [nano-banana-pro model contract](https://api.muapi.ai/api/v1/models/nano-banana-pro)
+for the current model-specific schemas. The logo generator supports both documented
+model slugs and sends their shared required `prompt` plus optional `aspect_ratio`
+fields; the Pro model also accepts an optional `resolution` field that this focused
+logo workflow leaves at the provider default.
+
+> **Note for Windows:** Use `python` instead of `pip` where needed (e.g., `python -m pip install ...`).
+
+## Integration
+
+**Bundled sub-skills:** brand, design-system, ui-styling
+**Related Skills:** ui-ux-pro-max

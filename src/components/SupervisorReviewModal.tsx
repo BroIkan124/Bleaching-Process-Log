@@ -74,8 +74,11 @@ export const SupervisorReviewModal: React.FC<SupervisorReviewModalProps> = ({
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-            <X className="w-5 h-5" />
+          <button 
+            onClick={onClose} 
+            className="btn-tactile p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer group"
+          >
+            <X className="w-5 h-5 transition-transform duration-200 group-hover:rotate-90" />
           </button>
         </div>
 
@@ -153,7 +156,7 @@ export const SupervisorReviewModal: React.FC<SupervisorReviewModalProps> = ({
         <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 flex items-center justify-between gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="btn-tactile btn-premium-glass px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer"
           >
             Close
           </button>
@@ -161,18 +164,18 @@ export const SupervisorReviewModal: React.FC<SupervisorReviewModalProps> = ({
           <div className="flex items-center gap-3">
             <button
               onClick={handleReturn}
-              className="px-4 py-2 rounded-xl border border-rose-300 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 text-xs font-bold transition-all flex items-center gap-1.5"
+              className="btn-tactile px-4 py-2 rounded-xl border border-rose-300 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 text-xs font-bold flex items-center gap-1.5 cursor-pointer group"
             >
-              <RotateCcw className="w-4 h-4" />
+              <RotateCcw className="w-4 h-4 transition-transform duration-300 group-hover:-rotate-45" />
               <span>Return with Comment</span>
             </button>
 
             <button
               onClick={handleApprove}
-              className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md transition-all flex items-center gap-1.5"
+              className="btn-premium-emerald px-5 py-2 rounded-xl text-white text-xs font-bold shadow-md flex items-center gap-1.5 cursor-pointer group"
             >
-              <Lock className="w-4 h-4" />
-              <span>Approve & Lock Sheet</span>
+              <Lock className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
+              <span>Approve &amp; Lock Sheet</span>
             </button>
           </div>
         </div>

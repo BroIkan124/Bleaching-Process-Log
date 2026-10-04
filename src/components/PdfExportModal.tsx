@@ -4,6 +4,7 @@ import React from "react";
 import { LogSheet } from "@/types";
 import { FORM_META } from "@/lib/constants";
 import { Printer, Download, X, Building2, CheckCircle2 } from "lucide-react";
+import { recordDocumentExport } from "@/lib/dbService";
 
 interface PdfExportModalProps {
   sheet: LogSheet;
@@ -19,6 +20,18 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
   if (!isOpen) return null;
 
   const handlePrint = () => {
+    recordDocumentExport(
+      "Bleaching Process Log Sheet (RF-FR-003)",
+      "RF-FR-003",
+      "Form",
+      null,
+      {
+        sheet_date: sheet.sheet_date,
+        plant: sheet.plant_name || sheet.plant_id,
+        product: sheet.product_name || sheet.product_id,
+        status: sheet.status,
+      }
+    );
     window.print();
   };
 
@@ -37,16 +50,16 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
           <div className="flex items-center gap-3">
             <button
               onClick={handlePrint}
-              className="px-4 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow flex items-center gap-1.5"
+              className="btn-premium-amber px-4 py-1.5 rounded-xl font-bold text-xs shadow-md flex items-center gap-1.5 cursor-pointer group"
             >
-              <Printer className="w-4 h-4" />
+              <Printer className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
               <span>Print / Save as PDF</span>
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700"
+              className="btn-tactile p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer group"
             >
-              <X className="w-5 h-5" />
+              <X className="w-5 h-5 transition-transform duration-200 group-hover:rotate-90" />
             </button>
           </div>
         </div>

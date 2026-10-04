@@ -130,17 +130,17 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
         <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={onOpenReviewModal}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 shrink-0"
+            className="btn-premium-emerald flex items-center gap-2 px-4 py-2.5 rounded-xl text-white font-bold text-xs sm:text-sm shadow-md cursor-pointer group shrink-0"
           >
-            <ShieldCheck className="w-4 h-4" />
+            <ShieldCheck className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
             <span>Review &amp; Approve Sheet</span>
           </button>
 
           <button
             onClick={onOpenPdfModal}
-            className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-bold text-zinc-700 dark:text-zinc-300"
+            className="btn-tactile btn-premium-glass flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-zinc-700 dark:text-zinc-300 cursor-pointer group shrink-0"
           >
-            <FileText className="w-4 h-4 text-amber-500" />
+            <FileText className="w-4 h-4 text-amber-500 transition-transform duration-200 group-hover:scale-110" />
             <span>Preview PDF</span>
           </button>
         </div>
@@ -358,9 +358,9 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
                           <button
                             type="button"
                             onClick={() => onAcknowledgeEvent(evt.id, currentUser.name)}
-                            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-sm transition-all active:scale-95"
+                            className="btn-premium-amber flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-white font-bold text-xs shadow-xs cursor-pointer group"
                           >
-                            <Check className="w-3.5 h-3.5" />
+                            <Check className="w-3.5 h-3.5 transition-transform duration-200 group-hover:scale-110" />
                             <span>Acknowledge Entry</span>
                           </button>
                         )

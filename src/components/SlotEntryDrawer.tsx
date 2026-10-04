@@ -150,26 +150,26 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
             <button
               onClick={() => onNavigateSlot(-1)}
               disabled={isFirstSlot}
-              className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30"
+              className="btn-tactile btn-premium-glass p-2 rounded-xl text-slate-600 dark:text-slate-300 disabled:opacity-30 cursor-pointer group"
               title="Previous Slot"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-5 h-5 transition-transform duration-200 group-hover:-translate-x-0.5" />
             </button>
             <button
               onClick={() => onNavigateSlot(1)}
               disabled={isLastSlot}
-              className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30"
+              className="btn-tactile btn-premium-glass p-2 rounded-xl text-slate-600 dark:text-slate-300 disabled:opacity-30 cursor-pointer group"
               title="Next Slot"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-0.5" />
             </button>
             <div className="h-6 w-[1px] bg-slate-200 dark:bg-slate-700 mx-1" />
             <button
               onClick={onClose}
-              className="p-2 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+              className="btn-tactile p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer group"
               title="Close Panel"
             >
-              <X className="w-5 h-5" />
+              <X className="w-5 h-5 transition-transform duration-200 group-hover:rotate-90" />
             </button>
           </div>
         </div>
@@ -228,14 +228,14 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                 type="button"
                 disabled={!canEdit}
                 onClick={() => handleFieldChange('acid_dosage_ok', !formData.acid_dosage_ok)}
-                className={`touch-target w-full rounded-xl border flex items-center justify-center gap-2 font-semibold text-sm transition-all select-none ${
+                className={`btn-tactile touch-target w-full rounded-xl border flex items-center justify-center gap-2 font-semibold text-sm select-none cursor-pointer group ${
                   formData.acid_dosage_ok
-                    ? 'bg-emerald-50 dark:bg-emerald-950/70 border-emerald-400 dark:border-emerald-600 text-emerald-700 dark:text-emerald-300'
-                    : 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-500'
+                    ? 'bg-emerald-50 dark:bg-emerald-950/70 border-emerald-400 dark:border-emerald-600 text-emerald-700 dark:text-emerald-300 shadow-2xs'
+                    : 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-500 hover:border-slate-400'
                 }`}
               >
-                <div className={`w-5 h-5 rounded-md flex items-center justify-center border ${
-                  formData.acid_dosage_ok ? 'bg-emerald-600 border-emerald-600 text-white' : 'border-slate-400'
+                <div className={`w-5 h-5 rounded-md flex items-center justify-center border transition-transform duration-150 group-active:scale-90 ${
+                  formData.acid_dosage_ok ? 'bg-emerald-600 border-emerald-600 text-white shadow-xs' : 'border-slate-400'
                 }`}>
                   {formData.acid_dosage_ok && <Check className="w-3.5 h-3.5" />}
                 </div>
@@ -252,14 +252,14 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                 type="button"
                 disabled={!canEdit}
                 onClick={() => handleFieldChange('earth_dosage_ok', !formData.earth_dosage_ok)}
-                className={`touch-target w-full rounded-xl border flex items-center justify-center gap-2 font-semibold text-sm transition-all select-none ${
+                className={`btn-tactile touch-target w-full rounded-xl border flex items-center justify-center gap-2 font-semibold text-sm select-none cursor-pointer group ${
                   formData.earth_dosage_ok
-                    ? 'bg-emerald-50 dark:bg-emerald-950/70 border-emerald-400 dark:border-emerald-600 text-emerald-700 dark:text-emerald-300'
-                    : 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-500'
+                    ? 'bg-emerald-50 dark:bg-emerald-950/70 border-emerald-400 dark:border-emerald-600 text-emerald-700 dark:text-emerald-300 shadow-2xs'
+                    : 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-500 hover:border-slate-400'
                 }`}
               >
-                <div className={`w-5 h-5 rounded-md flex items-center justify-center border ${
-                  formData.earth_dosage_ok ? 'bg-emerald-600 border-emerald-600 text-white' : 'border-slate-400'
+                <div className={`w-5 h-5 rounded-md flex items-center justify-center border transition-transform duration-150 group-active:scale-90 ${
+                  formData.earth_dosage_ok ? 'bg-emerald-600 border-emerald-600 text-white shadow-xs' : 'border-slate-400'
                 }`}>
                   {formData.earth_dosage_ok && <Check className="w-3.5 h-3.5" />}
                 </div>
@@ -363,9 +363,9 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                     type="button"
                     disabled={!canEdit}
                     onClick={() => handleFieldChange('bleacher_level', lvl)}
-                    className={`touch-target rounded-xl border font-bold text-base transition-all select-none ${
+                    className={`btn-tactile touch-target rounded-xl border font-bold text-base select-none cursor-pointer ${
                       formData.bleacher_level === lvl
-                        ? 'bg-amber-600 border-amber-600 text-white shadow-sm ring-2 ring-amber-500/30'
+                        ? 'btn-premium-amber text-white shadow-sm ring-2 ring-amber-500/30'
                         : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-slate-400'
                     }`}
                   >
@@ -387,9 +387,9 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                     type="button"
                     disabled={!canEdit}
                     onClick={() => handleFieldChange('niagara_filter', nf)}
-                    className={`touch-target rounded-xl border text-xs font-bold font-mono transition-all select-none ${
+                    className={`btn-tactile touch-target rounded-xl border text-xs font-bold font-mono select-none cursor-pointer ${
                       formData.niagara_filter === nf
-                        ? 'bg-amber-600 border-amber-600 text-white shadow-sm ring-2 ring-amber-500/30'
+                        ? 'btn-premium-amber text-white shadow-sm ring-2 ring-amber-500/30'
                         : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-slate-400'
                     }`}
                   >
@@ -547,7 +547,7 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                     key={btn}
                     type="button"
                     onClick={() => handleKeypadPress(btn)}
-                    className="touch-target bg-white dark:bg-slate-800 rounded-lg border border-slate-300 dark:border-slate-700 font-mono text-base font-bold shadow-sm active:scale-95 transition-transform flex items-center justify-center text-slate-800 dark:text-slate-200"
+                    className="btn-tactile touch-target bg-white dark:bg-slate-800 rounded-lg border border-slate-300 dark:border-slate-700 font-mono text-base font-bold shadow-2xs flex items-center justify-center text-slate-800 dark:text-slate-200 cursor-pointer hover:border-slate-400"
                   >
                     {btn === 'BACKSPACE' ? <Delete className="w-5 h-5 text-rose-600" /> : btn}
                   </button>
@@ -573,7 +573,7 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="btn-tactile btn-premium-glass px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-300 cursor-pointer"
             >
               Cancel
             </button>
@@ -581,9 +581,9 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
               type="button"
               disabled={!canEdit}
               onClick={handleSaveClick}
-              className="touch-target px-6 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm shadow-md transition-all active:scale-95 flex items-center gap-2 disabled:opacity-50"
+              className="btn-premium-amber touch-target px-6 py-2.5 rounded-xl font-bold text-sm shadow-md flex items-center gap-2 disabled:opacity-50 cursor-pointer group"
             >
-              <Save className="w-4 h-4" />
+              <Save className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
               <span>Save Slot ({formData.time_label} Hrs)</span>
             </button>
           </div>

@@ -18,6 +18,7 @@ import {
   FlaskConical,
   Filter
 } from "lucide-react";
+import { recordReportExport } from "@/lib/dbService";
 
 interface ReportsViewProps {
   sheet: LogSheet;
@@ -154,9 +155,23 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+
+    // Sync activity to InsForge
+    recordReportExport("CSV", currentUser, {
+      sheet_date: sheet.sheet_date,
+      time_range: timeRange,
+      shift: selectedShift,
+      total_rows: rows.length,
+    });
   };
 
   const handlePrint = () => {
+    // Sync activity to InsForge
+    recordReportExport("PRINT", currentUser, {
+      sheet_date: sheet.sheet_date,
+      time_range: timeRange,
+      shift: selectedShift,
+    });
     window.print();
   };
 
@@ -179,7 +194,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-xs font-bold">
+          <div className="btn-tactile flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-xs font-bold">
             <Calendar className="w-3.5 h-3.5 text-zinc-400" />
             <select
               value={timeRange}
@@ -194,18 +209,18 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
 
           <button
             onClick={handleExportCSV}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-white text-xs font-bold shadow-sm transition-all"
+            className="btn-tactile flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-white text-xs font-bold shadow-sm cursor-pointer group"
             title="Export full data in CSV format"
           >
-            <Download className="w-4 h-4" />
+            <Download className="w-4 h-4 transition-transform duration-200 group-hover:translate-y-0.5" />
             <span>Export CSV</span>
           </button>
 
           <button
             onClick={handlePrint}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-md transition-all active:scale-95"
+            className="btn-premium-amber flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-white text-xs font-bold shadow-md cursor-pointer group"
           >
-            <Printer className="w-4 h-4" />
+            <Printer className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
             <span>Print Report</span>
           </button>
         </div>

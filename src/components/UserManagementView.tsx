@@ -268,9 +268,9 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
 
         <button
           onClick={handleOpenAddModal}
-          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 shrink-0"
+          className="btn-premium-amber flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-white font-bold text-xs sm:text-sm shadow-md cursor-pointer group shrink-0"
         >
-          <UserPlus className="w-4 h-4" />
+          <UserPlus className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
           <span>Register New Staff</span>
         </button>
       </div>
@@ -447,7 +447,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
                       <button
                         type="button"
                         onClick={() => handleToggleStatus(user.id)}
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
+                        className={`btn-tactile inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold cursor-pointer ${
                           user.active
                             ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800"
                             : "bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300 border border-rose-300 dark:border-rose-800"
@@ -473,10 +473,10 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
                         <button
                           type="button"
                           onClick={() => handleOpenEditModal(user)}
-                          className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300"
+                          className="btn-tactile p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 cursor-pointer group"
                           title="Edit User"
                         >
-                          <Edit3 className="w-3.5 h-3.5" />
+                          <Edit3 className="w-3.5 h-3.5 transition-transform duration-200 group-hover:scale-110" />
                         </button>
                       </div>
                     </td>
@@ -507,9 +507,9 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
               </div>
               <button
                 onClick={() => setIsAddModalOpen(false)}
-                className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
+                className="btn-tactile p-1.5 rounded-lg text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 cursor-pointer group"
               >
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5 transition-transform duration-200 group-hover:rotate-90" />
               </button>
             </div>
 
@@ -642,13 +642,13 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-bold border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  className="btn-tactile btn-premium-glass px-4 py-2 rounded-xl text-xs font-bold cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-md transition-all"
+                  className="btn-premium-amber px-5 py-2 rounded-xl text-xs font-bold text-white shadow-md cursor-pointer group"
                 >
                   {editingUser ? "Save Changes" : "Register Staff"}
                 </button>

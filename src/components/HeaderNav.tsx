@@ -49,15 +49,45 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   const getStatusBadge = () => {
     switch (sheetStatus) {
       case "Draft":
-        return <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">Draft</span>;
+        return (
+          <span className="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
+            Draft
+          </span>
+        );
       case "InProgress":
-        return <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-300 dark:border-amber-700 animate-pulse">In Progress</span>;
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30 shadow-xs">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+            </span>
+            <span>In Progress</span>
+          </span>
+        );
       case "Submitted":
-        return <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-zinc-200 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">Submitted</span>;
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/30">
+            <span className="w-1.5 h-1.5 rounded-full bg-sky-500" />
+            <span>Submitted</span>
+          </span>
+        );
       case "Returned":
-        return <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300 border border-rose-300 dark:border-rose-700">Returned</span>;
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-500/30">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+            </span>
+            <span>Returned</span>
+          </span>
+        );
       case "Approved":
-        return <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">Approved</span>;
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 shadow-xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            <span>Approved &amp; Locked</span>
+          </span>
+        );
     }
   };
 
@@ -77,11 +107,11 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-30 w-full border-b border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-[#121316]/95 backdrop-blur shadow-2xs">
+    <header className="sticky top-0 z-30 w-full border-b border-zinc-200/90 dark:border-zinc-800/90 bg-white/90 dark:bg-[#0E1626]/90 backdrop-blur-2xl shadow-xs">
       <div className="max-w-[1680px] mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3">
         {/* Left: Brand Identity & Active Section */}
         <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-amber-600 to-amber-700 flex items-center justify-center text-white shadow-sm font-display font-bold shrink-0">
+          <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 flex items-center justify-center text-white shadow-md font-display font-bold shrink-0 border border-amber-400/30">
             <Building2 className="w-5 h-5" />
           </div>
           <div>
@@ -96,31 +126,35 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
               {activeTab === "bleaching" && getStatusBadge()}
             </div>
             <p className="text-[11px] text-zinc-500 font-medium hidden lg:block">
-              Nisshin Process Management System · Refinery Plant Control
+              Nisshin Process Management System · Refinery Plant Control Line 1
             </p>
           </div>
         </div>
 
         {/* Center: Shift & Telemetry Badge */}
-        <div className="hidden md:flex items-center gap-2.5 bg-zinc-100 dark:bg-zinc-800/80 px-3 py-1 rounded-xl border border-zinc-200 dark:border-zinc-700/80 text-xs">
-          <div className="flex items-center gap-1.5 font-medium">
+        <div className="hidden md:flex items-center gap-3 bg-zinc-100/90 dark:bg-zinc-900/80 px-3.5 py-1.5 rounded-xl border border-zinc-200/80 dark:border-zinc-700/60 text-xs shadow-xs">
+          <div className="flex items-center gap-2 font-medium">
             <Clock className="w-3.5 h-3.5 text-amber-500" />
-            <span className="text-zinc-500">Shift:</span>
-            <span className="font-bold text-zinc-800 dark:text-zinc-200 font-mono">
+            <span className="text-zinc-500 dark:text-zinc-400">Shift:</span>
+            <span className="font-bold text-zinc-900 dark:text-zinc-100 font-mono tracking-tight">
               Shift {currentShift} {currentShift === 1 ? '(0800–1500)' : currentShift === 2 ? '(1600–2300)' : '(2400–0700)'}
             </span>
           </div>
 
-          <div className="h-3 w-[1px] bg-zinc-300 dark:bg-zinc-700" />
+          <div className="h-3.5 w-[1px] bg-zinc-300 dark:bg-zinc-700" />
 
           <div className="flex items-center gap-1.5">
             {isOffline ? (
-              <span className="flex items-center gap-1 text-amber-500 font-medium">
+              <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-semibold font-mono text-[11px]">
                 <WifiOff className="w-3.5 h-3.5" /> Offline
               </span>
             ) : (
-              <span className="flex items-center gap-1 text-emerald-500 font-medium">
-                <Wifi className="w-3.5 h-3.5" /> Synced
+              <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold font-mono text-[11px]">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span>Live Synced</span>
               </span>
             )}
           </div>

@@ -44,21 +44,21 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
   const currentDischarge = dischargeTanks.find((t) => t.id === sheet.discharge_tank_id)?.name || "TK-201";
 
   return (
-    <div className="bg-white dark:bg-[#18181B] rounded-2xl border border-zinc-200/90 dark:border-zinc-800 shadow-sm transition-all overflow-hidden mb-5">
+    <div className="glass-panel rounded-2xl overflow-hidden mb-5 transition-all shadow-sm hover:shadow-md">
       {/* 1. Sleek Compact Parameter Summary Bar */}
-      <div className="px-4 sm:px-5 py-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-zinc-50/70 dark:bg-[#141517] border-b border-zinc-200/70 dark:border-zinc-800/80">
+      <div className="px-4 sm:px-5 py-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-zinc-50/80 dark:bg-[#121A2A]/80 border-b border-zinc-200/80 dark:border-zinc-800/80">
         {/* Left: Key Meta Badges */}
         <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
+            <div className="p-2 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20 shadow-2xs">
               <Factory className="w-4 h-4" />
             </div>
             <div>
               <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 block leading-tight">
                 {currentPlant}
               </span>
-              <span className="text-[11px] text-zinc-500 font-medium block leading-none mt-0.5">
-                {currentProduct} · Date: <span className="font-mono text-zinc-700 dark:text-zinc-300 font-semibold">{sheet.sheet_date}</span>
+              <span className="text-[11px] text-zinc-500 font-medium block leading-none mt-1">
+                {currentProduct} · Date: <span className="font-mono text-zinc-800 dark:text-zinc-200 font-bold">{sheet.sheet_date}</span>
               </span>
             </div>
           </div>
@@ -67,14 +67,15 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
 
           {/* Quick Telemetry Chips */}
           <div className="flex items-center gap-2 text-xs flex-wrap">
-            <span className="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 font-medium">
-              Feed: <strong className="text-zinc-900 dark:text-zinc-100">{currentFeed.split(" ")[0]}</strong>
+            <span className="px-2.5 py-1 rounded-lg bg-white/90 dark:bg-zinc-900/90 border border-zinc-200/90 dark:border-zinc-700/80 text-zinc-700 dark:text-zinc-300 font-medium shadow-2xs">
+              Feed: <strong className="text-zinc-900 dark:text-zinc-100 font-mono">{currentFeed.split(" ")[0]}</strong>
             </span>
-            <span className="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 font-medium">
-              Discharge: <strong className="text-zinc-900 dark:text-zinc-100">{currentDischarge.split(" ")[0]}</strong>
+            <span className="px-2.5 py-1 rounded-lg bg-white/90 dark:bg-zinc-900/90 border border-zinc-200/90 dark:border-zinc-700/80 text-zinc-700 dark:text-zinc-300 font-medium shadow-2xs">
+              Discharge: <strong className="text-zinc-900 dark:text-zinc-100 font-mono">{currentDischarge.split(" ")[0]}</strong>
             </span>
-            <span className="px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 font-mono font-bold">
-              Target: {sheet.input_mt_hr ?? 45.0} MT/HR
+            <span className="px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 font-mono font-bold shadow-2xs flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+              <span>Target: {sheet.input_mt_hr ?? 45.0} MT/HR</span>
             </span>
           </div>
         </div>

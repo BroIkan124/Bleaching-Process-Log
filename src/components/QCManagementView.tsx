@@ -21,7 +21,8 @@ import {
   ShieldCheck, 
   Calendar, 
   Database,
-  Building2
+  Building2,
+  Sparkles
 } from "lucide-react";
 import { syncQcSampleToInsForge, logActivityToInsForge } from "@/lib/dbService";
 
@@ -159,126 +160,136 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* 1. Header Metrics Banner */}
+      {/* 1. Header Metrics Banner with Glassmorphism & Specular Rims */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {/* Total Samples */}
-        <div className="bg-white dark:bg-[#18181B] p-4 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-sm flex items-center justify-between">
+        <div className="telemetry-card p-4 rounded-2xl flex items-center justify-between">
           <div>
-            <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider block">
+            <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block font-display">
               Total Lab Samples
             </span>
-            <div className="text-2xl font-bold font-mono text-slate-900 dark:text-white mt-1">
+            <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-white mt-1 tabular-nums">
               {totalCount}
             </div>
-            <span className="text-[11px] text-slate-400 dark:text-zinc-500">
+            <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-mono">
               Form RF-FR-001 (Rev 02/03)
             </span>
           </div>
-          <div className="p-3 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
-            <FlaskConical className="w-6 h-6" />
+          <div className="p-3 rounded-xl bg-zinc-100 dark:bg-white/5 text-zinc-700 dark:text-zinc-300 border border-zinc-200/80 dark:border-white/10 shadow-xs">
+            <FlaskConical className="w-6 h-6 text-amber-500" />
           </div>
         </div>
 
         {/* Accepted (In-Spec) */}
-        <div className="bg-white dark:bg-[#18181B] p-4 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-sm flex items-center justify-between">
+        <div className="telemetry-card p-4 rounded-2xl flex items-center justify-between">
           <div>
-            <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">
+            <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block font-display flex items-center gap-1.5">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
               In-Spec Accepted
             </span>
-            <div className="text-2xl font-bold font-mono text-emerald-700 dark:text-emerald-300 mt-1">
+            <div className="text-2xl font-bold font-mono text-emerald-700 dark:text-emerald-300 mt-1 tabular-nums">
               {acceptedCount}
             </div>
-            <span className="text-[11px] text-slate-400 dark:text-zinc-500">
+            <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-mono">
               {totalCount > 0 ? ((acceptedCount / totalCount) * 100).toFixed(1) : 0}% Pass Rate
             </span>
           </div>
-          <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+          <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-xs">
             <CheckCircle2 className="w-6 h-6" />
           </div>
         </div>
 
         {/* Rejected / Out-of-Spec */}
-        <div className="bg-white dark:bg-[#18181B] p-4 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-sm flex items-center justify-between">
+        <div className="telemetry-card p-4 rounded-2xl flex items-center justify-between">
           <div>
-            <span className="text-xs font-semibold text-rose-600 dark:text-rose-400 uppercase tracking-wider block">
+            <span className="text-[11px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider block font-display flex items-center gap-1.5">
+              {rejectedCount > 0 && (
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+                </span>
+              )}
               Out-of-Spec Rejected
             </span>
-            <div className="text-2xl font-bold font-mono text-rose-700 dark:text-rose-300 mt-1">
+            <div className="text-2xl font-bold font-mono text-rose-700 dark:text-rose-300 mt-1 tabular-nums">
               {rejectedCount}
             </div>
-            <span className="text-[11px] text-slate-400 dark:text-zinc-500">
+            <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-mono">
               Hold / Rework required
             </span>
           </div>
-          <div className="p-3 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400">
+          <div className="p-3 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 shadow-xs">
             <XCircle className="w-6 h-6" />
           </div>
         </div>
 
         {/* Pending Analysis */}
-        <div className="bg-white dark:bg-[#18181B] p-4 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-sm flex items-center justify-between">
+        <div className="telemetry-card p-4 rounded-2xl flex items-center justify-between">
           <div>
-            <span className="text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider block">
+            <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider block font-display">
               Pending QC Lab Test
             </span>
-            <div className="text-2xl font-bold font-mono text-amber-700 dark:text-amber-300 mt-1">
+            <div className="text-2xl font-bold font-mono text-amber-700 dark:text-amber-300 mt-1 tabular-nums">
               {pendingCount}
             </div>
-            <span className="text-[11px] text-slate-400 dark:text-zinc-500">
+            <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-mono">
               Awaiting QC decision
             </span>
           </div>
-          <div className="p-3 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+          <div className="p-3 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shadow-xs">
             <Clock className="w-6 h-6" />
           </div>
         </div>
       </div>
 
       {/* 2. Controls & Filter Bar */}
-      <div className="bg-white dark:bg-[#18181B] p-4 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-sm flex flex-wrap items-center justify-between gap-3">
+      <div className="glass-panel p-4 rounded-2xl flex flex-wrap items-center justify-between gap-3">
         {/* Search */}
         <div className="relative flex-1 min-w-[240px] max-w-md">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Cari Lot No, Report No, Produk, atau Tangki..."
-            className="w-full pl-9 pr-4 py-2 rounded-lg bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs font-sans text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+            className="w-full pl-10 pr-4 py-2 rounded-xl bg-zinc-50 dark:bg-black/30 border border-zinc-200 dark:border-white/10 text-xs font-sans text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all"
           />
         </div>
 
         {/* Filters and New Sample Action */}
         <div className="flex items-center gap-2.5 flex-wrap">
-          <div className="flex items-center rounded-lg bg-slate-100 dark:bg-slate-800 p-1 border border-slate-200 dark:border-slate-700 text-xs font-medium">
+          <div className="flex items-center rounded-xl bg-zinc-100/90 dark:bg-black/30 p-1 border border-zinc-200/80 dark:border-white/10 text-xs font-medium">
             <button
               onClick={() => setStatusFilter("all")}
-              className={`btn-tactile px-3 py-1 rounded-md cursor-pointer ${
-                statusFilter === "all" ? "bg-white dark:bg-slate-700 font-bold shadow-xs text-zinc-900 dark:text-white" : "text-slate-600 dark:text-slate-400"
+              className={`btn-tactile px-3 py-1.5 rounded-lg cursor-pointer transition-all ${
+                statusFilter === "all" ? "bg-white dark:bg-white/10 font-bold shadow-xs text-zinc-900 dark:text-white" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
               }`}
             >
               Semua ({totalCount})
             </button>
             <button
               onClick={() => setStatusFilter("accept")}
-              className={`btn-tactile px-3 py-1 rounded-md cursor-pointer ${
-                statusFilter === "accept" ? "bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 font-bold shadow-xs" : "text-slate-600 dark:text-slate-400"
+              className={`btn-tactile px-3 py-1.5 rounded-lg cursor-pointer transition-all ${
+                statusFilter === "accept" ? "bg-white dark:bg-white/10 text-emerald-600 dark:text-emerald-400 font-bold shadow-xs" : "text-zinc-600 dark:text-zinc-400 hover:text-emerald-600"
               }`}
             >
               Accepted ({acceptedCount})
             </button>
             <button
               onClick={() => setStatusFilter("reject")}
-              className={`btn-tactile px-3 py-1 rounded-md cursor-pointer ${
-                statusFilter === "reject" ? "bg-white dark:bg-slate-700 text-rose-600 dark:text-rose-400 font-bold shadow-xs" : "text-slate-600 dark:text-slate-400"
+              className={`btn-tactile px-3 py-1.5 rounded-lg cursor-pointer transition-all ${
+                statusFilter === "reject" ? "bg-white dark:bg-white/10 text-rose-600 dark:text-rose-400 font-bold shadow-xs" : "text-zinc-600 dark:text-zinc-400 hover:text-rose-600"
               }`}
             >
               Rejected ({rejectedCount})
             </button>
             <button
               onClick={() => setStatusFilter("pending")}
-              className={`btn-tactile px-3 py-1 rounded-md cursor-pointer ${
-                statusFilter === "pending" ? "bg-white dark:bg-slate-700 text-amber-600 dark:text-amber-400 font-bold shadow-xs" : "text-slate-600 dark:text-slate-400"
+              className={`btn-tactile px-3 py-1.5 rounded-lg cursor-pointer transition-all ${
+                statusFilter === "pending" ? "bg-white dark:bg-white/10 text-amber-600 dark:text-amber-400 font-bold shadow-xs" : "text-zinc-600 dark:text-zinc-400 hover:text-amber-600"
               }`}
             >
               Pending ({pendingCount})
@@ -296,39 +307,39 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
       </div>
 
       {/* 3. Main Samples Table (RF-FR-001) */}
-      <div className="bg-white dark:bg-[#18181B] rounded-xl border border-slate-200 dark:border-zinc-800 shadow-sm overflow-hidden">
-        <div className="px-4 py-3 bg-slate-50 dark:bg-zinc-900/60 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
+      <div className="glass-panel rounded-2xl overflow-hidden shadow-sm">
+        <div className="px-5 py-3.5 bg-zinc-50/80 dark:bg-black/25 border-b border-zinc-200/90 dark:border-white/10 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="font-display font-bold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+            <span className="font-display font-bold text-sm text-zinc-900 dark:text-white uppercase tracking-wider">
               QC Lab Sample Analysis Reports (Form RF-FR-001)
             </span>
-            <span className="text-xs text-slate-500 font-mono">
+            <span className="text-xs text-zinc-500 font-mono">
               [Showing {filteredReports.length} of {totalCount} Records]
             </span>
           </div>
-          <span className="text-xs text-slate-500 hidden sm:inline">
-            Data Sebenar Loji Penapis Minyak Lam Soon / Nisshin
+          <span className="text-xs text-zinc-500 dark:text-zinc-400 hidden sm:inline font-mono">
+            Lam Soon Edible Oils / Nisshin Process Standard
           </span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-left text-xs">
             <thead>
-              <tr className="bg-slate-100/90 dark:bg-zinc-900 text-slate-600 dark:text-zinc-300 font-semibold border-b border-slate-200 dark:border-zinc-800">
-                <th className="py-2.5 px-3">Report No / Lot No</th>
-                <th className="py-2.5 px-2">Sample Date / Time</th>
-                <th className="py-2.5 px-2">Product Name</th>
-                <th className="py-2.5 px-2">Tank (Feed → Disch)</th>
-                <th className="py-2.5 px-2 text-right">FFA (%)</th>
-                <th className="py-2.5 px-2 text-right">Moisture (%)</th>
-                <th className="py-2.5 px-2 text-right">PV (meq/kg)</th>
-                <th className="py-2.5 px-2 text-right">IV (Wijs)</th>
-                <th className="py-2.5 px-2 text-center">Colour (R / Y)</th>
-                <th className="py-2.5 px-3 text-center">QC Decision</th>
-                <th className="py-2.5 px-3 text-center">Actions</th>
+              <tr className="sticky top-0 z-10 backdrop-blur-xl bg-zinc-100/95 dark:bg-[#0E1626]/95 text-zinc-600 dark:text-zinc-300 font-bold border-b border-zinc-200/90 dark:border-white/10">
+                <th className="py-3 px-3">Report No / Lot No</th>
+                <th className="py-3 px-2">Sample Date / Time</th>
+                <th className="py-3 px-2">Product Name</th>
+                <th className="py-3 px-2">Tank (Feed → Disch)</th>
+                <th className="py-3 px-2 text-right">FFA (%)</th>
+                <th className="py-3 px-2 text-right">Moisture (%)</th>
+                <th className="py-3 px-2 text-right">PV (meq/kg)</th>
+                <th className="py-3 px-2 text-right">IV (Wijs)</th>
+                <th className="py-3 px-2 text-center">Colour (R / Y)</th>
+                <th className="py-3 px-3 text-center">QC Decision</th>
+                <th className="py-3 px-3 text-center">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-sans">
+            <tbody className="divide-y divide-zinc-200/60 dark:divide-white/5 font-sans">
               {filteredReports.map((report) => {
                 const isAccepted = report.decision?.decision === "accept" || report.decision?.decision === "accept_concession";
                 const isRejected = report.decision?.decision === "reject";
@@ -336,74 +347,74 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                 return (
                   <tr
                     key={report.id}
-                    className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                    className="hover:bg-zinc-500/5 dark:hover:bg-white/5 transition-colors group"
                   >
                     {/* Report & Lot No */}
                     <td className="py-2.5 px-3">
-                      <div className="font-mono font-bold text-slate-900 dark:text-white">
+                      <div className="font-mono font-bold text-zinc-900 dark:text-white">
                         {report.report_no}
                       </div>
-                      <div className="font-mono text-[10px] text-slate-500 truncate max-w-[190px]">
+                      <div className="font-mono text-[10px] text-zinc-500 truncate max-w-[190px]">
                         {report.lot_no}
                       </div>
                     </td>
 
                     {/* Date & Time */}
-                    <td className="py-2.5 px-2 font-mono text-[11px] text-slate-700 dark:text-slate-300">
+                    <td className="py-2.5 px-2 font-mono text-[11px] text-zinc-700 dark:text-zinc-300">
                       <div>{report.sample_date}</div>
-                      <div className="text-slate-400">{report.time_check} Hrs</div>
+                      <div className="text-zinc-400">{report.time_check} Hrs</div>
                     </td>
 
                     {/* Product Name */}
-                    <td className="py-2.5 px-2 font-medium text-slate-800 dark:text-slate-200">
+                    <td className="py-2.5 px-2 font-medium text-zinc-900 dark:text-zinc-200">
                       {report.product_name || "RBD Palm Oil"}
                     </td>
 
                     {/* Tanks */}
-                    <td className="py-2.5 px-2 font-mono text-[11px] text-slate-600 dark:text-slate-400">
+                    <td className="py-2.5 px-2 font-mono text-[11px] text-zinc-600 dark:text-zinc-400">
                       {report.feed_tank_code || "TK-101A"} → {report.discharge_tank_code || "TK-201A"}
                     </td>
 
                     {/* FFA (%) */}
-                    <td className="py-2.5 px-2 text-right font-mono tabular-nums text-slate-800 dark:text-slate-200">
+                    <td className="py-2.5 px-2 text-right font-mono tabular-nums text-zinc-900 dark:text-zinc-100 font-semibold">
                       {getParamVal(report, "FFA")}
                     </td>
 
                     {/* Moisture (%) */}
-                    <td className="py-2.5 px-2 text-right font-mono tabular-nums text-slate-800 dark:text-slate-200">
+                    <td className="py-2.5 px-2 text-right font-mono tabular-nums text-zinc-900 dark:text-zinc-100 font-semibold">
                       {getParamVal(report, "H2O")}
                     </td>
 
                     {/* PV (meq/kg) */}
-                    <td className="py-2.5 px-2 text-right font-mono tabular-nums text-slate-800 dark:text-slate-200">
+                    <td className="py-2.5 px-2 text-right font-mono tabular-nums text-zinc-900 dark:text-zinc-100 font-semibold">
                       {getParamVal(report, "PV")}
                     </td>
 
                     {/* IV */}
-                    <td className="py-2.5 px-2 text-right font-mono tabular-nums text-slate-800 dark:text-slate-200">
+                    <td className="py-2.5 px-2 text-right font-mono tabular-nums text-zinc-900 dark:text-zinc-100 font-semibold">
                       {getParamVal(report, "IV")}
                     </td>
 
                     {/* Colour R/Y */}
-                    <td className="py-2.5 px-2 text-center font-mono tabular-nums text-slate-800 dark:text-slate-200">
+                    <td className="py-2.5 px-2 text-center font-mono tabular-nums text-zinc-900 dark:text-zinc-100 font-semibold">
                       {getParamVal(report, "COLOUR_R")}R / {getParamVal(report, "COLOUR_Y")}Y
                     </td>
 
                     {/* Decision Badge */}
                     <td className="py-2.5 px-3 text-center">
                       {isAccepted ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
-                          <CheckCircle2 className="w-3 h-3" />
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-500" />
                           <span>RELEASE</span>
                         </span>
                       ) : isRejected ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 dark:bg-rose-950/70 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-700" title={report.decision?.reason_label || "Reject"}>
-                          <XCircle className="w-3 h-3" />
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-500/30" title={report.decision?.reason_label || "Reject"}>
+                          <XCircle className="w-3 h-3 text-rose-500" />
                           <span>REJECT</span>
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
-                          <Clock className="w-3 h-3" />
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30">
+                          <Clock className="w-3 h-3 text-amber-500" />
                           <span>PENDING</span>
                         </span>
                       )}
@@ -417,7 +428,7 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                             setSelectedReport(report);
                             setIsEditorOpen(true);
                           }}
-                          className="btn-tactile p-1.5 rounded-lg border border-slate-200 dark:border-zinc-700 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 cursor-pointer group"
+                          className="btn-tactile p-1.5 rounded-xl border border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-700 dark:text-zinc-300 cursor-pointer group transition-all"
                           title="Semak / Edit Keputusan Makmal"
                         >
                           <Edit3 className="w-3.5 h-3.5 text-zinc-700 dark:text-zinc-300 transition-transform duration-200 group-hover:scale-110" />
@@ -428,10 +439,10 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                             setSelectedReport(report);
                             setIsCertificateOpen(true);
                           }}
-                          className="btn-tactile p-1.5 rounded-lg border border-slate-200 dark:border-zinc-700 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 cursor-pointer group"
+                          className="btn-tactile p-1.5 rounded-xl border border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-700 dark:text-zinc-300 cursor-pointer group transition-all"
                           title="Lihat / Cetak Sijil Analisis (RF-FR-001)"
                         >
-                          <FileText className="w-3.5 h-3.5 text-amber-600 transition-transform duration-200 group-hover:scale-110" />
+                          <FileText className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 transition-transform duration-200 group-hover:scale-110" />
                         </button>
                       </div>
                     </td>
@@ -445,21 +456,21 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
 
       {/* 4. Modal: Edit Test Results & Submit Decision */}
       {isEditorOpen && selectedReport && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-2xl bg-white dark:bg-[#18181B] rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="px-6 py-4 border-b border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900/60 flex items-center justify-between">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
+          <div className="w-full max-w-2xl bg-white/95 dark:bg-[#0E1626]/95 backdrop-blur-2xl rounded-2xl border border-zinc-200/90 dark:border-white/10 shadow-[0_25px_60px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="px-6 py-4 border-b border-zinc-200 dark:border-white/10 bg-zinc-50/80 dark:bg-black/30 flex items-center justify-between">
               <div>
-                <h3 className="font-bold font-display text-base text-slate-900 dark:text-white flex items-center gap-2">
+                <h3 className="font-bold font-display text-base text-zinc-900 dark:text-white flex items-center gap-2">
                   <span>QC Lab Results & Disposition Decision</span>
                   <span className="text-xs font-mono font-normal text-zinc-500 dark:text-zinc-400">
                     ({selectedReport.report_no})
                   </span>
                 </h3>
-                <p className="text-xs text-slate-500 font-mono">
+                <p className="text-xs text-zinc-500 font-mono mt-0.5">
                   {selectedReport.product_name} · Lot: {selectedReport.lot_no}
                 </p>
               </div>
-              <button onClick={() => setIsEditorOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+              <button onClick={() => setIsEditorOpen(false)} className="btn-tactile text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-1.5 rounded-lg cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -468,8 +479,8 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
               {/* Parameters Inputs */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {selectedReport.results?.map((res, idx) => (
-                  <div key={res.id || idx} className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40">
-                    <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1 truncate" title={res.parameter_name}>
+                  <div key={res.id || idx} className="p-3 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50/60 dark:bg-white/5">
+                    <label className="block text-[11px] font-semibold text-zinc-600 dark:text-zinc-400 mb-1 truncate" title={res.parameter_name}>
                       {res.parameter_code} ({res.unit || "-"})
                     </label>
                     <input
@@ -481,15 +492,15 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                         const updatedResults = selectedReport.results.map((r, i) => i === idx ? { ...r, value_numeric: val } : r);
                         setSelectedReport({ ...selectedReport, results: updatedResults });
                       }}
-                      className="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-mono text-sm font-bold text-slate-900 dark:text-white"
+                      className="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-black/40 border border-zinc-300 dark:border-white/10 font-mono text-sm font-bold text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
                     />
                   </div>
                 ))}
               </div>
 
               {/* Disposition Action Selector */}
-              <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 space-y-3">
-                <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">
+              <div className="p-4 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50/80 dark:bg-black/30 space-y-3">
+                <label className="block text-xs font-bold text-zinc-800 dark:text-zinc-200 font-display">
                   QC Final Decision & Release Authorization
                 </label>
                 <div className="grid grid-cols-3 gap-2">
@@ -507,10 +518,10 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                         }
                       });
                     }}
-                    className={`py-2 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                    className={`btn-tactile py-2.5 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                       selectedReport.decision?.decision === "accept"
-                        ? "bg-emerald-600 text-white border-emerald-600 shadow-sm"
-                        : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:border-slate-400"
+                        ? "btn-premium-emerald text-white border-emerald-600 shadow-sm"
+                        : "bg-white dark:bg-white/5 text-zinc-700 dark:text-zinc-300 border-zinc-300 dark:border-white/10 hover:border-zinc-400"
                     }`}
                   >
                     <CheckCircle2 className="w-4 h-4" />
@@ -533,10 +544,10 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                         }
                       });
                     }}
-                    className={`py-2 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                    className={`btn-tactile py-2.5 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                       selectedReport.decision?.decision === "reject"
                         ? "bg-rose-600 text-white border-rose-600 shadow-sm"
-                        : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:border-slate-400"
+                        : "bg-white dark:bg-white/5 text-zinc-700 dark:text-zinc-300 border-zinc-300 dark:border-white/10 hover:border-zinc-400"
                     }`}
                   >
                     <XCircle className="w-4 h-4" />
@@ -558,10 +569,10 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                         }
                       });
                     }}
-                    className={`py-2 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                    className={`btn-tactile py-2.5 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                       selectedReport.decision?.decision === "accept_concession"
-                        ? "bg-amber-600 text-white border-amber-600 shadow-sm"
-                        : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:border-slate-400"
+                        ? "btn-premium-amber text-white border-amber-600 shadow-sm"
+                        : "bg-white dark:bg-white/5 text-zinc-700 dark:text-zinc-300 border-zinc-300 dark:border-white/10 hover:border-zinc-400"
                     }`}
                   >
                     <AlertTriangle className="w-4 h-4" />
@@ -571,11 +582,11 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
               </div>
             </div>
 
-            <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 flex justify-end gap-3">
+            <div className="px-6 py-4 border-t border-zinc-200 dark:border-white/10 bg-zinc-50/80 dark:bg-black/30 flex justify-end gap-3">
               <button
                 type="button"
                 onClick={() => setIsEditorOpen(false)}
-                className="btn-tactile btn-premium-glass px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer"
+                className="btn-tactile px-4 py-2 rounded-xl text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200/60 dark:hover:bg-white/5 border border-zinc-200 dark:border-white/10 cursor-pointer"
               >
                 Cancel
               </button>
@@ -594,60 +605,60 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
 
       {/* 5. Modal: Register New QC Sample (RF-FR-001) */}
       {isNewSampleOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-lg bg-white dark:bg-[#18181B] rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-2xl overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900/60 flex items-center justify-between">
-              <h3 className="font-bold font-display text-base text-slate-900 dark:text-white flex items-center gap-2">
-                <FlaskConical className="w-5 h-5 text-amber-600" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
+          <div className="w-full max-w-lg bg-white/95 dark:bg-[#0E1626]/95 backdrop-blur-2xl rounded-2xl border border-zinc-200/90 dark:border-white/10 shadow-[0_25px_60px_rgba(0,0,0,0.5)] overflow-hidden">
+            <div className="px-6 py-4 border-b border-zinc-200 dark:border-white/10 bg-zinc-50/80 dark:bg-black/30 flex items-center justify-between">
+              <h3 className="font-bold font-display text-base text-zinc-900 dark:text-white flex items-center gap-2">
+                <FlaskConical className="w-5 h-5 text-amber-500" />
                 <span>Pendaftaran Sampel Makmal Baharu (RF-FR-001)</span>
               </h3>
-              <button onClick={() => setIsNewSampleOpen(false)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setIsNewSampleOpen(false)} className="btn-tactile text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-1.5 rounded-lg cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleCreateSample} className="p-6 space-y-3.5 text-xs">
               <div>
-                <label className="block text-slate-600 dark:text-slate-400 font-semibold mb-1">Lot Number</label>
+                <label className="block text-zinc-700 dark:text-zinc-300 font-semibold mb-1">Lot Number</label>
                 <input
                   type="text"
                   required
                   value={newSample.lot_no}
                   onChange={(e) => setNewSample({ ...newSample, lot_no: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-mono text-sm text-slate-900 dark:text-white"
+                  className="w-full px-3 py-2 rounded-xl bg-zinc-50 dark:bg-black/40 border border-zinc-300 dark:border-white/10 font-mono text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-600 dark:text-slate-400 font-semibold mb-1">Tarikh Sampel</label>
+                  <label className="block text-zinc-700 dark:text-zinc-300 font-semibold mb-1">Tarikh Sampel</label>
                   <input
                     type="date"
                     required
                     value={newSample.sample_date}
                     onChange={(e) => setNewSample({ ...newSample, sample_date: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-mono text-xs text-slate-900 dark:text-white"
+                    className="w-full px-3 py-2 rounded-xl bg-zinc-50 dark:bg-black/40 border border-zinc-300 dark:border-white/10 font-mono text-xs text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-600 dark:text-slate-400 font-semibold mb-1">Masa Ambilan</label>
+                  <label className="block text-zinc-700 dark:text-zinc-300 font-semibold mb-1">Masa Ambilan</label>
                   <input
                     type="text"
                     required
                     value={newSample.time_check}
                     onChange={(e) => setNewSample({ ...newSample, time_check: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-mono text-xs text-slate-900 dark:text-white"
+                    className="w-full px-3 py-2 rounded-xl bg-zinc-50 dark:bg-black/40 border border-zinc-300 dark:border-white/10 font-mono text-xs text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
                     placeholder="14:00"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-slate-600 dark:text-slate-400 font-semibold mb-1">Produk</label>
+                <label className="block text-zinc-700 dark:text-zinc-300 font-semibold mb-1">Produk</label>
                 <select
                   value={newSample.product_name}
                   onChange={(e) => setNewSample({ ...newSample, product_name: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
+                  className="w-full px-3 py-2 rounded-xl bg-zinc-50 dark:bg-black/40 border border-zinc-300 dark:border-white/10 text-xs text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
                 >
                   <option value="RBD Palm Oil">RBD Palm Oil</option>
                   <option value="PL 65 Matsuyama">PL 65 Matsuyama</option>
@@ -660,32 +671,32 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-600 dark:text-slate-400 font-semibold mb-1">Feed Tank</label>
+                  <label className="block text-zinc-700 dark:text-zinc-300 font-semibold mb-1">Feed Tank</label>
                   <input
                     type="text"
                     value={newSample.feed_tank_code}
                     onChange={(e) => setNewSample({ ...newSample, feed_tank_code: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
+                    className="w-full px-3 py-2 rounded-xl bg-zinc-50 dark:bg-black/40 border border-zinc-300 dark:border-white/10 text-xs text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-600 dark:text-slate-400 font-semibold mb-1">Discharge Tank</label>
+                  <label className="block text-zinc-700 dark:text-zinc-300 font-semibold mb-1">Discharge Tank</label>
                   <input
                     type="text"
                     value={newSample.discharge_tank_code}
                     onChange={(e) => setNewSample({ ...newSample, discharge_tank_code: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
+                    className="w-full px-3 py-2 rounded-xl bg-zinc-50 dark:bg-black/40 border border-zinc-300 dark:border-white/10 text-xs text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-slate-600 dark:text-slate-400 font-semibold mb-1">Titik Pensampelan (Sampling Point)</label>
+                <label className="block text-zinc-700 dark:text-zinc-300 font-semibold mb-1">Titik Pensampelan (Sampling Point)</label>
                 <input
                   type="text"
                   value={newSample.sampling_point_name}
                   onChange={(e) => setNewSample({ ...newSample, sampling_point_name: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
+                  className="w-full px-3 py-2 rounded-xl bg-zinc-50 dark:bg-black/40 border border-zinc-300 dark:border-white/10 text-xs text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
                 />
               </div>
 
@@ -693,7 +704,7 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsNewSampleOpen(false)}
-                  className="btn-tactile btn-premium-glass px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer"
+                  className="btn-tactile px-4 py-2 rounded-xl text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200/60 dark:hover:bg-white/5 border border-zinc-200 dark:border-white/10 cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -711,10 +722,10 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
 
       {/* 6. Modal: Print-Ready Official QC Certificate (RF-FR-001) */}
       {isCertificateOpen && selectedReport && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in overflow-y-auto">
-          <div className="w-full max-w-4xl bg-white dark:bg-[#18181B] rounded-2xl shadow-2xl border border-slate-300 dark:border-zinc-800 flex flex-col my-auto max-h-[95vh] overflow-hidden">
-            <div className="px-6 py-3 border-b border-slate-200 dark:border-zinc-800 bg-slate-100 dark:bg-zinc-900 flex items-center justify-between print:hidden">
-              <span className="font-bold text-sm text-slate-800 dark:text-slate-200 font-display">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in overflow-y-auto">
+          <div className="w-full max-w-4xl bg-white dark:bg-[#18181B] rounded-2xl shadow-2xl border border-zinc-300 dark:border-white/10 flex flex-col my-auto max-h-[95vh] overflow-hidden">
+            <div className="px-6 py-3.5 border-b border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-black/40 flex items-center justify-between print:hidden">
+              <span className="font-bold text-sm text-zinc-900 dark:text-white font-display">
                 Official QC Laboratory Analysis Certificate (RF-FR-001)
               </span>
               <div className="flex items-center gap-2">
@@ -727,7 +738,7 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                 </button>
                 <button 
                   onClick={() => setIsCertificateOpen(false)} 
-                  className="btn-tactile text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg cursor-pointer group"
+                  className="btn-tactile text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-1.5 rounded-lg cursor-pointer group"
                 >
                   <X className="w-5 h-5 transition-transform duration-200 group-hover:rotate-90" />
                 </button>

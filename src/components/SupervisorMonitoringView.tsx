@@ -71,26 +71,30 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
     switch (severity) {
       case "alert":
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300 border border-rose-300 dark:border-rose-800">
-            <AlertCircle className="w-3 h-3" /> Out of Spec Alert
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-500/30">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-500"></span>
+            </span>
+            <AlertCircle className="w-3 h-3 text-rose-500" /> Out of Spec Alert
           </span>
         );
       case "warning":
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
-            <AlertTriangle className="w-3 h-3" /> Attention Required
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30">
+            <AlertTriangle className="w-3 h-3 text-amber-500" /> Attention Required
           </span>
         );
       case "success":
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
-            <CheckCircle2 className="w-3 h-3" /> Completed / In-Spec
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+            <CheckCircle2 className="w-3 h-3 text-emerald-500" /> Completed / In-Spec
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
-            <Clock className="w-3 h-3" /> Info
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-zinc-100 text-zinc-800 dark:bg-white/10 dark:text-zinc-300 border border-zinc-200 dark:border-white/10">
+            <Clock className="w-3 h-3 text-zinc-400" /> Info
           </span>
         );
     }
@@ -111,15 +115,15 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
 
   return (
     <div className="space-y-6">
-      {/* 1. Header Bar with Overview */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm">
+      {/* 1. Header Bar with Luxury Glassmorphism Overview */}
+      <div className="glass-panel flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl shadow-sm">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="p-2 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+          <div className="flex items-center gap-2.5">
+            <span className="p-2.5 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shadow-xs">
               <ShieldCheck className="w-5 h-5" />
             </span>
             <h1 className="text-xl font-bold font-display text-zinc-900 dark:text-zinc-100">
-              Supervisor Monitoring &amp; Audit Hub (Live Supervisor Monitor)
+              Supervisor Monitoring &amp; Audit Hub
             </h1>
           </div>
           <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1 font-medium">
@@ -127,7 +131,7 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
           </p>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2.5 flex-wrap">
           <button
             onClick={onOpenReviewModal}
             className="btn-premium-emerald flex items-center gap-2 px-4 py-2.5 rounded-xl text-white font-bold text-xs sm:text-sm shadow-md cursor-pointer group shrink-0"
@@ -138,7 +142,7 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
 
           <button
             onClick={onOpenPdfModal}
-            className="btn-tactile btn-premium-glass flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-zinc-700 dark:text-zinc-300 cursor-pointer group shrink-0"
+            className="btn-tactile flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-zinc-700 dark:text-zinc-300 bg-zinc-100 hover:bg-zinc-200/80 dark:bg-white/5 dark:hover:bg-white/10 border border-zinc-200 dark:border-white/10 cursor-pointer group shrink-0 transition-all"
           >
             <FileText className="w-4 h-4 text-amber-500 transition-transform duration-200 group-hover:scale-110" />
             <span>Preview PDF</span>
@@ -149,11 +153,14 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
       {/* 2. Live Shift Health Progress Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Shift 1 */}
-        <div className="p-4 rounded-xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-3">
+        <div className="telemetry-card p-4 rounded-2xl space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-              <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+              </span>
+              <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900 dark:text-zinc-100 font-display">
                 Shift 1 (0800 – 1500)
               </h2>
             </div>
@@ -162,25 +169,25 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
             </span>
           </div>
 
-          <div className="w-full bg-zinc-200 dark:bg-zinc-800 rounded-full h-2 overflow-hidden">
+          <div className="w-full bg-zinc-200/80 dark:bg-white/10 rounded-full h-2 overflow-hidden">
             <div 
-              className="bg-amber-500 h-2 rounded-full transition-all duration-500"
+              className="bg-amber-500 h-2 rounded-full transition-all duration-500 shadow-sm"
               style={{ width: `${(s1Completed / 8) * 100}%` }}
             />
           </div>
 
           <div className="flex items-center justify-between text-xs text-zinc-500 pt-1">
-            <span>Staff: <strong className="text-zinc-800 dark:text-zinc-200">Ahmad Razif</strong></span>
+            <span>Technician: <strong className="text-zinc-800 dark:text-zinc-200">Ahmad Razif</strong></span>
             <span className="font-mono">{s1Completed} / 8 Hours Logged</span>
           </div>
         </div>
 
         {/* Shift 2 */}
-        <div className="p-4 rounded-xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-3">
+        <div className="telemetry-card p-4 rounded-2xl space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-zinc-400" />
-              <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900 dark:text-zinc-100 font-display">
                 Shift 2 (1600 – 2300)
               </h2>
             </div>
@@ -189,7 +196,7 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
             </span>
           </div>
 
-          <div className="w-full bg-zinc-200 dark:bg-zinc-800 rounded-full h-2 overflow-hidden">
+          <div className="w-full bg-zinc-200/80 dark:bg-white/10 rounded-full h-2 overflow-hidden">
             <div 
               className="bg-zinc-400 h-2 rounded-full transition-all duration-500"
               style={{ width: `${(s2Completed / 8) * 100}%` }}
@@ -197,17 +204,17 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
           </div>
 
           <div className="flex items-center justify-between text-xs text-zinc-500 pt-1">
-            <span>Staff: <strong className="text-zinc-800 dark:text-zinc-200">Mohd Danial</strong></span>
+            <span>Technician: <strong className="text-zinc-800 dark:text-zinc-200">Mohd Danial</strong></span>
             <span className="font-mono">{s2Completed} / 8 Hours Logged</span>
           </div>
         </div>
 
         {/* Shift 3 */}
-        <div className="p-4 rounded-xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-3">
+        <div className="telemetry-card p-4 rounded-2xl space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-zinc-400" />
-              <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900 dark:text-zinc-100 font-display">
                 Shift 3 (2400 – 0700)
               </h2>
             </div>
@@ -216,7 +223,7 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
             </span>
           </div>
 
-          <div className="w-full bg-zinc-200 dark:bg-zinc-800 rounded-full h-2 overflow-hidden">
+          <div className="w-full bg-zinc-200/80 dark:bg-white/10 rounded-full h-2 overflow-hidden">
             <div 
               className="bg-zinc-400 h-2 rounded-full transition-all duration-500"
               style={{ width: `${(s3Completed / 8) * 100}%` }}
@@ -224,22 +231,22 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
           </div>
 
           <div className="flex items-center justify-between text-xs text-zinc-500 pt-1">
-            <span>Staff: <strong className="text-zinc-800 dark:text-zinc-200">K. Subramaniam</strong></span>
+            <span>Technician: <strong className="text-zinc-800 dark:text-zinc-200">K. Subramaniam</strong></span>
             <span className="font-mono">{s3Completed} / 8 Hours Logged</span>
           </div>
         </div>
       </div>
 
       {/* 3. Filter Bar & Search */}
-      <div className="p-4 rounded-xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+      <div className="glass-panel p-4 rounded-2xl flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between shadow-sm">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search audit trail, hourly slot, staff name, or alert type..."
-            className="w-full pl-9 pr-4 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500"
+            className="w-full pl-10 pr-4 py-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-black/30 text-xs sm:text-sm font-medium text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all"
           />
         </div>
 
@@ -249,7 +256,7 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
             <select
               value={filterSeverity}
               onChange={(e) => setFilterSeverity(e.target.value)}
-              className="px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-xs font-bold text-zinc-800 dark:text-zinc-200 focus:outline-none"
+              className="px-3 py-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-black/30 text-xs font-bold text-zinc-800 dark:text-zinc-200 focus:outline-none"
             >
               <option value="ALL">All Severity Levels</option>
               <option value="alert">Alert (Critical)</option>
@@ -262,7 +269,7 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
           <select
             value={filterSource}
             onChange={(e) => setFilterSource(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-xs font-bold text-zinc-800 dark:text-zinc-200 focus:outline-none"
+            className="px-3 py-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-black/30 text-xs font-bold text-zinc-800 dark:text-zinc-200 focus:outline-none"
           >
             <option value="ALL">All Sources</option>
             <option value="Bleaching Log">Bleaching Log (RF-FR-003)</option>
@@ -273,20 +280,27 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
       </div>
 
       {/* 4. Live Activity Timeline List */}
-      <div className="rounded-2xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm p-5 space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-zinc-800">
-          <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-emerald-500 animate-ping" />
+      <div className="glass-panel rounded-2xl shadow-sm p-5 space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-zinc-200/80 dark:border-white/10">
+          <div className="flex items-center gap-2.5">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+            </span>
             <h2 className="text-sm font-bold font-display uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
               Audit Trail &amp; Recent Updates
             </h2>
-            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
+            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-white/10 text-zinc-600 dark:text-zinc-300">
               {filteredEvents.length} Events
             </span>
           </div>
 
           {pendingAlertCount > 0 && (
-            <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+            <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/30 flex items-center gap-1.5">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+              </span>
               {pendingAlertCount} Requires Supervisor Acknowledgment
             </span>
           )}
@@ -294,7 +308,7 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
 
         <div className="space-y-3">
           {filteredEvents.length === 0 ? (
-            <div className="py-12 text-center text-zinc-400">
+            <div className="py-12 text-center text-zinc-400 font-mono text-xs">
               No activity found matching these filter criteria.
             </div>
           ) : (
@@ -310,15 +324,15 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
                   key={evt.id}
                   className={`p-4 rounded-xl border transition-all ${
                     evt.severity === "alert"
-                      ? "bg-rose-50/60 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900/40"
+                      ? "bg-rose-500/5 dark:bg-rose-950/20 border-rose-500/30"
                       : evt.severity === "warning"
-                      ? "bg-amber-50/60 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/40"
-                      : "bg-zinc-50/70 dark:bg-zinc-900/40 border-zinc-200 dark:border-zinc-800/80"
+                      ? "bg-amber-500/5 dark:bg-amber-950/20 border-amber-500/30"
+                      : "bg-zinc-50/60 dark:bg-white/5 border-zinc-200/80 dark:border-white/10"
                   }`}
                 >
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                     <div className="flex items-start gap-3 min-w-0">
-                      <div className="p-2 rounded-xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm shrink-0">
+                      <div className="p-2.5 rounded-xl bg-white dark:bg-black/40 border border-zinc-200/80 dark:border-white/10 shadow-xs shrink-0">
                         {getSourceIcon(evt.source)}
                       </div>
 
@@ -350,7 +364,7 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
                     <div className="shrink-0 flex sm:flex-col items-end justify-between gap-2 pt-2 sm:pt-0">
                       {evt.requires_acknowledgment ? (
                         evt.acknowledged ? (
-                          <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
+                          <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
                             <Check className="w-3.5 h-3.5" />
                             <span>Acknowledged ({evt.acknowledged_by || currentUser.name})</span>
                           </div>

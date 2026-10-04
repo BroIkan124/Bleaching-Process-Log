@@ -57,26 +57,26 @@ export const SupervisorReviewModal: React.FC<SupervisorReviewModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-      <div className="w-full max-w-2xl bg-white dark:bg-[#18181B] rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
+      <div className="w-full max-w-2xl bg-white/95 dark:bg-[#0E1626]/95 backdrop-blur-2xl rounded-2xl border border-zinc-200/90 dark:border-white/10 shadow-[0_25px_60px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900/60 flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-zinc-200 dark:border-white/10 bg-zinc-50/80 dark:bg-black/30 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+            <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-xs">
               <ShieldCheck className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-base font-bold font-display text-slate-900 dark:text-white">
+              <h3 className="text-base font-bold font-display text-zinc-900 dark:text-white">
                 Supervisor Quality Review &amp; Approval
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 font-mono mt-0.5">
                 Log Sheet Compliance Review RF-FR-003 Rev 03
               </p>
             </div>
           </div>
           <button 
             onClick={onClose} 
-            className="btn-tactile p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer group"
+            className="btn-tactile p-2 rounded-xl text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/5 cursor-pointer group transition-all"
           >
             <X className="w-5 h-5 transition-transform duration-200 group-hover:rotate-90" />
           </button>
@@ -86,27 +86,27 @@ export const SupervisorReviewModal: React.FC<SupervisorReviewModalProps> = ({
         <div className="p-6 overflow-y-auto space-y-5 text-xs sm:text-sm">
           {/* Summary metrics */}
           <div className="grid grid-cols-3 gap-3">
-            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
-              <span className="text-[11px] text-slate-500 font-medium block">Total Slots Filled</span>
-              <span className="text-lg font-bold font-mono text-slate-900 dark:text-white">
+            <div className="telemetry-card p-3 rounded-xl">
+              <span className="text-[11px] text-zinc-500 font-semibold block font-display">Total Slots Filled</span>
+              <span className="text-lg font-bold font-mono text-zinc-900 dark:text-white mt-0.5 block tabular-nums">
                 {completedSlots} / 24
               </span>
             </div>
 
             <div className={`p-3 rounded-xl border ${
               outOfSpecSlots.length > 0 
-                ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200' 
-                : 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200'
+                ? 'bg-rose-500/10 border-rose-500/30 text-rose-800 dark:text-rose-200' 
+                : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-800 dark:text-emerald-200'
             }`}>
-              <span className="text-[11px] font-medium block">Out-of-Spec Readings</span>
-              <span className="text-lg font-bold font-mono">
+              <span className="text-[11px] font-semibold block font-display">Out-of-Spec Readings</span>
+              <span className="text-lg font-bold font-mono mt-0.5 block tabular-nums">
                 {outOfSpecSlots.length} Slots
               </span>
             </div>
 
-            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
-              <span className="text-[11px] text-slate-500 font-medium block">Reviewer</span>
-              <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate block mt-1">
+            <div className="telemetry-card p-3 rounded-xl">
+              <span className="text-[11px] text-zinc-500 font-semibold block font-display">Reviewer</span>
+              <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate block mt-1 font-mono">
                 {currentUser.name}
               </span>
             </div>
@@ -114,17 +114,17 @@ export const SupervisorReviewModal: React.FC<SupervisorReviewModalProps> = ({
 
           {/* Out of spec deviations list */}
           {outOfSpecSlots.length > 0 && (
-            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 space-y-2">
-              <div className="flex items-center gap-2 font-semibold text-rose-700 dark:text-rose-300 text-xs">
+            <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 space-y-2.5">
+              <div className="flex items-center gap-2 font-bold text-rose-700 dark:text-rose-300 text-xs font-display">
                 <AlertTriangle className="w-4 h-4" />
                 <span>Detected Process Deviations List:</span>
               </div>
-              <div className="divide-y divide-rose-200 dark:divide-rose-900/50 max-h-36 overflow-y-auto">
+              <div className="divide-y divide-rose-500/20 max-h-36 overflow-y-auto font-mono text-xs">
                 {outOfSpecSlots.map((s) => (
-                  <div key={s.id} className="py-1.5 text-xs flex justify-between gap-2">
-                    <span className="font-mono font-bold text-rose-800 dark:text-rose-200">{s.time_label} Hrs:</span>
+                  <div key={s.id} className="py-2 text-xs flex justify-between items-center gap-2">
+                    <span className="font-bold text-rose-800 dark:text-rose-200 shrink-0">{s.time_label} Hrs:</span>
                     <span className="text-rose-700 dark:text-rose-300 flex-1 truncate">{s.out_of_spec.map(f => f.message).join('; ')}</span>
-                    <span className="font-mono text-slate-500 italic truncate max-w-[150px]">{s.remarks || 'No remarks!'}</span>
+                    <span className="text-zinc-500 italic truncate max-w-[150px]">{s.remarks || 'No remarks!'}</span>
                   </div>
                 ))}
               </div>
@@ -133,18 +133,18 @@ export const SupervisorReviewModal: React.FC<SupervisorReviewModalProps> = ({
 
           {/* Supervisor note textarea */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5 font-display">
               Supervisor Assessment &amp; Notes
             </label>
             <textarea
               rows={3}
               value={reviewNote}
               onChange={(e) => setReviewNote(e.target.value)}
-              className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:ring-1 focus:ring-amber-500 focus:outline-none"
+              className="w-full p-3 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-black/30 text-zinc-900 dark:text-white text-xs focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 focus:outline-none transition-all"
               placeholder="Enter quality review remarks or corrective instructions for the technician..."
             />
             {error && (
-              <p className="text-xs text-rose-600 font-medium mt-1 flex items-center gap-1">
+              <p className="text-xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
                 <AlertTriangle className="w-3.5 h-3.5" />
                 {error}
               </p>
@@ -153,10 +153,10 @@ export const SupervisorReviewModal: React.FC<SupervisorReviewModalProps> = ({
         </div>
 
         {/* Footer Actions */}
-        <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 flex items-center justify-between gap-3">
+        <div className="px-6 py-4 border-t border-zinc-200 dark:border-white/10 bg-zinc-50/80 dark:bg-black/30 flex items-center justify-between gap-3">
           <button
             onClick={onClose}
-            className="btn-tactile btn-premium-glass px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer"
+            className="btn-tactile px-4 py-2 rounded-xl text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200/60 dark:hover:bg-white/5 border border-zinc-200 dark:border-white/10 cursor-pointer"
           >
             Close
           </button>

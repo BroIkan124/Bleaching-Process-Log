@@ -177,15 +177,15 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* 1. Header Bar with Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm">
+      {/* 1. Header Bar with Actions & Glassmorphism */}
+      <div className="glass-panel flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl shadow-sm">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="p-2 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+          <div className="flex items-center gap-2.5">
+            <span className="p-2.5 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shadow-xs">
               <BarChart3 className="w-5 h-5" />
             </span>
             <h1 className="text-xl font-bold font-display text-zinc-900 dark:text-zinc-100">
-              Plant Performance Reports &amp; Analytics (RF-FR-003)
+              Plant Performance Reports &amp; Analytics
             </h1>
           </div>
           <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1 font-medium">
@@ -193,8 +193,8 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          <div className="btn-tactile flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-xs font-bold">
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <div className="btn-tactile flex items-center gap-1.5 px-3 py-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-black/30 text-xs font-bold">
             <Calendar className="w-3.5 h-3.5 text-zinc-400" />
             <select
               value={timeRange}
@@ -209,7 +209,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
 
           <button
             onClick={handleExportCSV}
-            className="btn-tactile flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-white text-xs font-bold shadow-sm cursor-pointer group"
+            className="btn-tactile flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-100 text-xs font-bold shadow-sm cursor-pointer group transition-all"
             title="Export full data in CSV format"
           >
             <Download className="w-4 h-4 transition-transform duration-200 group-hover:translate-y-0.5" />
@@ -226,132 +226,140 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         </div>
       </div>
 
-      {/* 2. Key Production Summary Cards */}
+      {/* 2. Key Production Summary Cards with Telemetry Styling */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="p-4 rounded-xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm">
+        <div className="telemetry-card p-4 rounded-2xl">
           <div className="flex items-center justify-between text-zinc-500 mb-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Total Oil Processed</span>
-            <Droplet className="w-4 h-4 text-amber-500" />
+            <span className="text-[11px] font-bold uppercase tracking-wider font-display">Total Oil Processed</span>
+            <div className="p-2 rounded-lg bg-amber-500/10 text-amber-500">
+              <Droplet className="w-4 h-4" />
+            </div>
           </div>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-2xl font-bold font-display text-zinc-900 dark:text-zinc-100 font-mono">
+            <span className="text-2xl font-bold font-display text-zinc-900 dark:text-zinc-100 font-mono tabular-nums">
               {totalInputMT > 0 ? totalInputMT.toFixed(1) : "229.2"}
             </span>
-            <span className="text-xs text-zinc-500 font-bold">MT</span>
+            <span className="text-xs text-zinc-500 font-bold font-mono">MT</span>
           </div>
-          <span className="text-[11px] text-zinc-400 font-medium block mt-1">
+          <span className="text-[11px] text-zinc-400 font-medium block mt-1 font-mono">
             Avg Flow: {avgFlowrate} MT/HR
           </span>
         </div>
 
-        <div className="p-4 rounded-xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm">
+        <div className="telemetry-card p-4 rounded-2xl">
           <div className="flex items-center justify-between text-zinc-500 mb-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Specification Compliance</span>
-            <Gauge className="w-4 h-4 text-emerald-500" />
+            <span className="text-[11px] font-bold uppercase tracking-wider font-display">Spec Compliance</span>
+            <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500">
+              <Gauge className="w-4 h-4" />
+            </div>
           </div>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-2xl font-bold font-display text-emerald-500 font-mono">
+            <span className="text-2xl font-bold font-display text-emerald-500 font-mono tabular-nums">
               {inSpecPercentage}%
             </span>
             <span className="text-xs text-zinc-500 font-bold">In-Spec</span>
           </div>
-          <span className="text-[11px] text-zinc-400 font-medium block mt-1">
-            {totalIncidents === 0 ? "100% Normal Parameters" : `${totalIncidents} out-of-spec readings detected`}
+          <span className="text-[11px] text-zinc-400 font-medium block mt-1 font-mono">
+            {totalIncidents === 0 ? "100% Normal Parameters" : `${totalIncidents} deviations logged`}
           </span>
         </div>
 
-        <div className="p-4 rounded-xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm">
+        <div className="telemetry-card p-4 rounded-2xl">
           <div className="flex items-center justify-between text-zinc-500 mb-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Average Plant Vacuum</span>
-            <TrendingUp className="w-4 h-4 text-sky-500" />
+            <span className="text-[11px] font-bold uppercase tracking-wider font-display">Average Plant Vacuum</span>
+            <div className="p-2 rounded-lg bg-sky-500/10 text-sky-500">
+              <TrendingUp className="w-4 h-4" />
+            </div>
           </div>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-2xl font-bold font-display text-zinc-900 dark:text-zinc-100 font-mono">
+            <span className="text-2xl font-bold font-display text-zinc-900 dark:text-zinc-100 font-mono tabular-nums">
               {avgVacuum}
             </span>
-            <span className="text-xs text-zinc-500 font-bold">mmHg</span>
+            <span className="text-xs text-zinc-500 font-bold font-mono">mmHg</span>
           </div>
-          <span className="text-[11px] text-emerald-500 font-semibold block mt-1">
+          <span className="text-[11px] text-emerald-500 font-semibold block mt-1 font-mono">
             Min Spec: ≥ 600.0 mmHg
           </span>
         </div>
 
-        <div className="p-4 rounded-xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm">
+        <div className="telemetry-card p-4 rounded-2xl">
           <div className="flex items-center justify-between text-zinc-500 mb-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Average HE Temp</span>
-            <Sparkles className="w-4 h-4 text-purple-500" />
+            <span className="text-[11px] font-bold uppercase tracking-wider font-display">Average HE Temp</span>
+            <div className="p-2 rounded-lg bg-purple-500/10 text-purple-500">
+              <Sparkles className="w-4 h-4" />
+            </div>
           </div>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-2xl font-bold font-display text-zinc-900 dark:text-zinc-100 font-mono">
+            <span className="text-2xl font-bold font-display text-zinc-900 dark:text-zinc-100 font-mono tabular-nums">
               {avgTemp}
             </span>
-            <span className="text-xs text-zinc-500 font-bold">°C</span>
+            <span className="text-xs text-zinc-500 font-bold font-mono">°C</span>
           </div>
-          <span className="text-[11px] text-zinc-400 font-medium block mt-1">
-            Operating Spec: 70.0°C – 115.0°C
+          <span className="text-[11px] text-zinc-400 font-medium block mt-1 font-mono">
+            Operating: 70.0°C – 115.0°C
           </span>
         </div>
       </div>
 
       {/* 3. Quality Parameters Lovibond & FFA */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="p-4 rounded-xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-2">
+        <div className="telemetry-card p-4 rounded-2xl space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
+            <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider font-display">
               Free Fatty Acids (FFA %)
             </span>
             <FlaskConical className="w-4 h-4 text-amber-500" />
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold font-display font-mono text-zinc-900 dark:text-zinc-100">
+            <span className="text-2xl font-bold font-display font-mono text-zinc-900 dark:text-zinc-100 tabular-nums">
               {avgFFA}%
             </span>
             <span className="text-xs text-emerald-500 font-bold font-mono">≤ 0.050% Max</span>
           </div>
-          <div className="w-full bg-zinc-200 dark:bg-zinc-800 rounded-full h-1.5 overflow-hidden">
-            <div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: "45%" }} />
+          <div className="w-full bg-zinc-200/80 dark:bg-white/10 rounded-full h-1.5 overflow-hidden">
+            <div className="bg-emerald-500 h-1.5 rounded-full shadow-sm" style={{ width: "45%" }} />
           </div>
         </div>
 
-        <div className="p-4 rounded-xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-2">
+        <div className="telemetry-card p-4 rounded-2xl space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
+            <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider font-display">
               Lovibond Colour Red (R)
             </span>
-            <span className="w-3 h-3 rounded-full bg-rose-500" />
+            <span className="w-3 h-3 rounded-full bg-rose-500 shadow-sm" />
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold font-display font-mono text-zinc-900 dark:text-zinc-100">
+            <span className="text-2xl font-bold font-display font-mono text-zinc-900 dark:text-zinc-100 tabular-nums">
               {avgRed} R
             </span>
             <span className="text-xs text-emerald-500 font-bold font-mono">≤ 2.5 R Max</span>
           </div>
-          <div className="w-full bg-zinc-200 dark:bg-zinc-800 rounded-full h-1.5 overflow-hidden">
-            <div className="bg-rose-500 h-1.5 rounded-full" style={{ width: "65%" }} />
+          <div className="w-full bg-zinc-200/80 dark:bg-white/10 rounded-full h-1.5 overflow-hidden">
+            <div className="bg-rose-500 h-1.5 rounded-full shadow-sm" style={{ width: "65%" }} />
           </div>
         </div>
 
-        <div className="p-4 rounded-xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-2">
+        <div className="telemetry-card p-4 rounded-2xl space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
+            <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider font-display">
               Lovibond Colour Yellow (Y)
             </span>
-            <span className="w-3 h-3 rounded-full bg-amber-400" />
+            <span className="w-3 h-3 rounded-full bg-amber-400 shadow-sm" />
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold font-display font-mono text-zinc-900 dark:text-zinc-100">
+            <span className="text-2xl font-bold font-display font-mono text-zinc-900 dark:text-zinc-100 tabular-nums">
               {avgYellow} Y
             </span>
             <span className="text-xs text-emerald-500 font-bold font-mono">≤ 20.0 Y Max</span>
           </div>
-          <div className="w-full bg-zinc-200 dark:bg-zinc-800 rounded-full h-1.5 overflow-hidden">
-            <div className="bg-amber-400 h-1.5 rounded-full" style={{ width: "70%" }} />
+          <div className="w-full bg-zinc-200/80 dark:bg-white/10 rounded-full h-1.5 overflow-hidden">
+            <div className="bg-amber-400 h-1.5 rounded-full shadow-sm" style={{ width: "70%" }} />
           </div>
         </div>
       </div>
 
       {/* 4. Shift Comparison Breakdown Table */}
-      <div className="rounded-2xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm p-5 space-y-4">
+      <div className="glass-panel rounded-2xl shadow-sm p-5 space-y-4">
         <h2 className="text-sm font-bold font-display uppercase tracking-wider text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
           <Clock className="w-4 h-4 text-amber-500" />
           <span>Operations by Shift (Shift Comparison)</span>
@@ -359,48 +367,48 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Shift 1 Card */}
-          <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 space-y-2">
+          <div className="telemetry-card p-4 rounded-xl space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wide">
+              <span className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wide font-display">
                 Shift 1 (0800 – 1500)
               </span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-mono">
                 Active ({s1Saved.length}/8 Hrs)
               </span>
             </div>
-            <p className="text-xs text-zinc-500">Technician: <strong>{sheet.tech_s1_name || "Ahmad Razif"}</strong></p>
-            <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800 flex justify-between text-xs">
-              <span className="text-zinc-500">Logged Volume:</span>
-              <span className="font-mono font-bold">{s1MT > 0 ? s1MT.toFixed(1) : "229.2"} MT</span>
+            <p className="text-xs text-zinc-500">Technician: <strong className="text-zinc-800 dark:text-zinc-200">{sheet.tech_s1_name || "Ahmad Razif"}</strong></p>
+            <div className="pt-2 border-t border-zinc-200/80 dark:border-white/10 flex justify-between text-xs font-mono">
+              <span className="text-zinc-500 font-sans">Logged Volume:</span>
+              <span className="font-bold">{s1MT > 0 ? s1MT.toFixed(1) : "229.2"} MT</span>
             </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-zinc-500">Avg Rate:</span>
-              <span className="font-mono font-bold">45.8 MT/HR</span>
+            <div className="flex justify-between text-xs font-mono">
+              <span className="text-zinc-500 font-sans">Avg Rate:</span>
+              <span className="font-bold">45.8 MT/HR</span>
             </div>
             <div className="flex justify-between text-xs">
               <span className="text-zinc-500">Compliance:</span>
-              <span className="text-emerald-500 font-bold">In-Spec Completed</span>
+              <span className="text-emerald-500 font-bold font-mono">In-Spec Completed</span>
             </div>
           </div>
 
           {/* Shift 2 Card */}
-          <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 space-y-2">
+          <div className="telemetry-card p-4 rounded-xl space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wide">
+              <span className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wide font-display">
                 Shift 2 (1600 – 2300)
               </span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-200 dark:bg-zinc-800 text-zinc-500">
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-zinc-200/80 dark:bg-white/10 text-zinc-500 font-mono">
                 Pending Handover
               </span>
             </div>
-            <p className="text-xs text-zinc-500">Technician: <strong>{sheet.tech_s2_name || "Mohd Danial"}</strong></p>
-            <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800 flex justify-between text-xs">
-              <span className="text-zinc-500">Target Volume:</span>
-              <span className="font-mono font-bold">360.0 MT</span>
+            <p className="text-xs text-zinc-500">Technician: <strong className="text-zinc-800 dark:text-zinc-200">{sheet.tech_s2_name || "Mohd Danial"}</strong></p>
+            <div className="pt-2 border-t border-zinc-200/80 dark:border-white/10 flex justify-between text-xs font-mono">
+              <span className="text-zinc-500 font-sans">Target Volume:</span>
+              <span className="font-bold">360.0 MT</span>
             </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-zinc-500">Target Flow:</span>
-              <span className="font-mono font-bold">45.0 MT/HR</span>
+            <div className="flex justify-between text-xs font-mono">
+              <span className="text-zinc-500 font-sans">Target Flow:</span>
+              <span className="font-bold">45.0 MT/HR</span>
             </div>
             <div className="flex justify-between text-xs">
               <span className="text-zinc-500">Status:</span>
@@ -409,23 +417,23 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
           </div>
 
           {/* Shift 3 Card */}
-          <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 space-y-2">
+          <div className="telemetry-card p-4 rounded-xl space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wide">
+              <span className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wide font-display">
                 Shift 3 (2400 – 0700)
               </span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-200 dark:bg-zinc-800 text-zinc-500">
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-zinc-200/80 dark:bg-white/10 text-zinc-500 font-mono">
                 Pending Handover
               </span>
             </div>
-            <p className="text-xs text-zinc-500">Technician: <strong>{sheet.tech_s3_name || "K. Subramaniam"}</strong></p>
-            <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800 flex justify-between text-xs">
-              <span className="text-zinc-500">Target Volume:</span>
-              <span className="font-mono font-bold">360.0 MT</span>
+            <p className="text-xs text-zinc-500">Technician: <strong className="text-zinc-800 dark:text-zinc-200">{sheet.tech_s3_name || "K. Subramaniam"}</strong></p>
+            <div className="pt-2 border-t border-zinc-200/80 dark:border-white/10 flex justify-between text-xs font-mono">
+              <span className="text-zinc-500 font-sans">Target Volume:</span>
+              <span className="font-bold">360.0 MT</span>
             </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-zinc-500">Target Flow:</span>
-              <span className="font-mono font-bold">45.0 MT/HR</span>
+            <div className="flex justify-between text-xs font-mono">
+              <span className="text-zinc-500 font-sans">Target Flow:</span>
+              <span className="font-bold">45.0 MT/HR</span>
             </div>
             <div className="flex justify-between text-xs">
               <span className="text-zinc-500">Status:</span>
@@ -436,7 +444,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
       </div>
 
       {/* 5. Full Hourly Entries Detail Table */}
-      <div className="rounded-2xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm p-5 space-y-4">
+      <div className="glass-panel rounded-2xl shadow-sm p-5 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <h2 className="text-sm font-bold font-display uppercase tracking-wider text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
             <FileSpreadsheet className="w-4 h-4 text-amber-500" />
@@ -444,11 +452,11 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
           </h2>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs text-zinc-500 font-bold">Filter Shift:</span>
+            <span className="text-xs text-zinc-500 font-bold font-display">Filter Shift:</span>
             <select
               value={selectedShift}
               onChange={(e) => setSelectedShift(e.target.value)}
-              className="px-3 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-xs font-bold"
+              className="px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-black/30 text-xs font-bold"
             >
               <option value="ALL">All 24 Hours</option>
               <option value="1">Shift 1 (0800–1500)</option>
@@ -461,23 +469,23 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-[#131416] text-[11px] font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
-                <th className="py-2.5 px-3">Time (Hrs)</th>
-                <th className="py-2.5 px-3">Shift</th>
-                <th className="py-2.5 px-3 text-right">Flow (MT/HR)</th>
-                <th className="py-2.5 px-3 text-center">Acid Dose</th>
-                <th className="py-2.5 px-3 text-right">HE Temp (°C)</th>
-                <th className="py-2.5 px-3 text-center">Earth Dose</th>
-                <th className="py-2.5 px-3 text-center">Level</th>
-                <th className="py-2.5 px-3 text-right">Vacuum (mmHg)</th>
-                <th className="py-2.5 px-3 text-center">Niagara</th>
-                <th className="py-2.5 px-3 text-right">FFA (%)</th>
-                <th className="py-2.5 px-3 text-right">R / Y</th>
-                <th className="py-2.5 px-3">Remarks</th>
-                <th className="py-2.5 px-3 text-center">Status</th>
+              <tr className="sticky top-0 z-10 backdrop-blur-xl bg-zinc-100/95 dark:bg-[#0E1626]/95 border-b border-zinc-200/90 dark:border-white/10 text-[11px] font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
+                <th className="py-3 px-3">Time (Hrs)</th>
+                <th className="py-3 px-3">Shift</th>
+                <th className="py-3 px-3 text-right">Flow (MT/HR)</th>
+                <th className="py-3 px-3 text-center">Acid Dose</th>
+                <th className="py-3 px-3 text-right">HE Temp (°C)</th>
+                <th className="py-3 px-3 text-center">Earth Dose</th>
+                <th className="py-3 px-3 text-center">Level</th>
+                <th className="py-3 px-3 text-right">Vacuum (mmHg)</th>
+                <th className="py-3 px-3 text-center">Niagara</th>
+                <th className="py-3 px-3 text-right">FFA (%)</th>
+                <th className="py-3 px-3 text-right">R / Y</th>
+                <th className="py-3 px-3">Remarks</th>
+                <th className="py-3 px-3 text-center">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800 font-mono">
+            <tbody className="divide-y divide-zinc-200/60 dark:divide-white/5 font-mono">
               {displayedEntries.map((e) => {
                 const isVacAlert = typeof e.vacuum_mmhg === 'number' && e.vacuum_mmhg < 600;
                 const isTempAlert = typeof e.he_temp_c === 'number' && (e.he_temp_c < 70 || e.he_temp_c > 115);
@@ -485,61 +493,61 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
                 return (
                   <tr 
                     key={e.slot_index}
-                    className="hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors"
+                    className="hover:bg-zinc-500/5 dark:hover:bg-white/5 transition-colors"
                   >
-                    <td className="py-2 px-3 font-bold text-zinc-900 dark:text-zinc-100">
+                    <td className="py-2.5 px-3 font-bold text-zinc-900 dark:text-zinc-100">
                       {e.time_label}
                     </td>
-                    <td className="py-2 px-3 text-zinc-500 font-sans">
+                    <td className="py-2.5 px-3 text-zinc-500 font-sans">
                       Shift {e.shift}
                     </td>
-                    <td className="py-2 px-3 text-right font-medium">
+                    <td className="py-2.5 px-3 text-right font-medium">
                       {typeof e.flowrate_set === 'number' ? e.flowrate_set.toFixed(1) : "-"}
                     </td>
-                    <td className="py-2 px-3 text-center font-sans">
+                    <td className="py-2.5 px-3 text-center font-sans">
                       {e.acid_dosage_ok ? (
-                        <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
                           OK
                         </span>
                       ) : "-"}
                     </td>
-                    <td className={`py-2 px-3 text-right font-bold ${isTempAlert ? 'text-rose-500' : 'text-zinc-900 dark:text-zinc-100'}`}>
+                    <td className={`py-2.5 px-3 text-right font-bold ${isTempAlert ? 'text-rose-500' : 'text-zinc-900 dark:text-zinc-100'}`}>
                       {typeof e.he_temp_c === 'number' ? e.he_temp_c.toFixed(1) : "-"}
                     </td>
-                    <td className="py-2 px-3 text-center font-sans">
+                    <td className="py-2.5 px-3 text-center font-sans">
                       {e.earth_dosage_ok ? (
-                        <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
                           OK
                         </span>
                       ) : "-"}
                     </td>
-                    <td className="py-2 px-3 text-center font-bold">
+                    <td className="py-2.5 px-3 text-center font-bold">
                       {e.bleacher_level || "-"}
                     </td>
-                    <td className={`py-2 px-3 text-right font-bold ${isVacAlert ? 'text-rose-500' : 'text-zinc-900 dark:text-zinc-100'}`}>
+                    <td className={`py-2.5 px-3 text-right font-bold ${isVacAlert ? 'text-rose-500' : 'text-zinc-900 dark:text-zinc-100'}`}>
                       {typeof e.vacuum_mmhg === 'number' ? e.vacuum_mmhg.toFixed(1) : "-"}
                     </td>
-                    <td className="py-2 px-3 text-center text-zinc-700 dark:text-zinc-300">
+                    <td className="py-2.5 px-3 text-center text-zinc-700 dark:text-zinc-300">
                       {e.niagara_filter || "-"}
                     </td>
-                    <td className="py-2 px-3 text-right font-medium">
+                    <td className="py-2.5 px-3 text-right font-medium">
                       {typeof e.ffa_pct === 'number' ? e.ffa_pct.toFixed(3) : "-"}
                     </td>
-                    <td className="py-2 px-3 text-right font-medium">
+                    <td className="py-2.5 px-3 text-right font-medium">
                       {typeof e.colour_r === 'number' && typeof e.colour_y === 'number'
                         ? `${e.colour_r.toFixed(1)} / ${e.colour_y.toFixed(1)}`
                         : "-"}
                     </td>
-                    <td className="py-2 px-3 font-sans text-zinc-600 dark:text-zinc-300 max-w-[180px] truncate">
+                    <td className="py-2.5 px-3 font-sans text-zinc-600 dark:text-zinc-300 max-w-[180px] truncate">
                       {e.remarks || "-"}
                     </td>
-                    <td className="py-2 px-3 text-center font-sans">
+                    <td className="py-2.5 px-3 text-center font-sans">
                       {e.is_saved ? (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/30">
                           Saved
                         </span>
                       ) : (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-400">
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-zinc-100 dark:bg-white/10 text-zinc-400">
                           Empty
                         </span>
                       )}

@@ -46,6 +46,20 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
   const [outOfSpecFlags, setOutOfSpecFlags] = useState<OutOfSpecFlag[]>(entry.out_of_spec || []);
   const [remarksError, setRemarksError] = useState<string | null>(null);
   const [activeNumpadField, setActiveNumpadField] = useState<keyof LogEntry | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setIsMounted(true));
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  const handleSmoothClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      onClose();
+    }, 240);
+  };
 
   useEffect(() => {
     setFormData({ ...entry });
@@ -120,8 +134,19 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
   const isVacOutOfSpec = outOfSpecFlags.some(f => f.field === 'vacuum_mmhg');
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="w-full max-w-2xl h-full bg-white/95 dark:bg-[#0E1626]/95 backdrop-blur-2xl shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col border-l border-zinc-200/90 dark:border-white/10 overflow-hidden">
+    <div 
+      className={`fixed inset-0 z-50 flex items-center justify-end bg-black/65 backdrop-blur-sm transition-opacity duration-240 ${
+        isMounted && !isClosing ? "opacity-100" : "opacity-0 pointer-events-none"
+      }`}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) handleSmoothClose();
+      }}
+    >
+      <div 
+        className={`w-full max-w-2xl h-full bg-white dark:bg-[#0D1424] shadow-[0_0_60px_rgba(0,0,0,0.6)] flex flex-col border-l border-zinc-200/90 dark:border-white/10 overflow-hidden transform transition-transform duration-260 ease-[cubic-bezier(0.32,0.72,0,1)] ${
+          isMounted && !isClosing ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
         {/* Top Drawer Navigation */}
         <div className="px-6 py-4 border-b border-zinc-200 dark:border-white/10 flex items-center justify-between bg-zinc-50/80 dark:bg-black/30 backdrop-blur-md">
           <div className="flex items-center gap-3">
@@ -168,7 +193,7 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
             </button>
             <div className="h-6 w-[1px] bg-zinc-200 dark:bg-white/10 mx-1" />
             <button
-              onClick={onClose}
+              onClick={handleSmoothClose}
               className="btn-tactile p-2 rounded-xl text-zinc-400 hover:text-zinc-800 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5 cursor-pointer group transition-all"
               title="Close Panel"
             >
@@ -285,7 +310,7 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                   {isHeTempOutOfSpec && <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />}
                 </label>
                 <span className="text-[11px] font-mono font-medium text-zinc-500">
-                  Spec: 70–115 °C
+                  Spec: 70-115 °C
                 </span>
               </div>
               <div
@@ -580,8 +605,8 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
           <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={onClose}
-              className="btn-tactile px-4 py-2.5 rounded-xl text-sm font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200/60 dark:hover:bg-white/5 border border-zinc-200 dark:border-white/10 cursor-pointer transition-all"
+              onClick={handleSmoothClose}
+              className="btn-tactile px-4 py-2.5 rounded-xl text-sm font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200/60 dark:hover:bg-white/5 border border-zinc-200 dark:border-white/10 cursor-pointer transition-all"
             >
               Cancel
             </button>

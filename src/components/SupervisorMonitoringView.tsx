@@ -161,7 +161,7 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
               </span>
               <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900 dark:text-zinc-100 font-display">
-                Shift 1 (0800 – 1500)
+                Shift 1 (0800-1500)
               </h2>
             </div>
             <span className="text-xs font-mono font-bold text-amber-500">
@@ -188,7 +188,7 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-zinc-400" />
               <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900 dark:text-zinc-100 font-display">
-                Shift 2 (1600 – 2300)
+                Shift 2 (1600-2300)
               </h2>
             </div>
             <span className="text-xs font-mono font-bold text-zinc-400">
@@ -215,7 +215,7 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-zinc-400" />
               <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900 dark:text-zinc-100 font-display">
-                Shift 3 (2400 – 0700)
+                Shift 3 (2400-0700)
               </h2>
             </div>
             <span className="text-xs font-mono font-bold text-zinc-400">

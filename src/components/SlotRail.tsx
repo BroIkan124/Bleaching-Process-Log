@@ -74,9 +74,9 @@ export const SlotRail: React.FC<SlotRailProps> = ({
               key={shift.id} 
               className={`p-3 rounded-xl border ${shiftBorderClass} transition-all`}
             >
-              <div className="flex items-center justify-between text-[11px] font-bold text-zinc-700 dark:text-zinc-300 mb-2.5 px-1">
+              <div className="flex items-center justify-between text-xs font-extrabold text-zinc-800 dark:text-zinc-200 mb-2.5 px-1">
                 <span className="tracking-tight">{shift.name}</span>
-                <span className="font-mono text-zinc-500 text-[10px] bg-white/60 dark:bg-zinc-800/60 px-2 py-0.5 rounded border border-zinc-200/50 dark:border-zinc-700/50 font-semibold">{shift.hours}</span>
+                <span className="font-mono text-zinc-600 dark:text-zinc-300 text-xs bg-white/80 dark:bg-zinc-800/80 px-2 py-0.5 rounded border border-zinc-200 dark:border-zinc-700 font-bold">{shift.hours}</span>
               </div>
 
               <div className="grid grid-cols-8 gap-1.5">
@@ -89,16 +89,16 @@ export const SlotRail: React.FC<SlotRailProps> = ({
                   const hasOutOfSpec = entry.out_of_spec && entry.out_of_spec.length > 0;
                   const isDone = entry.is_saved;
 
-                  let stateClass = "bg-white dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:border-zinc-400";
+                  let stateClass = "bg-white dark:bg-[#0D1424] border-zinc-200/90 dark:border-white/[0.08] text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-white/20";
 
                   if (hasOutOfSpec) {
-                    stateClass = "bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 font-bold shadow-2xs";
+                    stateClass = "bg-rose-50/90 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 font-bold shadow-[0_0_12px_rgba(239,68,68,0.2)]";
                   } else if (isDone) {
-                    stateClass = "bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 font-medium shadow-2xs";
+                    stateClass = "bg-emerald-50/90 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 font-bold shadow-[0_0_10px_rgba(16,185,129,0.15)]";
                   }
 
                   if (isSelected) {
-                    stateClass = "ring-2 ring-amber-500 shadow-md scale-105 z-10 font-bold bg-amber-50/90 dark:bg-amber-950/60 border-amber-400 dark:border-amber-600 text-zinc-900 dark:text-white";
+                    stateClass = "ring-2 ring-amber-500 shadow-[0_0_16px_rgba(245,158,11,0.35)] z-10 font-extrabold bg-amber-500/15 dark:bg-amber-500/25 border-amber-500 text-zinc-900 dark:text-amber-300";
                   }
 
                   return (
@@ -109,7 +109,7 @@ export const SlotRail: React.FC<SlotRailProps> = ({
                       className={`slot-tile-btn h-11 rounded-lg flex flex-col items-center justify-center p-0.5 border text-center select-none relative cursor-pointer ${stateClass}`}
                       title={`Slot ${entry.time_label} (${shift.name}) - ${hasOutOfSpec ? 'Out of Spec Alert' : isDone ? 'Saved' : 'Not Logged'}`}
                     >
-                      <span className="font-mono text-[11px] leading-tight font-bold">
+                      <span className="font-mono text-xs leading-tight font-extrabold">
                         {entry.time_label}
                       </span>
 

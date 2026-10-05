@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { LogSheet } from "@/types";
 import { FORM_META } from "@/lib/constants";
 import { Printer, Download, X, Building2, CheckCircle2 } from "lucide-react";
@@ -17,7 +17,17 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
   isOpen,
   onClose,
 }) => {
+  const [isClosing, setIsClosing] = useState(false);
+
   if (!isOpen) return null;
+
+  const handleSmoothClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      onClose();
+    }, 200);
+  };
 
   const handlePrint = () => {
     recordDocumentExport(
@@ -36,14 +46,25 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in overflow-y-auto">
-      <div className="w-full max-w-6xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-300 dark:border-slate-800 flex flex-col my-auto max-h-[95vh] overflow-hidden">
+    <div 
+      className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm transition-opacity duration-200 overflow-y-auto ${
+        isClosing ? "opacity-0 pointer-events-none" : "opacity-100"
+      }`}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) handleSmoothClose();
+      }}
+    >
+      <div 
+        className={`w-full max-w-6xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-300 dark:border-slate-800 flex flex-col my-auto max-h-[95vh] overflow-hidden transform transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          isClosing ? "scale-95 opacity-0" : "scale-100 opacity-100"
+        }`}
+      >
         {/* Modal Controls Bar (Hidden during Print) */}
         <div className="px-6 py-3 border-b border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-800 flex items-center justify-between print:hidden">
           <div className="flex items-center gap-2">
             <Printer className="w-5 h-5 text-amber-600" />
             <span className="font-bold text-sm text-slate-800 dark:text-slate-200 font-display">
-              A4 Landscape Official Print & PDF Export (RF-FR-003 Rev 03)
+              A4 Landscape Official Print &amp; PDF Export (RF-FR-003 Rev 03)
             </span>
           </div>
 
@@ -56,7 +77,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
               <span>Print / Save as PDF</span>
             </button>
             <button
-              onClick={onClose}
+              onClick={handleSmoothClose}
               className="btn-tactile p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer group"
             >
               <X className="w-5 h-5 transition-transform duration-200 group-hover:rotate-90" />
@@ -119,15 +140,15 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
             {/* Technician Shift Assignments */}
             <div className="grid grid-cols-3 gap-2 text-[11px] text-gray-800">
               <div>
-                <strong>Tech 1st Shift (0800–1500): </strong>
+                <strong>Tech 1st Shift (0800-1500): </strong>
                 <span>{sheet.tech_s1_name || "Ahmad Razif"}</span>
               </div>
               <div>
-                <strong>Tech 2nd Shift (1600–2300): </strong>
+                <strong>Tech 2nd Shift (1600-2300): </strong>
                 <span>{sheet.tech_s2_name || "Mohd Danial"}</span>
               </div>
               <div>
-                <strong>Tech 3rd Shift (2400–0700): </strong>
+                <strong>Tech 3rd Shift (2400-0700): </strong>
                 <span>{sheet.tech_s3_name || "K. Subramaniam"}</span>
               </div>
             </div>
@@ -166,7 +187,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
                 <th className="border border-black py-1 px-1">Time<br/>(Hrs)</th>
                 <th className="border border-black py-1 px-1">Flowrate<br/>MT/HR</th>
                 <th className="border border-black py-1 px-1">Acid<br/>(√)</th>
-                <th className="border border-black py-1 px-1">HE Temp<br/>(70–115°C)</th>
+                <th className="border border-black py-1 px-1">HE Temp<br/>(70-115°C)</th>
                 <th className="border border-black py-1 px-1">Earth<br/>(√)</th>
                 <th className="border border-black py-1 px-1">Level<br/>(L/H)</th>
                 <th className="border border-black py-1 px-1">Vacuum<br/>(&ge;600)</th>

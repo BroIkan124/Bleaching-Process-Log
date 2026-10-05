@@ -44,7 +44,16 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
   const [roleFilter, setRoleFilter] = useState<string>("ALL");
   const [shiftFilter, setShiftFilter] = useState<string>("ALL");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isClosingModal, setIsClosingModal] = useState(false);
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
+
+  const handleCloseModal = () => {
+    setIsClosingModal(true);
+    setTimeout(() => {
+      setIsClosingModal(false);
+      setIsAddModalOpen(false);
+    }, 200);
+  };
 
   // Form State for Add / Edit
   const [formData, setFormData] = useState<{
@@ -211,7 +220,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
         department: newUser.department,
       });
     }
-    setIsAddModalOpen(false);
+    handleCloseModal();
   };
 
   // If not admin, show guard warning
@@ -354,9 +363,9 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
             className="px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-xs font-bold text-zinc-800 dark:text-zinc-200 focus:outline-none"
           >
             <option value="ALL">All Shifts</option>
-            <option value="1">Shift 1 (0800–1500)</option>
-            <option value="2">Shift 2 (1600–2300)</option>
-            <option value="3">Shift 3 (2400–0700)</option>
+            <option value="1">Shift 1 (0800-1500)</option>
+            <option value="2">Shift 2 (1600-2300)</option>
+            <option value="3">Shift 3 (2400-0700)</option>
           </select>
         </div>
       </div>
@@ -491,11 +500,18 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
       {/* Add / Edit User Modal */}
       {isAddModalOpen && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
+          className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md modal-backdrop-animate ${
+            isClosingModal ? "is-closing" : ""
+          }`}
           role="dialog"
           aria-modal="true"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) handleCloseModal();
+          }}
         >
-          <div className="relative w-full max-w-lg bg-white dark:bg-[#18181B] rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden text-zinc-900 dark:text-zinc-100">
+          <div className={`relative w-full max-w-lg bg-white/95 dark:bg-[#18181B]/95 backdrop-blur-2xl rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden text-zinc-900 dark:text-zinc-100 modal-card-animate ${
+            isClosingModal ? "is-closing" : ""
+          }`}>
             <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-[#131416]">
               <div className="flex items-center gap-2.5">
                 <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500">
@@ -506,7 +522,8 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
                 </h3>
               </div>
               <button
-                onClick={() => setIsAddModalOpen(false)}
+                type="button"
+                onClick={handleCloseModal}
                 className="btn-tactile p-1.5 rounded-lg text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 cursor-pointer group"
               >
                 <X className="w-5 h-5 transition-transform duration-200 group-hover:rotate-90" />
@@ -561,9 +578,9 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
                     }}
                     className="w-full px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-xs font-bold focus:outline-none"
                   >
-                    <option value="1">Shift 1 (0800–1500)</option>
-                    <option value="2">Shift 2 (1600–2300)</option>
-                    <option value="3">Shift 3 (2400–0700)</option>
+                    <option value="1">Shift 1 (0800-1500)</option>
+                    <option value="2">Shift 2 (1600-2300)</option>
+                    <option value="3">Shift 3 (2400-0700)</option>
                     <option value="ALL">All Shifts (Flexible)</option>
                   </select>
                 </div>
@@ -641,7 +658,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
               <div className="flex items-center justify-end gap-2 pt-4 border-t border-zinc-200 dark:border-zinc-800">
                 <button
                   type="button"
-                  onClick={() => setIsAddModalOpen(false)}
+                  onClick={handleCloseModal}
                   className="btn-tactile btn-premium-glass px-4 py-2 rounded-xl text-xs font-bold cursor-pointer"
                 >
                   Cancel

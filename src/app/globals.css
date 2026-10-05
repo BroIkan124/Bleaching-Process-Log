@@ -3,24 +3,38 @@
 @tailwind utilities;
 
 :root {
-  --bg-primary: #F5F6F4;
+  /* High-Contrast Crisp Light Mode (Surgical & Clean) */
+  --bg-primary: #F8FAFC;
   --bg-card: #FFFFFF;
-  --text-main: #1B2A2E;
-  --text-muted: #5E6E73;
+  --bg-surface-elevated: #F1F5F9;
+  --text-main: #0F172A;
+  --text-muted: #64748B;
+  --text-dim: #94A3B8;
   --border-color: #E2E8F0;
-  --oil-gold: #B8860B;
-  --inspec: #2F7D52;
-  --outofspec: #C0392B;
+  --border-subtle: #EDF2F7;
+  --oil-gold: #D97706;
+  --inspec: #059669;
+  --outofspec: #DC2626;
   --overdue: #D97706;
+
+  /* Emil Kowalski / Apple-grade Easing Curves */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-snappy: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .dark {
-  --bg-primary: #0F1012;
-  --bg-card: #18181B;
-  --text-main: #F4F4F5;
-  --text-muted: #A1A1AA;
-  --border-color: #27272A;
-  --oil-gold: #E5A93C;
+  /* Deep Industrial Dark (Obsidian Telemetry Precision - Zero Eye Strain) */
+  --bg-primary: #080C14;
+  --bg-card: #0D1424;
+  --bg-surface-elevated: #131C2E;
+  --text-main: #F8FAFC;
+  --text-muted: #94A3B8;
+  --text-dim: #64748B;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-subtle: rgba(255, 255, 255, 0.04);
+  --oil-gold: #F59E0B;
   --inspec: #10B981;
   --outofspec: #EF4444;
   --overdue: #F59E0B;
@@ -29,87 +43,98 @@
 body {
   background-color: var(--bg-primary);
   color: var(--text-main);
-  font-family: var(--font-sans), 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  font-weight: 500;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  font-family: var(--font-sans), 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-weight: 550;
+  -webkit-font-smoothing: subpixel-antialiased;
+  -moz-osx-font-smoothing: auto;
+  text-rendering: optimizeLegibility;
+  letter-spacing: -0.01em;
 }
 
-/* Solid high-contrast telemetry numbers for industrial visibility */
+/* Telemetry Numbers: High-contrast monospace with tabular alignment */
 .tabular-nums, .font-mono {
   font-family: var(--font-mono), 'JetBrains Mono', monospace;
-  font-weight: 600;
+  font-weight: 650;
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
 
-/* Touch Target Minimum 48px standard for plant floor use */
+/* Touch Target Minimum 48px standard for plant floor tablet use */
 .touch-target {
   min-height: 48px;
   min-width: 48px;
 }
 
-/* Custom Scrollbars */
+/* Custom High-Precision Scrollbars */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.04);
-}
-
-.dark ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
   background: #CBD5E1;
-  border-radius: 4px;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
 }
 
 .dark ::-webkit-scrollbar-thumb {
   background: #334155;
+  border: 2px solid transparent;
+  background-clip: content-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: #94A3B8;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+  border: 2px solid transparent;
+  background-clip: content-box;
 }
 
 /* Plant Status Badges */
 .badge-inspec {
-  background-color: rgba(47, 125, 82, 0.12);
-  color: #2F7D52;
-  border: 1px solid rgba(47, 125, 82, 0.28);
+  background-color: rgba(5, 150, 105, 0.1);
+  color: #059669;
+  border: 1px solid rgba(5, 150, 105, 0.25);
 }
 
 .dark .badge-inspec {
-  background-color: rgba(16, 185, 129, 0.15);
+  background-color: rgba(16, 185, 129, 0.12);
   color: #34D399;
-  border-color: rgba(16, 185, 129, 0.3);
+  border-color: rgba(16, 185, 129, 0.28);
 }
 
 .badge-outofspec {
-  background-color: rgba(192, 57, 43, 0.12);
-  color: #C0392B;
-  border: 1px solid rgba(192, 57, 43, 0.35);
+  background-color: rgba(220, 38, 38, 0.1);
+  color: #DC2626;
+  border: 1px solid rgba(220, 38, 38, 0.28);
 }
 
 .dark .badge-outofspec {
-  background-color: rgba(239, 68, 68, 0.15);
+  background-color: rgba(239, 68, 68, 0.12);
   color: #F87171;
-  border-color: rgba(239, 68, 68, 0.35);
+  border-color: rgba(239, 68, 68, 0.3);
 }
 
 .badge-overdue {
-  background-color: rgba(217, 119, 6, 0.12);
+  background-color: rgba(217, 119, 6, 0.1);
   color: #D97706;
-  border: 1px solid rgba(217, 119, 6, 0.3);
+  border: 1px solid rgba(217, 119, 6, 0.25);
 }
 
 .dark .badge-overdue {
-  background-color: rgba(245, 158, 11, 0.15);
+  background-color: rgba(245, 158, 11, 0.12);
   color: #FBBF24;
-  border-color: rgba(245, 158, 11, 0.3);
+  border-color: rgba(245, 158, 11, 0.28);
 }
 
 /* ==========================================================================
@@ -117,37 +142,38 @@ body {
    ========================================================================== */
 
 .glass-panel {
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(226, 232, 240, 0.95);
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 
-              0 1px 3px rgba(0, 0, 0, 0.04), 
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04), 
+              0 1px 3px rgba(0, 0, 0, 0.02), 
               inset 0 1px 0 rgba(255, 255, 255, 1);
-  transition: border-color 200ms ease, box-shadow 200ms ease;
+  transition: border-color 160ms var(--ease-out), box-shadow 160ms var(--ease-out);
 }
 
 .dark .glass-panel {
-  background: rgba(14, 22, 36, 0.88);
-  border: 1px solid rgba(31, 46, 67, 0.9);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4), 
-              inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  background: rgba(13, 20, 36, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 12px 36px 0 rgba(0, 0, 0, 0.55), 
+              inset 0 1px 0 rgba(255, 255, 255, 0.07);
 }
 
 .telemetry-card {
-  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 180ms ease;
+  transition: transform 160ms var(--ease-out),
+              box-shadow 160ms var(--ease-out),
+              border-color 160ms ease;
   position: relative;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .telemetry-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.08), 0 0 16px rgba(245, 158, 11, 0.15);
+    transform: translateY(-1.5px);
+    box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.06), 0 0 14px rgba(245, 158, 11, 0.12);
   }
   .dark .telemetry-card:hover {
-    box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.6), 0 0 20px rgba(245, 158, 11, 0.2);
+    transform: translateY(-1.5px);
+    box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.6), 0 0 18px rgba(245, 158, 11, 0.18);
   }
 }
 
@@ -155,11 +181,11 @@ body {
 @keyframes ambientBeacon {
   0%, 100% {
     transform: scale(1);
-    opacity: 1;
+    opacity: 0.9;
   }
   50% {
-    transform: scale(1.4);
-    opacity: 0.4;
+    transform: scale(1.35);
+    opacity: 0.3;
   }
 }
 
@@ -173,7 +199,7 @@ body {
   inset: -2px;
   border-radius: 9999px;
   background: inherit;
-  animation: ambientBeacon 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation: ambientBeacon 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   pointer-events: none;
 }
 
@@ -190,20 +216,14 @@ textarea:focus-visible {
    Emil Kowalski / Apple-Grade Tactile & Micro-Animation System
    ========================================================================== */
 
-:root {
-  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-snappy: cubic-bezier(0.2, 0.8, 0.2, 1);
-  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
-}
-
 /* Master Tactile Press & Hover Micro-Interaction */
 .btn-tactile {
-  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1),
-              background-color 180ms ease,
-              border-color 180ms ease,
-              color 180ms ease,
-              opacity 180ms ease;
+  transition: transform 160ms var(--ease-out),
+              box-shadow 160ms var(--ease-out),
+              background-color 160ms ease,
+              border-color 160ms ease,
+              color 160ms ease,
+              opacity 160ms ease;
   will-change: transform;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
@@ -212,13 +232,13 @@ textarea:focus-visible {
 
 @media (hover: hover) and (pointer: fine) {
   .btn-tactile:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.12);
+    transform: translateY(-1.5px);
+    box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.1);
   }
 }
 
 .btn-tactile:active {
-  transform: scale(0.94) translateY(0);
+  transform: scale(0.97) translateY(0);
 }
 
 .btn-tactile:disabled {
@@ -228,68 +248,76 @@ textarea:focus-visible {
 
 /* Premium Amber Action Button (Primary) */
 .btn-premium-amber {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
+  background-color: #d97706;
+  background-image: linear-gradient(135deg, #f59e0b 0%, #d97706 60%, #b45309 100%);
   color: #ffffff;
   border: 1px solid rgba(251, 191, 36, 0.45);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 
-              0 6px 16px rgba(217, 119, 6, 0.3), 
-              inset 0 1px 0 rgba(255, 255, 255, 0.4);
-  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1),
-              background 180ms ease,
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12), 
+              0 4px 14px rgba(217, 119, 6, 0.3), 
+              inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1),
+              box-shadow 180ms cubic-bezier(0.23, 1, 0.32, 1),
+              filter 180ms cubic-bezier(0.23, 1, 0.32, 1),
               opacity 180ms ease;
   position: relative;
   overflow: hidden;
+  will-change: transform, filter;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .btn-premium-amber:hover {
-    transform: translateY(-2px) scale(1.02);
-    background: linear-gradient(135deg, #fbbf24 0%, #ea580c 50%, #b45309 100%);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15), 
-                0 12px 28px rgba(245, 158, 11, 0.55), 
-                0 0 16px rgba(251, 191, 36, 0.45),
-                inset 0 1px 0 rgba(255, 255, 255, 0.55);
+    transform: translateY(-1.5px) scale(1.015);
+    filter: brightness(1.08);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15), 
+                0 8px 24px rgba(245, 158, 11, 0.45), 
+                0 0 16px rgba(251, 191, 36, 0.35),
+                inset 0 1px 0 rgba(255, 255, 255, 0.45);
   }
 }
 
 .btn-premium-amber:active {
-  transform: scale(0.94) translateY(0);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), 
-              inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  transform: scale(0.97) translateY(0);
+  filter: brightness(0.95);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 
+              inset 0 2px 4px rgba(0, 0, 0, 0.25);
+  transition-duration: 80ms;
 }
 
 /* Premium Emerald Action Button (Approval / In-Spec) */
 .btn-premium-emerald {
-  background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+  background-color: #059669;
+  background-image: linear-gradient(135deg, #10b981 0%, #059669 60%, #047857 100%);
   color: #ffffff;
   border: 1px solid rgba(52, 211, 153, 0.45);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 
-              0 6px 16px rgba(5, 150, 105, 0.3), 
-              inset 0 1px 0 rgba(255, 255, 255, 0.4);
-  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1),
-              background 180ms ease,
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12), 
+              0 4px 14px rgba(5, 150, 105, 0.3), 
+              inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1),
+              box-shadow 180ms cubic-bezier(0.23, 1, 0.32, 1),
+              filter 180ms cubic-bezier(0.23, 1, 0.32, 1),
               opacity 180ms ease;
   position: relative;
   overflow: hidden;
+  will-change: transform, filter;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .btn-premium-emerald:hover {
-    transform: translateY(-2px) scale(1.02);
-    background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #047857 100%);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15), 
-                0 12px 28px rgba(16, 185, 129, 0.55), 
-                0 0 16px rgba(52, 211, 153, 0.45),
-                inset 0 1px 0 rgba(255, 255, 255, 0.55);
+    transform: translateY(-1.5px) scale(1.015);
+    filter: brightness(1.08);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15), 
+                0 8px 24px rgba(16, 185, 129, 0.45), 
+                0 0 16px rgba(52, 211, 153, 0.35),
+                inset 0 1px 0 rgba(255, 255, 255, 0.45);
   }
 }
 
 .btn-premium-emerald:active {
-  transform: scale(0.94) translateY(0);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), 
-              inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  transform: scale(0.97) translateY(0);
+  filter: brightness(0.95);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 
+              inset 0 2px 4px rgba(0, 0, 0, 0.25);
+  transition-duration: 80ms;
 }
 
 /* Premium Glass/Secondary Button */
@@ -301,89 +329,89 @@ textarea:focus-visible {
   color: #334155;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 
               inset 0 1px 0 rgba(255, 255, 255, 0.85);
-  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1),
-              background-color 180ms ease,
-              border-color 180ms ease,
-              color 180ms ease;
+  transition: transform 160ms var(--ease-out),
+              box-shadow 160ms var(--ease-out),
+              background-color 160ms ease,
+              border-color 160ms ease,
+              color 160ms ease;
 }
 
 .dark .btn-premium-glass {
-  background: rgba(39, 39, 42, 0.7);
+  background: rgba(30, 41, 59, 0.7);
   border-color: rgba(255, 255, 255, 0.1);
   color: #e4e4e7;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 
-              inset 0 1px 0 rgba(255, 255, 255, 0.1);
+              inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .btn-premium-glass:hover {
-    transform: translateY(-2px);
+    transform: translateY(-1.5px);
     background: rgba(255, 255, 255, 1);
     border-color: rgba(203, 213, 225, 1);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08), 
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08), 
                 inset 0 1px 0 rgba(255, 255, 255, 1);
   }
   .dark .btn-premium-glass:hover {
-    background: rgba(63, 63, 70, 0.85);
-    border-color: rgba(255, 255, 255, 0.18);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), 
-                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    background: rgba(45, 59, 85, 0.85);
+    border-color: rgba(255, 255, 255, 0.16);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), 
+                inset 0 1px 0 rgba(255, 255, 255, 0.15);
   }
 }
 
 .btn-premium-glass:active {
-  transform: scale(0.95) translateY(0);
+  transform: scale(0.97) translateY(0);
 }
 
 /* Floating Bottom Dock Pill Button */
 .dock-pill-btn {
-  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1),
-              background-color 200ms ease,
-              color 200ms ease,
-              box-shadow 200ms ease;
+  transition: transform 160ms var(--ease-out),
+              background-color 160ms ease,
+              color 160ms ease,
+              box-shadow 160ms ease;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .dock-pill-btn:hover {
-    transform: translateY(-3px) scale(1.04);
+    transform: translateY(-2px) scale(1.02);
   }
 }
 
 .dock-pill-btn:active {
-  transform: scale(0.92) translateY(0);
+  transform: scale(0.96) translateY(0);
 }
 
 /* 24-Hour Slot Timeline Tile */
 .slot-tile-btn {
-  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 180ms ease,
-              background-color 180ms ease;
+  transition: transform 160ms var(--ease-out),
+              box-shadow 160ms var(--ease-out),
+              border-color 160ms ease,
+              background-color 160ms ease;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .slot-tile-btn:hover {
-    transform: translateY(-2.5px) scale(1.04);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12), 0 0 12px rgba(245, 158, 11, 0.25);
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1), 0 0 12px rgba(245, 158, 11, 0.2);
     z-index: 10;
   }
   .dark .slot-tile-btn:hover {
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5), 0 0 14px rgba(245, 158, 11, 0.35);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5), 0 0 14px rgba(245, 158, 11, 0.3);
   }
 }
 
 .slot-tile-btn:active {
-  transform: scale(0.92) translateY(0);
+  transform: scale(0.95) translateY(0);
 }
 
 /* Table Action Button */
 .table-action-btn {
-  transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1),
+  transition: transform 160ms var(--ease-out),
               background-color 160ms ease,
               color 160ms ease,
               box-shadow 160ms ease,
@@ -394,13 +422,13 @@ textarea:focus-visible {
 
 @media (hover: hover) and (pointer: fine) {
   .table-action-btn:hover {
-    transform: translateY(-2px) scale(1.03);
-    box-shadow: 0 4px 12px rgba(217, 119, 6, 0.35);
+    transform: translateY(-1.5px) scale(1.02);
+    box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
   }
 }
 
 .table-action-btn:active {
-  transform: scale(0.92);
+  transform: scale(0.95);
 }
 
 /* Subtle Shimmer Sheen Effect for Hero / Primary CTA */
@@ -426,8 +454,91 @@ textarea:focus-visible {
     rgba(255, 255, 255, 0.25) 50%,
     transparent 100%
   );
-  animation: buttonSheen 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation: buttonSheen 3.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   pointer-events: none;
+}
+
+/* Hardware-Accelerated Smooth View Transition (Zero Blur / Zero Flick) */
+.fade-in-tactile {
+  animation: fadeInSmooth 220ms var(--ease-out) forwards;
+  will-change: opacity, transform;
+}
+
+@keyframes fadeInSmooth {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Master Modal & Dialog Smooth Presentation (Apple / Emil Kowalski Standard) */
+@keyframes modalBackdropFadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.modal-backdrop-animate {
+  animation: modalBackdropFadeIn 240ms cubic-bezier(0.23, 1, 0.32, 1) forwards;
+  will-change: opacity;
+}
+
+.modal-backdrop-animate.is-closing {
+  opacity: 0 !important;
+  transition: opacity 200ms cubic-bezier(0.23, 1, 0.32, 1) !important;
+  pointer-events: none !important;
+}
+
+@keyframes modalCardPopIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-card-animate {
+  animation: modalCardPopIn 260ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.modal-card-animate.is-closing {
+  opacity: 0 !important;
+  transform: scale(0.95) translateY(8px) !important;
+  transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1), opacity 200ms cubic-bezier(0.23, 1, 0.32, 1) !important;
+}
+
+/* Master Drawer Sheet Slide Animation */
+@keyframes drawerSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.drawer-sheet-animate {
+  animation: drawerSlideIn 280ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.drawer-sheet-animate.is-closing {
+  transform: translateX(100%) !important;
+  opacity: 0 !important;
+  transition: transform 240ms cubic-bezier(0.32, 0.72, 0, 1), opacity 240ms ease !important;
 }
 
 /* Accessibility: Respect Reduced Motion Preferences */
@@ -446,5 +557,11 @@ textarea:focus-visible {
   .animate-sheen::after {
     animation: none !important;
     display: none !important;
+  }
+  .fade-in-tactile {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
   }
 }

@@ -26,18 +26,34 @@ interface HelpSupportModalProps {
 
 export default function HelpSupportModal({ isOpen, onClose, currentUser }: HelpSupportModalProps) {
   const [activeTab, setActiveTab] = useState<'sop' | 'specs' | 'directory' | 'diagnostics'>('sop');
+  const [isClosing, setIsClosing] = useState(false);
 
   if (!isOpen) return null;
 
+  const handleSmoothClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      onClose();
+    }, 200);
+  };
+
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-200"
+      className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md modal-backdrop-animate ${
+        isClosing ? "is-closing" : ""
+      }`}
       role="dialog"
       aria-modal="true"
       aria-labelledby="help-modal-title"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) handleSmoothClose();
+      }}
     >
       <div 
-        className="w-full max-w-4xl max-h-[92vh] flex flex-col bg-[#0A101D] dark:bg-[#0A101D] border border-[#1F2E43] rounded-2xl shadow-2xl overflow-hidden font-sans text-slate-200"
+        className={`w-full max-w-4xl max-h-[92vh] flex flex-col bg-[#0A101D] dark:bg-[#0A101D] border border-[#1F2E43] rounded-2xl shadow-2xl overflow-hidden font-sans text-slate-200 modal-card-animate ${
+          isClosing ? "is-closing" : ""
+        }`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
@@ -59,7 +75,7 @@ export default function HelpSupportModal({ isOpen, onClose, currentUser }: HelpS
           </div>
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleSmoothClose}
             className="btn-tactile p-2 rounded-lg text-slate-400 hover:text-white hover:bg-[#1A283C] transition-all duration-200 ease-spring active:scale-90 cursor-pointer group"
             title="Close Modal"
             aria-label="Close"
@@ -424,7 +440,7 @@ export default function HelpSupportModal({ isOpen, onClose, currentUser }: HelpS
 
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleSmoothClose}
             className="btn-tactile px-4 py-1.5 rounded-lg bg-[#142032] hover:bg-[#1A283C] text-slate-200 font-mono text-xs border border-[#1F2E43] shadow-sm hover:border-slate-500/50 transition-all duration-200 ease-spring active:scale-95 cursor-pointer"
           >
             Close

@@ -47,6 +47,33 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [isCertificateOpen, setIsCertificateOpen] = useState(false);
   const [isNewSampleOpen, setIsNewSampleOpen] = useState(false);
+  const [isClosingNewSample, setIsClosingNewSample] = useState(false);
+  const [isClosingEditor, setIsClosingEditor] = useState(false);
+  const [isClosingCertificate, setIsClosingCertificate] = useState(false);
+
+  const handleCloseNewSample = () => {
+    setIsClosingNewSample(true);
+    setTimeout(() => {
+      setIsClosingNewSample(false);
+      setIsNewSampleOpen(false);
+    }, 200);
+  };
+
+  const handleCloseEditor = () => {
+    setIsClosingEditor(true);
+    setTimeout(() => {
+      setIsClosingEditor(false);
+      setIsEditorOpen(false);
+    }, 200);
+  };
+
+  const handleCloseCertificate = () => {
+    setIsClosingCertificate(true);
+    setTimeout(() => {
+      setIsClosingCertificate(false);
+      setIsCertificateOpen(false);
+    }, 200);
+  };
 
   // New sample form state
   const [newSample, setNewSample] = useState({
@@ -92,7 +119,7 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
   const handleSaveResults = (updatedReport: SampleReport) => {
     setReports(prev => prev.map(r => r.id === updatedReport.id ? updatedReport : r));
     setSelectedReport(updatedReport);
-    setIsEditorOpen(false);
+    handleCloseEditor();
     syncQcSampleToInsForge(updatedReport, currentUser);
     logActivityToInsForge(currentUser, "UPDATE_QC_TEST_RESULTS", "SAMPLE_REPORT", updatedReport.id, {
       lot_no: updatedReport.lot_no,
@@ -139,7 +166,7 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
     };
 
     setReports([created, ...reports]);
-    setIsNewSampleOpen(false);
+    handleCloseNewSample();
     syncQcSampleToInsForge(created, currentUser);
     logActivityToInsForge(currentUser, "REGISTER_NEW_SAMPLE", "SAMPLE_REPORT", created.id, {
       lot_no: created.lot_no,
@@ -456,8 +483,19 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
 
       {/* 4. Modal: Edit Test Results & Submit Decision */}
       {isEditorOpen && selectedReport && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
-          <div className="w-full max-w-2xl bg-white/95 dark:bg-[#0E1626]/95 backdrop-blur-2xl rounded-2xl border border-zinc-200/90 dark:border-white/10 shadow-[0_25px_60px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col max-h-[90vh]">
+        <div 
+          className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md modal-backdrop-animate ${
+            isClosingEditor ? "is-closing" : ""
+          }`}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) handleCloseEditor();
+          }}
+        >
+          <div 
+            className={`w-full max-w-2xl bg-white/95 dark:bg-[#0E1626]/95 backdrop-blur-2xl rounded-2xl border border-zinc-200/90 dark:border-white/10 shadow-[0_25px_60px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col max-h-[90vh] modal-card-animate ${
+              isClosingEditor ? "is-closing" : ""
+            }`}
+          >
             <div className="px-6 py-4 border-b border-zinc-200 dark:border-white/10 bg-zinc-50/80 dark:bg-black/30 flex items-center justify-between">
               <div>
                 <h3 className="font-bold font-display text-base text-zinc-900 dark:text-white flex items-center gap-2">
@@ -470,7 +508,11 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                   {selectedReport.product_name} · Lot: {selectedReport.lot_no}
                 </p>
               </div>
-              <button onClick={() => setIsEditorOpen(false)} className="btn-tactile text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-1.5 rounded-lg cursor-pointer">
+              <button 
+                type="button"
+                onClick={handleCloseEditor} 
+                className="btn-tactile text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-1.5 rounded-lg cursor-pointer transition-transform duration-150 hover:scale-110 active:scale-95"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -585,7 +627,7 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
             <div className="px-6 py-4 border-t border-zinc-200 dark:border-white/10 bg-zinc-50/80 dark:bg-black/30 flex justify-end gap-3">
               <button
                 type="button"
-                onClick={() => setIsEditorOpen(false)}
+                onClick={handleCloseEditor}
                 className="btn-tactile px-4 py-2 rounded-xl text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200/60 dark:hover:bg-white/5 border border-zinc-200 dark:border-white/10 cursor-pointer"
               >
                 Cancel
@@ -605,14 +647,29 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
 
       {/* 5. Modal: Register New QC Sample (RF-FR-001) */}
       {isNewSampleOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
-          <div className="w-full max-w-lg bg-white/95 dark:bg-[#0E1626]/95 backdrop-blur-2xl rounded-2xl border border-zinc-200/90 dark:border-white/10 shadow-[0_25px_60px_rgba(0,0,0,0.5)] overflow-hidden">
+        <div 
+          className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md modal-backdrop-animate ${
+            isClosingNewSample ? "is-closing" : ""
+          }`}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) handleCloseNewSample();
+          }}
+        >
+          <div 
+            className={`w-full max-w-lg bg-white/95 dark:bg-[#0E1626]/95 backdrop-blur-2xl rounded-2xl border border-zinc-200/90 dark:border-white/10 shadow-[0_25px_60px_rgba(0,0,0,0.5)] overflow-hidden modal-card-animate ${
+              isClosingNewSample ? "is-closing" : ""
+            }`}
+          >
             <div className="px-6 py-4 border-b border-zinc-200 dark:border-white/10 bg-zinc-50/80 dark:bg-black/30 flex items-center justify-between">
               <h3 className="font-bold font-display text-base text-zinc-900 dark:text-white flex items-center gap-2">
                 <FlaskConical className="w-5 h-5 text-amber-500" />
                 <span>Pendaftaran Sampel Makmal Baharu (RF-FR-001)</span>
               </h3>
-              <button onClick={() => setIsNewSampleOpen(false)} className="btn-tactile text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-1.5 rounded-lg cursor-pointer">
+              <button 
+                type="button"
+                onClick={handleCloseNewSample} 
+                className="btn-tactile text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-1.5 rounded-lg cursor-pointer transition-transform duration-150 hover:scale-110 active:scale-95"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -703,7 +760,7 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
               <div className="pt-2 flex justify-end gap-2.5">
                 <button
                   type="button"
-                  onClick={() => setIsNewSampleOpen(false)}
+                  onClick={handleCloseNewSample}
                   className="btn-tactile px-4 py-2 rounded-xl text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200/60 dark:hover:bg-white/5 border border-zinc-200 dark:border-white/10 cursor-pointer"
                 >
                   Cancel
@@ -722,14 +779,26 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
 
       {/* 6. Modal: Print-Ready Official QC Certificate (RF-FR-001) */}
       {isCertificateOpen && selectedReport && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in overflow-y-auto">
-          <div className="w-full max-w-4xl bg-white dark:bg-[#18181B] rounded-2xl shadow-2xl border border-zinc-300 dark:border-white/10 flex flex-col my-auto max-h-[95vh] overflow-hidden">
+        <div 
+          className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto modal-backdrop-animate ${
+            isClosingCertificate ? "is-closing" : ""
+          }`}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) handleCloseCertificate();
+          }}
+        >
+          <div 
+            className={`w-full max-w-4xl bg-white dark:bg-[#18181B] rounded-2xl shadow-2xl border border-zinc-300 dark:border-white/10 flex flex-col my-auto max-h-[95vh] overflow-hidden modal-card-animate ${
+              isClosingCertificate ? "is-closing" : ""
+            }`}
+          >
             <div className="px-6 py-3.5 border-b border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-black/40 flex items-center justify-between print:hidden">
               <span className="font-bold text-sm text-zinc-900 dark:text-white font-display">
                 Official QC Laboratory Analysis Certificate (RF-FR-001)
               </span>
               <div className="flex items-center gap-2">
                 <button
+                  type="button"
                   onClick={() => window.print()}
                   className="btn-tactile px-4 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white dark:text-zinc-900 text-white font-bold text-xs shadow-md flex items-center gap-1.5 cursor-pointer group"
                 >
@@ -737,7 +806,8 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                   <span>Print Certificate</span>
                 </button>
                 <button 
-                  onClick={() => setIsCertificateOpen(false)} 
+                  type="button"
+                  onClick={handleCloseCertificate} 
                   className="btn-tactile text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-1.5 rounded-lg cursor-pointer group"
                 >
                   <X className="w-5 h-5 transition-transform duration-200 group-hover:rotate-90" />

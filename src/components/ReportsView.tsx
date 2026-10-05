@@ -296,7 +296,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
             <span className="text-xs text-zinc-500 font-bold font-mono">°C</span>
           </div>
           <span className="text-[11px] text-zinc-400 font-medium block mt-1 font-mono">
-            Operating: 70.0°C – 115.0°C
+            Operating: 70.0°C - 115.0°C
           </span>
         </div>
       </div>
@@ -370,7 +370,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
           <div className="telemetry-card p-4 rounded-xl space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wide font-display">
-                Shift 1 (0800 – 1500)
+                Shift 1 (0800-1500)
               </span>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-mono">
                 Active ({s1Saved.length}/8 Hrs)
@@ -395,7 +395,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
           <div className="telemetry-card p-4 rounded-xl space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wide font-display">
-                Shift 2 (1600 – 2300)
+                Shift 2 (1600-2300)
               </span>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-zinc-200/80 dark:bg-white/10 text-zinc-500 font-mono">
                 Pending Handover
@@ -420,7 +420,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
           <div className="telemetry-card p-4 rounded-xl space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wide font-display">
-                Shift 3 (2400 – 0700)
+                Shift 3 (2400-0700)
               </span>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-zinc-200/80 dark:bg-white/10 text-zinc-500 font-mono">
                 Pending Handover
@@ -459,9 +459,9 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
               className="px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-black/30 text-xs font-bold"
             >
               <option value="ALL">All 24 Hours</option>
-              <option value="1">Shift 1 (0800–1500)</option>
-              <option value="2">Shift 2 (1600–2300)</option>
-              <option value="3">Shift 3 (2400–0700)</option>
+              <option value="1">Shift 1 (0800-1500)</option>
+              <option value="2">Shift 2 (1600-2300)</option>
+              <option value="3">Shift 3 (2400-0700)</option>
             </select>
           </div>
         </div>

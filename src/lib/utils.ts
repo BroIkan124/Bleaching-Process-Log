@@ -44,7 +44,7 @@ export function validateReadingSpecs(entry: Partial<LogEntry>): OutOfSpecFlag[] 
           field: 'he_temp_c',
           value: temp,
           rule: `70.0 - 115.0 °C`,
-          message: `HE Temp ${temp}°C is out of allowable limit (70.0–115.0°C)`,
+          message: `HE Temp ${temp}°C is out of allowable limit (70.0-115.0°C)`,
         });
       }
     }

@@ -45,7 +45,7 @@ export const FloatingBottomDock: React.FC<FloatingBottomDockProps> = ({
       <nav 
         role="tablist"
         aria-label="Dashboard Views"
-        className="glass-panel flex items-center gap-1 sm:gap-1.5 p-1.5 rounded-2xl bg-white/85 dark:bg-[#0E1626]/85 backdrop-blur-2xl border border-zinc-200/90 dark:border-white/12 shadow-[0_20px_50px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.9)] dark:shadow-[0_24px_60px_rgba(0,0,0,0.65),inset_0_1px_0_rgba(255,255,255,0.12)] ring-1 ring-black/5 dark:ring-white/5"
+        className="glass-panel flex items-center gap-1 sm:gap-1.5 p-1.5 rounded-2xl bg-white/90 dark:bg-[#080C14]/90 backdrop-blur-2xl border border-zinc-200/90 dark:border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.14),inset_0_1px_0_rgba(255,255,255,0.9)] dark:shadow-[0_24px_60px_rgba(0,0,0,0.75),inset_0_1px_0_rgba(255,255,255,0.1)] ring-1 ring-black/5 dark:ring-white/5"
       >
         {/* Tab 1: Bleaching Process Log */}
         <button
@@ -54,9 +54,9 @@ export const FloatingBottomDock: React.FC<FloatingBottomDockProps> = ({
           id="tab-bleaching"
           aria-selected={activeTab === 'bleaching'}
           onClick={() => onTabChange('bleaching')}
-          className={`dock-pill-btn group relative flex items-center gap-2 px-3 sm:px-3.5 py-2 rounded-xl text-xs font-bold select-none shrink-0 cursor-pointer transition-all duration-200 ${
+          className={`dock-pill-btn group relative flex items-center gap-2 px-3 sm:px-3.5 py-2 rounded-xl text-xs font-bold select-none shrink-0 cursor-pointer ${
             activeTab === 'bleaching'
-              ? 'btn-premium-amber text-white shadow-[0_4px_16px_rgba(217,119,6,0.45),inset_0_1px_0_rgba(255,255,255,0.35)] scale-[1.02]'
+              ? 'btn-premium-amber text-white shadow-[0_4px_16px_rgba(217,119,6,0.45),inset_0_1px_0_rgba(255,255,255,0.35)]'
               : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100/80 dark:hover:bg-white/5'
           }`}
         >
@@ -78,9 +78,9 @@ export const FloatingBottomDock: React.FC<FloatingBottomDockProps> = ({
           id="tab-qc"
           aria-selected={activeTab === 'qc'}
           onClick={() => onTabChange('qc')}
-          className={`dock-pill-btn group relative flex items-center gap-2 px-3 sm:px-3.5 py-2 rounded-xl text-xs font-bold select-none shrink-0 cursor-pointer transition-all duration-200 ${
+          className={`dock-pill-btn group relative flex items-center gap-2 px-3 sm:px-3.5 py-2 rounded-xl text-xs font-bold select-none shrink-0 cursor-pointer ${
             activeTab === 'qc'
-              ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-[0_4px_16px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.25)] scale-[1.02]'
+              ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-[0_4px_16px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.25)]'
               : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100/80 dark:hover:bg-white/5'
           }`}
         >
@@ -103,9 +103,9 @@ export const FloatingBottomDock: React.FC<FloatingBottomDockProps> = ({
           id="tab-reports"
           aria-selected={activeTab === 'reports'}
           onClick={() => onTabChange('reports')}
-          className={`dock-pill-btn group relative flex items-center gap-2 px-3 sm:px-3.5 py-2 rounded-xl text-xs font-bold select-none shrink-0 cursor-pointer transition-all duration-200 ${
+          className={`dock-pill-btn group relative flex items-center gap-2 px-3 sm:px-3.5 py-2 rounded-xl text-xs font-bold select-none shrink-0 cursor-pointer ${
             activeTab === 'reports'
-              ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-[0_4px_16px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.25)] scale-[1.02]'
+              ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-[0_4px_16px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.25)]'
               : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100/80 dark:hover:bg-white/5'
           }`}
         >
@@ -121,9 +121,9 @@ export const FloatingBottomDock: React.FC<FloatingBottomDockProps> = ({
             id="tab-supervisor"
             aria-selected={activeTab === 'supervisor'}
             onClick={() => onTabChange('supervisor')}
-            className={`dock-pill-btn group relative flex items-center gap-2 px-3 sm:px-3.5 py-2 rounded-xl text-xs font-bold select-none shrink-0 cursor-pointer transition-all duration-200 ${
+            className={`dock-pill-btn group relative flex items-center gap-2 px-3 sm:px-3.5 py-2 rounded-xl text-xs font-bold select-none shrink-0 cursor-pointer ${
               activeTab === 'supervisor'
-                ? 'btn-premium-emerald text-white shadow-[0_4px_16px_rgba(16,185,129,0.45),inset_0_1px_0_rgba(255,255,255,0.35)] scale-[1.02]'
+                ? 'btn-premium-emerald text-white shadow-[0_4px_16px_rgba(16,185,129,0.45),inset_0_1px_0_rgba(255,255,255,0.35)]'
                 : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100/80 dark:hover:bg-white/5'
             }`}
           >
@@ -146,9 +146,9 @@ export const FloatingBottomDock: React.FC<FloatingBottomDockProps> = ({
             id="tab-users"
             aria-selected={activeTab === 'users'}
             onClick={() => onTabChange('users')}
-            className={`dock-pill-btn group relative flex items-center gap-2 px-3 sm:px-3.5 py-2 rounded-xl text-xs font-bold select-none shrink-0 cursor-pointer transition-all duration-200 ${
+            className={`dock-pill-btn group relative flex items-center gap-2 px-3 sm:px-3.5 py-2 rounded-xl text-xs font-bold select-none shrink-0 cursor-pointer ${
               activeTab === 'users'
-                ? 'bg-gradient-to-b from-purple-500 to-purple-600 text-white shadow-[0_4px_16px_rgba(168,85,247,0.45),inset_0_1px_0_rgba(255,255,255,0.35)] scale-[1.02]'
+                ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-[0_4px_16px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.25)]'
                 : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100/80 dark:hover:bg-white/5'
             }`}
           >

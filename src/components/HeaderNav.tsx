@@ -107,11 +107,11 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-30 w-full border-b border-zinc-200/90 dark:border-zinc-800/90 bg-white/90 dark:bg-[#0E1626]/90 backdrop-blur-2xl shadow-xs">
+    <header className="sticky top-0 z-30 w-full border-b border-zinc-200/80 dark:border-white/[0.08] bg-white/90 dark:bg-[#080C14]/90 backdrop-blur-2xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.5)]">
       <div className="max-w-[1680px] mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3">
         {/* Left: Brand Identity & Active Section */}
         <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 flex items-center justify-center text-white shadow-md font-display font-bold shrink-0 border border-amber-400/30">
+          <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 flex items-center justify-center text-white shadow-[0_2px_10px_rgba(217,119,6,0.35)] font-display font-bold shrink-0 border border-amber-400/40">
             <Building2 className="w-5 h-5" />
           </div>
           <div>
@@ -126,7 +126,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
               {activeTab === "bleaching" && getStatusBadge()}
             </div>
             <p className="text-[11px] text-zinc-500 font-medium hidden lg:block">
-              Nisshin Process Management System · Refinery Plant Control Line 1
+              Nisshin Process Management System - Refinery Plant Control Line 1
             </p>
           </div>
         </div>
@@ -137,7 +137,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
             <Clock className="w-3.5 h-3.5 text-amber-500" />
             <span className="text-zinc-500 dark:text-zinc-400">Shift:</span>
             <span className="font-bold text-zinc-900 dark:text-zinc-100 font-mono tracking-tight">
-              Shift {currentShift} {currentShift === 1 ? '(0800–1500)' : currentShift === 2 ? '(1600–2300)' : '(2400–0700)'}
+              Shift {currentShift} {currentShift === 1 ? '(0800-1500)' : currentShift === 2 ? '(1600-2300)' : '(2400-0700)'}
             </span>
           </div>
 

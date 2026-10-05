@@ -33,8 +33,17 @@ export const SupervisorReviewModal: React.FC<SupervisorReviewModalProps> = ({
 }) => {
   const [reviewNote, setReviewNote] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [isClosing, setIsClosing] = useState(false);
 
   if (!isOpen) return null;
+
+  const handleSmoothClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      onClose();
+    }, 200);
+  };
 
   // Count out of spec slots
   const outOfSpecSlots = sheet.entries.filter(e => e.out_of_spec && e.out_of_spec.length > 0);
@@ -43,7 +52,7 @@ export const SupervisorReviewModal: React.FC<SupervisorReviewModalProps> = ({
   const handleApprove = () => {
     setError(null);
     onApprove(reviewNote);
-    onClose();
+    handleSmoothClose();
   };
 
   const handleReturn = () => {
@@ -53,12 +62,23 @@ export const SupervisorReviewModal: React.FC<SupervisorReviewModalProps> = ({
     }
     setError(null);
     onReturn(reviewNote);
-    onClose();
+    handleSmoothClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
-      <div className="w-full max-w-2xl bg-white/95 dark:bg-[#0E1626]/95 backdrop-blur-2xl rounded-2xl border border-zinc-200/90 dark:border-white/10 shadow-[0_25px_60px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col max-h-[90vh]">
+    <div 
+      className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm transition-opacity duration-200 ${
+        isClosing ? "opacity-0 pointer-events-none" : "opacity-100"
+      }`}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) handleSmoothClose();
+      }}
+    >
+      <div 
+        className={`w-full max-w-2xl bg-white dark:bg-[#0D1424] rounded-2xl border border-zinc-200/90 dark:border-white/10 shadow-[0_25px_60px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col max-h-[90vh] transform transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          isClosing ? "scale-95 opacity-0" : "scale-100 opacity-100"
+        }`}
+      >
         {/* Header */}
         <div className="px-6 py-4 border-b border-zinc-200 dark:border-white/10 bg-zinc-50/80 dark:bg-black/30 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -75,7 +95,7 @@ export const SupervisorReviewModal: React.FC<SupervisorReviewModalProps> = ({
             </div>
           </div>
           <button 
-            onClick={onClose} 
+            onClick={handleSmoothClose} 
             className="btn-tactile p-2 rounded-xl text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/5 cursor-pointer group transition-all"
           >
             <X className="w-5 h-5 transition-transform duration-200 group-hover:rotate-90" />
@@ -155,7 +175,7 @@ export const SupervisorReviewModal: React.FC<SupervisorReviewModalProps> = ({
         {/* Footer Actions */}
         <div className="px-6 py-4 border-t border-zinc-200 dark:border-white/10 bg-zinc-50/80 dark:bg-black/30 flex items-center justify-between gap-3">
           <button
-            onClick={onClose}
+            onClick={handleSmoothClose}
             className="btn-tactile px-4 py-2 rounded-xl text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200/60 dark:hover:bg-white/5 border border-zinc-200 dark:border-white/10 cursor-pointer"
           >
             Close

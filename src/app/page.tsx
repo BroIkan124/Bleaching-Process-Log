@@ -75,8 +75,22 @@ export default function BleachingProcessLogApp() {
 
   // 4. Core Bleaching Log State
   const [sheet, setSheet] = useState<LogSheet>(() => createMockSheet());
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState(true);
   const [isOffline, setIsOffline] = useState(false);
+
+  // Initialize theme from localStorage or default to Deep Industrial Dark
+  useEffect(() => {
+    try {
+      const savedTheme = localStorage.getItem("nisshin_theme");
+      if (savedTheme !== null) {
+        setIsDark(savedTheme === "dark");
+      } else {
+        setIsDark(true);
+      }
+    } catch {
+      setIsDark(true);
+    }
+  }, []);
 
   // 5. Interaction State
   const [selectedSlotIndex, setSelectedSlotIndex] = useState<number>(0);
@@ -93,8 +107,10 @@ export default function BleachingProcessLogApp() {
   useEffect(() => {
     if (isDark) {
       document.documentElement.classList.add("dark");
+      try { localStorage.setItem("nisshin_theme", "dark"); } catch {}
     } else {
       document.documentElement.classList.remove("dark");
+      try { localStorage.setItem("nisshin_theme", "light"); } catch {}
     }
   }, [isDark]);
 
@@ -392,7 +408,7 @@ export default function BleachingProcessLogApp() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[var(--bg-primary)] text-[var(--text-main)] transition-colors">
+    <div className="min-h-screen flex flex-col bg-[var(--bg-primary)] text-[var(--text-main)] transition-colors animate-in fade-in duration-300">
       {/* 1. Header Navigation with Dynamic Tab Pill & User Auth Button */}
       <HeaderNav
         sheetStatus={sheet.status}
@@ -429,87 +445,89 @@ export default function BleachingProcessLogApp() {
 
       {/* Main Workspace Body */}
       <main className="flex-1 max-w-[1680px] w-full mx-auto p-3 sm:p-5 pb-28 sm:pb-32">
-        {/* Tab 1: Bleaching Process Log (RF-FR-003) */}
-        {activeTab === 'bleaching' && (
-          <>
-            {/* Banner if Sheet was Returned */}
-            {sheet.status === 'Returned' && sheet.review_note && (
-              <div className="mb-4 p-4 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-200 flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
-                <div>
-                  <span className="font-bold">Sheet Returned by Supervisor ({sheet.reviewed_by_name}):</span>
-                  <p className="text-xs mt-1 font-mono">{sheet.review_note}</p>
+        <div key={activeTab} className="fade-in-tactile">
+          {/* Tab 1: Bleaching Process Log (RF-FR-003) */}
+          {activeTab === 'bleaching' && (
+            <>
+              {/* Banner if Sheet was Returned */}
+              {sheet.status === 'Returned' && sheet.review_note && (
+                <div className="mb-4 p-4 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-200 flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold">Sheet Returned by Supervisor ({sheet.reviewed_by_name}):</span>
+                    <p className="text-xs mt-1 font-mono">{sheet.review_note}</p>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Operating Parameters Header */}
-            <SheetHeaderParameters
-              sheet={sheet}
-              plants={MOCK_PLANTS}
-              products={MOCK_PRODUCTS}
-              tanks={MOCK_TANKS}
-              isLocked={isSheetLocked}
-              onUpdateHeader={handleUpdateHeader}
-            />
+              {/* Operating Parameters Header */}
+              <SheetHeaderParameters
+                sheet={sheet}
+                plants={MOCK_PLANTS}
+                products={MOCK_PRODUCTS}
+                tanks={MOCK_TANKS}
+                isLocked={isSheetLocked}
+                onUpdateHeader={handleUpdateHeader}
+              />
 
-            {/* 24-Hour Timeline Slot Rail */}
-            <SlotRail
-              entries={sheet.entries}
-              selectedSlotIndex={selectedSlotIndex}
-              onSelectSlot={handleSelectSlot}
-              activeCurrentHourIndex={currentSlotIndex}
-            />
+              {/* 24-Hour Timeline Slot Rail */}
+              <SlotRail
+                entries={sheet.entries}
+                selectedSlotIndex={selectedSlotIndex}
+                onSelectSlot={handleSelectSlot}
+                activeCurrentHourIndex={currentSlotIndex}
+              />
 
-            {/* Full 24-Slot Paper-Like Grid */}
-            <HourlyTableGrid
-              entries={sheet.entries}
-              currentShift={currentShift}
+              {/* Full 24-Slot Paper-Like Grid */}
+              <HourlyTableGrid
+                entries={sheet.entries}
+                currentShift={currentShift}
+                currentUser={currentUser}
+                isLocked={isSheetLocked}
+                onSelectSlot={handleSelectSlot}
+                selectedSlotIndex={selectedSlotIndex}
+              />
+            </>
+          )}
+
+          {/* Tab 2: QC Management Tab View */}
+          {activeTab === 'qc' && (
+            <QCManagementView
               currentUser={currentUser}
-              isLocked={isSheetLocked}
-              onSelectSlot={handleSelectSlot}
-              selectedSlotIndex={selectedSlotIndex}
+              isDark={isDark}
             />
-          </>
-        )}
+          )}
 
-        {/* Tab 2: QC Management Tab View */}
-        {activeTab === 'qc' && (
-          <QCManagementView
-            currentUser={currentUser}
-            isDark={isDark}
-          />
-        )}
+          {/* Tab 3: Reports & Analytics Tab View */}
+          {activeTab === 'reports' && (
+            <ReportsView
+              sheet={sheet}
+              currentUser={currentUser}
+            />
+          )}
 
-        {/* Tab 3: Reports & Analytics Tab View */}
-        {activeTab === 'reports' && (
-          <ReportsView
-            sheet={sheet}
-            currentUser={currentUser}
-          />
-        )}
+          {/* Tab 4: Supervisor Monitoring View */}
+          {activeTab === 'supervisor' && (
+            <SupervisorMonitoringView
+              currentUser={currentUser}
+              sheet={sheet}
+              events={supervisorEvents}
+              onAcknowledgeEvent={handleAcknowledgeEvent}
+              onOpenReviewModal={() => setIsReviewOpen(true)}
+              onOpenPdfModal={() => setIsPdfOpen(true)}
+            />
+          )}
 
-        {/* Tab 4: Supervisor Monitoring View */}
-        {activeTab === 'supervisor' && (
-          <SupervisorMonitoringView
-            currentUser={currentUser}
-            sheet={sheet}
-            events={supervisorEvents}
-            onAcknowledgeEvent={handleAcknowledgeEvent}
-            onOpenReviewModal={() => setIsReviewOpen(true)}
-            onOpenPdfModal={() => setIsPdfOpen(true)}
-          />
-        )}
-
-        {/* Tab 5: Admin User Management View */}
-        {activeTab === 'users' && (
-          <UserManagementView
-            currentUser={currentUser}
-            users={allUsers}
-            onUpdateUsers={setAllUsers}
-            onRequestLoginModal={handleLogout}
-          />
-        )}
+          {/* Tab 5: Admin User Management View */}
+          {activeTab === 'users' && (
+            <UserManagementView
+              currentUser={currentUser}
+              users={allUsers}
+              onUpdateUsers={setAllUsers}
+              onRequestLoginModal={handleLogout}
+            />
+          )}
+        </div>
       </main>
 
       {/* Hourly Entry Drawer (Bleaching Tab) */}

@@ -44,13 +44,13 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
   const currentDischarge = dischargeTanks.find((t) => t.id === sheet.discharge_tank_id)?.name || "TK-201";
 
   return (
-    <div className="glass-panel rounded-2xl overflow-hidden mb-5 transition-all shadow-sm hover:shadow-md">
+    <div className="glass-panel rounded-2xl overflow-hidden mb-5 transition-all shadow-sm hover:shadow-md border border-zinc-200/80 dark:border-white/[0.08]">
       {/* 1. Sleek Compact Parameter Summary Bar */}
-      <div className="px-4 sm:px-5 py-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-zinc-50/80 dark:bg-[#121A2A]/80 border-b border-zinc-200/80 dark:border-zinc-800/80">
+      <div className="px-4 sm:px-5 py-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-zinc-50/80 dark:bg-[#0D1424]/80 border-b border-zinc-200/80 dark:border-white/[0.08]">
         {/* Left: Key Meta Badges */}
         <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20 shadow-2xs">
+            <div className="p-2 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/25 shadow-2xs">
               <Factory className="w-4 h-4" />
             </div>
             <div>
@@ -58,7 +58,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                 {currentPlant}
               </span>
               <span className="text-[11px] text-zinc-500 font-medium block leading-none mt-1">
-                {currentProduct} · Date: <span className="font-mono text-zinc-800 dark:text-zinc-200 font-bold">{sheet.sheet_date}</span>
+                {currentProduct} - Date: <span className="font-mono text-zinc-800 dark:text-zinc-200 font-bold">{sheet.sheet_date}</span>
               </span>
             </div>
           </div>
@@ -67,10 +67,10 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
 
           {/* Quick Telemetry Chips */}
           <div className="flex items-center gap-2 text-xs flex-wrap">
-            <span className="px-2.5 py-1 rounded-lg bg-white/90 dark:bg-zinc-900/90 border border-zinc-200/90 dark:border-zinc-700/80 text-zinc-700 dark:text-zinc-300 font-medium shadow-2xs">
+            <span className="px-2.5 py-1 rounded-lg bg-white/90 dark:bg-white/[0.06] border border-zinc-200/90 dark:border-white/[0.08] text-zinc-700 dark:text-zinc-300 font-medium shadow-2xs">
               Feed: <strong className="text-zinc-900 dark:text-zinc-100 font-mono">{currentFeed.split(" ")[0]}</strong>
             </span>
-            <span className="px-2.5 py-1 rounded-lg bg-white/90 dark:bg-zinc-900/90 border border-zinc-200/90 dark:border-zinc-700/80 text-zinc-700 dark:text-zinc-300 font-medium shadow-2xs">
+            <span className="px-2.5 py-1 rounded-lg bg-white/90 dark:bg-white/[0.06] border border-zinc-200/90 dark:border-white/[0.08] text-zinc-700 dark:text-zinc-300 font-medium shadow-2xs">
               Discharge: <strong className="text-zinc-900 dark:text-zinc-100 font-mono">{currentDischarge.split(" ")[0]}</strong>
             </span>
             <span className="px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 font-mono font-bold shadow-2xs flex items-center gap-1.5">
@@ -103,8 +103,13 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
       </div>
 
       {/* 2. Structured Expanded Settings Grid */}
-      {isExpanded && (
-        <div className="p-5 space-y-5 animate-in slide-in-from-top-2 duration-200 text-xs">
+      <div 
+        className={`grid transition-[grid-template-rows,opacity] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] ${
+          isExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0 pointer-events-none"
+        }`}
+      >
+        <div className="overflow-hidden">
+          <div className="p-5 space-y-5 text-xs">
           {/* Group 1: Plant & Tank Logistics */}
           <div className="space-y-2">
             <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500 flex items-center gap-1.5">
@@ -379,7 +384,8 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
             </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
+  </div>
   );
 };

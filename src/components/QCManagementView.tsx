@@ -24,7 +24,8 @@ import {
   Database,
   Building2,
   Sparkles,
-  Tag
+  Tag,
+  Droplets
 } from "lucide-react";
 import { syncQcSampleToInsForge, logActivityToInsForge } from "@/lib/dbService";
 import { RadioSelect } from "./RadioSelect";
@@ -840,14 +841,19 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                       title="Add a custom oil product to the catalog"
                     >
                       <Plus className="w-3.5 h-3.5" />
-                      <span>+ Add Product</span>
+                      <span>Add Product</span>
                     </button>
                   )}
                 </div>
                 <RadioSelect
                   value={newSample.product_name}
+                  icon={<Droplets className="w-3.5 h-3.5 text-amber-500 shrink-0" />}
                   onChange={(val) => setNewSample({ ...newSample, product_name: val })}
-                  options={availableProducts.map((p) => p.name)}
+                  options={availableProducts.map((p) => ({
+                    value: p.name,
+                    label: p.name,
+                    icon: <Droplets className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                  }))}
                   searchable={true}
                   onAddCustom={onAddProduct ? () => setIsAddProdModalOpen(true) : undefined}
                   addCustomLabel="+ Register New Product..."
@@ -905,10 +911,10 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
         </div>
       )}
 
-      {/* Modal: Add Custom Product in QC Management */}
-      {isAddProdModalOpen && onAddProduct && (
+      {/* Modal: Add Custom Product in QC Management (Portalled to document.body for full viewport coverage) */}
+      {isAddProdModalOpen && onAddProduct && typeof document !== "undefined" && createPortal(
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in"
+          className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
           onClick={(e) => {
             if (e.target === e.currentTarget) setIsAddProdModalOpen(false);
           }}
@@ -998,13 +1004,14 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {/* 6. Modal: Print-Ready Official QC Certificate (RF-FR-001) */}
-      {isCertificateOpen && selectedReport && (
+      {/* 6. Modal: Print-Ready Official QC Certificate (RF-FR-001) (Portalled to document.body) */}
+      {isCertificateOpen && selectedReport && typeof document !== "undefined" && createPortal(
         <div 
-          className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto modal-backdrop-animate ${
+          className={`fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto modal-backdrop-animate ${
             isClosingCertificate ? "is-closing" : ""
           }`}
           onClick={(e) => {
@@ -1111,7 +1118,8 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

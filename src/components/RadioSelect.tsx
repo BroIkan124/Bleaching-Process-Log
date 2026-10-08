@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useId } from "react";
+import { createPortal } from "react-dom";
 import { 
   ChevronDown, 
   Check, 
@@ -63,45 +64,38 @@ function getDefaultIcon(label: string, value: string): React.ReactNode {
   const text = `${label} ${value}`.toLowerCase();
   
   if (text.includes("plant") || text.includes("line 1") || text.includes("line 2") || text.includes("fractionation")) {
-    return <Factory className="w-3.5 h-3.5 text-amber-500" />;
+    return <Factory className="w-3.5 h-3.5 text-amber-500 shrink-0" />;
   }
   if (text.includes("acid") || text.includes("phosphoric") || text.includes("citric")) {
-    return <Beaker className="w-3.5 h-3.5 text-sky-400" />;
+    return <Beaker className="w-3.5 h-3.5 text-sky-400 shrink-0" />;
   }
   if (text.includes("feed") || text.includes("discharge") || text.includes("tank")) {
-    return <Database className="w-3.5 h-3.5 text-emerald-400" />;
-  }
-  if (text.includes("oil") || text.includes("rbd") || text.includes("chocohi") || text.includes("daisy") || text.includes("palm")) {
-    return <Droplets className="w-3.5 h-3.5 text-amber-400" />;
+    return <Database className="w-3.5 h-3.5 text-emerald-400 shrink-0" />;
   }
   if (text.includes("alert") || text.includes("critical")) {
-    return <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />;
+    return <ShieldAlert className="w-3.5 h-3.5 text-rose-400 shrink-0" />;
   }
   if (text.includes("warning") || text.includes("attention")) {
-    return <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />;
+    return <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />;
   }
   if (text.includes("success") || text.includes("in-spec")) {
-    return <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />;
+    return <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />;
   }
   if (text.includes("info")) {
-    return <Info className="w-3.5 h-3.5 text-blue-400" />;
+    return <Info className="w-3.5 h-3.5 text-blue-400 shrink-0" />;
   }
   if (text.includes("shift") || text.includes("today") || text.includes("days") || text.includes("month") || text.includes("24 hour")) {
-    return <Clock className="w-3.5 h-3.5 text-amber-400" />;
+    return <Clock className="w-3.5 h-3.5 text-amber-400 shrink-0" />;
   }
   if (text.includes("admin") || text.includes("supervisor") || text.includes("qa") || text.includes("technician") || text.includes("chemist")) {
-    return <Shield className="w-3.5 h-3.5 text-indigo-400" />;
+    return <Shield className="w-3.5 h-3.5 text-indigo-400 shrink-0" />;
   }
   if (text.includes("log") || text.includes("operating") || text.includes("source")) {
-    return <Sliders className="w-3.5 h-3.5 text-violet-400" />;
+    return <Sliders className="w-3.5 h-3.5 text-violet-400 shrink-0" />;
   }
   
-  // Default clean radio dot icon
-  return (
-    <svg viewBox="0 0 16 16" className="w-3.5 h-3.5 flex-shrink-0 text-zinc-400" fill="currentColor">
-      <circle cx="8" cy="8" r="4" opacity="0.7" />
-    </svg>
-  );
+  // ALL refinery oil product types (DF 20, FARM COW, G9, CHOCOHI, etc.) and general options get the golden oil droplets icon!
+  return <Droplets className="w-3.5 h-3.5 text-amber-500 shrink-0" />;
 }
 
 export function RadioSelect({
@@ -158,13 +152,45 @@ export function RadioSelect({
 
   const stringValue = value !== undefined && value !== null ? String(value) : "";
   const selectedOption = normalizedOptions.find((opt) => String(opt.value) === stringValue);
+  const [triggerRect, setTriggerRect] = useState<DOMRect | null>(null);
 
-  // Close on outside click
+  // Realtime positioning coordinates calculation
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const updatePosition = () => {
+      if (triggerRef.current) {
+        const rect = triggerRef.current.getBoundingClientRect();
+        setTriggerRect(rect);
+        const spaceBelow = window.innerHeight - rect.bottom;
+        if (direction === "auto") {
+          setOpenUpward(spaceBelow < 250 && rect.top > 250);
+        } else if (direction === "up") {
+          setOpenUpward(true);
+        } else {
+          setOpenUpward(false);
+        }
+      }
+    };
+
+    updatePosition();
+    window.addEventListener("scroll", updatePosition, true);
+    window.addEventListener("resize", updatePosition);
+    return () => {
+      window.removeEventListener("scroll", updatePosition, true);
+      window.removeEventListener("resize", updatePosition);
+    };
+  }, [isOpen, direction]);
+
+  // Close on outside click (supporting portal mounted in document.body)
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
+      const target = event.target as Node;
       if (
         containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
+        !containerRef.current.contains(target) &&
+        menuRef.current &&
+        !menuRef.current.contains(target)
       ) {
         setIsOpen(false);
       }
@@ -177,24 +203,6 @@ export function RadioSelect({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen]);
-
-  // Check collision for upward opening
-  useEffect(() => {
-    if (isOpen && direction === "auto" && triggerRef.current) {
-      const rect = triggerRef.current.getBoundingClientRect();
-      const spaceBelow = window.innerHeight - rect.bottom;
-      // If space below is less than 220px and space above is greater, open upward
-      if (spaceBelow < 220 && rect.top > 220) {
-        setOpenUpward(true);
-      } else {
-        setOpenUpward(false);
-      }
-    } else if (direction === "up") {
-      setOpenUpward(true);
-    } else {
-      setOpenUpward(false);
-    }
-  }, [isOpen, direction]);
 
   // Keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -333,16 +341,23 @@ export function RadioSelect({
         />
       </button>
 
-      {/* Dropdown Menu — Option.css Uiverse 3D Design */}
-      {isOpen && (
+      {/* Dropdown Menu — Option.css Uiverse 3D Design portalled to document.body */}
+      {isOpen && triggerRect && typeof document !== "undefined" && createPortal(
         <div
           ref={menuRef}
           role="listbox"
           tabIndex={-1}
-          style={{ width: menuWidth || "100%" }}
-          className={`radio-option-container absolute z-[120] max-h-72 flex flex-col overflow-hidden animate-scale-in shadow-2xl ${
-            openUpward ? "bottom-full mb-1.5 origin-bottom" : "top-full mt-1.5 origin-top"
-          } ${align === "right" ? "right-0" : "left-0"} ${menuClassName}`}
+          style={{
+            position: "fixed",
+            top: openUpward ? `${triggerRect.top - 6}px` : `${triggerRect.bottom + 6}px`,
+            transform: openUpward ? "translateY(-100%)" : "none",
+            left: align === "right" ? "auto" : `${triggerRect.left}px`,
+            right: align === "right" ? `${window.innerWidth - triggerRect.right}px` : "auto",
+            transformOrigin: openUpward ? "bottom" : "top",
+            width: menuWidth || `${triggerRect.width}px`,
+            zIndex: 99999,
+          }}
+          className={`radio-option-container max-h-72 flex flex-col overflow-hidden animate-scale-in shadow-2xl ${menuClassName}`}
         >
           {/* Quick Search Header */}
           {isSearchEnabled && (
@@ -424,7 +439,8 @@ export function RadioSelect({
               </button>
             </div>
           )}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

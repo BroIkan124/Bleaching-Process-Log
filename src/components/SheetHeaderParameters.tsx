@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { createPortal } from "react-dom";
 import { LogSheet, Plant, Product, Tank } from "@/types";
 import { 
   Sliders, 
@@ -12,6 +13,7 @@ import {
   Calendar, 
   Sparkles,
   Droplet,
+  Droplets,
   CheckCircle2,
   Settings2,
   Plus,
@@ -52,7 +54,9 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
   const currentDischarge = dischargeTanks.find((t) => t.id === sheet.discharge_tank_id)?.name || "TK-201";
 
   return (
-    <div className="glass-panel rounded-2xl overflow-hidden mb-5 transition-all shadow-md hover:shadow-xl border border-zinc-200/90 dark:border-white/10 [transform-style:preserve-3d]">
+    <div className={`glass-panel rounded-2xl mb-5 transition-all shadow-md hover:shadow-xl border border-zinc-200/90 dark:border-white/10 ${
+      isExpanded ? "overflow-visible relative z-30" : "overflow-hidden"
+    }`}>
       {/* 1. Sleek Compact Parameter Summary Bar with 3D Depth */}
       <div className="px-4 sm:px-5 py-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-gradient-to-r from-zinc-50 via-zinc-100/70 to-zinc-50 dark:from-[#0D1424] dark:via-[#131D33] dark:to-[#0D1424] border-b border-zinc-200/80 dark:border-white/10">
         {/* Left: Key Meta Badges */}
@@ -153,13 +157,14 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                       title="Register a new oil product into the plant catalog"
                     >
                       <Plus className="w-3.5 h-3.5" />
-                      <span>+ Add Product</span>
+                      <span>Add Product</span>
                     </button>
                   )}
                 </div>
                 <RadioSelect
                   disabled={isLocked}
                   value={sheet.product_id}
+                  icon={<Droplets className="w-3.5 h-3.5 text-amber-500 shrink-0" />}
                   onChange={(val) => {
                     const chosen = products.find((p) => p.id === val);
                     onUpdateHeader({
@@ -167,7 +172,11 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                       product_name: chosen?.name || sheet.product_name,
                     });
                   }}
-                  options={products.map((p) => ({ value: p.id, label: p.name }))}
+                  options={products.map((p) => ({ 
+                    value: p.id, 
+                    label: p.name,
+                    icon: <Droplets className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                  }))}
                   searchable={true}
                   onAddCustom={onAddProduct && !isLocked ? () => setIsAddProductModalOpen(true) : undefined}
                   addCustomLabel="+ Register New Product..."
@@ -409,10 +418,10 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
       </div>
     </div>
 
-      {/* Modal: Add New Oil Product */}
-      {isAddProductModalOpen && onAddProduct && (
+      {/* Modal: Add New Oil Product (Portalled to document.body for full viewport coverage) */}
+      {isAddProductModalOpen && onAddProduct && typeof document !== "undefined" && createPortal(
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in"
+          className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
           onClick={(e) => {
             if (e.target === e.currentTarget) setIsAddProductModalOpen(false);
           }}
@@ -496,7 +505,8 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

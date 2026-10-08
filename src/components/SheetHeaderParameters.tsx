@@ -15,6 +15,7 @@ import {
   CheckCircle2,
   Settings2
 } from "lucide-react";
+import { RadioSelect } from "./RadioSelect";
 
 interface SheetHeaderParametersProps {
   sheet: LogSheet;
@@ -44,37 +45,40 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
   const currentDischarge = dischargeTanks.find((t) => t.id === sheet.discharge_tank_id)?.name || "TK-201";
 
   return (
-    <div className="glass-panel rounded-2xl overflow-hidden mb-5 transition-all shadow-sm hover:shadow-md border border-zinc-200/80 dark:border-white/[0.08]">
-      {/* 1. Sleek Compact Parameter Summary Bar */}
-      <div className="px-4 sm:px-5 py-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-zinc-50/80 dark:bg-[#0D1424]/80 border-b border-zinc-200/80 dark:border-white/[0.08]">
+    <div className="glass-panel rounded-2xl overflow-hidden mb-5 transition-all shadow-md hover:shadow-xl border border-zinc-200/90 dark:border-white/10 [transform-style:preserve-3d]">
+      {/* 1. Sleek Compact Parameter Summary Bar with 3D Depth */}
+      <div className="px-4 sm:px-5 py-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-gradient-to-r from-zinc-50 via-zinc-100/70 to-zinc-50 dark:from-[#0D1424] dark:via-[#131D33] dark:to-[#0D1424] border-b border-zinc-200/80 dark:border-white/10">
         {/* Left: Key Meta Badges */}
         <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/25 shadow-2xs">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 shadow-[0_2px_8px_rgba(245,158,11,0.2)]">
               <Factory className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 block leading-tight">
+              <span className="text-xs font-bold font-display uppercase tracking-wider text-zinc-900 dark:text-zinc-100 block leading-tight">
                 {currentPlant}
               </span>
-              <span className="text-[11px] text-zinc-500 font-medium block leading-none mt-1">
-                {currentProduct} - Date: <span className="font-mono text-zinc-800 dark:text-zinc-200 font-bold">{sheet.sheet_date}</span>
+              <span className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium block leading-none mt-1">
+                {currentProduct} · Date: <span className="font-mono text-zinc-800 dark:text-zinc-200 font-bold">{sheet.sheet_date}</span>
               </span>
             </div>
           </div>
 
           <div className="h-4 w-[1px] bg-zinc-300 dark:bg-zinc-700 hidden sm:block" />
 
-          {/* Quick Telemetry Chips */}
+          {/* Quick 3D Telemetry Chips */}
           <div className="flex items-center gap-2 text-xs flex-wrap">
-            <span className="px-2.5 py-1 rounded-lg bg-white/90 dark:bg-white/[0.06] border border-zinc-200/90 dark:border-white/[0.08] text-zinc-700 dark:text-zinc-300 font-medium shadow-2xs">
-              Feed: <strong className="text-zinc-900 dark:text-zinc-100 font-mono">{currentFeed.split(" ")[0]}</strong>
+            <span className="px-2.5 py-1 rounded-lg bg-white/95 dark:bg-white/[0.08] border border-zinc-200/90 dark:border-white/10 text-zinc-700 dark:text-zinc-300 font-medium shadow-sm">
+              Feed: <strong className="text-zinc-900 dark:text-zinc-100 font-mono font-bold">{currentFeed.split(" ")[0]}</strong>
             </span>
-            <span className="px-2.5 py-1 rounded-lg bg-white/90 dark:bg-white/[0.06] border border-zinc-200/90 dark:border-white/[0.08] text-zinc-700 dark:text-zinc-300 font-medium shadow-2xs">
-              Discharge: <strong className="text-zinc-900 dark:text-zinc-100 font-mono">{currentDischarge.split(" ")[0]}</strong>
+            <span className="px-2.5 py-1 rounded-lg bg-white/95 dark:bg-white/[0.08] border border-zinc-200/90 dark:border-white/10 text-zinc-700 dark:text-zinc-300 font-medium shadow-sm">
+              Discharge: <strong className="text-zinc-900 dark:text-zinc-100 font-mono font-bold">{currentDischarge.split(" ")[0]}</strong>
             </span>
-            <span className="px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 font-mono font-bold shadow-2xs flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+            <span className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-500/15 to-amber-500/5 border border-amber-500/35 text-amber-700 dark:text-amber-300 font-mono font-bold shadow-sm flex items-center gap-1.5">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+              </span>
               <span>Target: {sheet.input_mt_hr ?? 45.0} MT/HR</span>
             </span>
           </div>
@@ -85,7 +89,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
           <button
             type="button"
             onClick={() => setIsExpanded(!isExpanded)}
-            className={`btn-tactile flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer group ${
+            className={`btn-tactile flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold cursor-pointer group shadow-sm ${
               isExpanded
                 ? "btn-premium-amber text-white"
                 : "btn-premium-glass text-zinc-700 dark:text-zinc-300"
@@ -105,10 +109,10 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
       {/* 2. Structured Expanded Settings Grid */}
       <div 
         className={`grid transition-[grid-template-rows,opacity] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] ${
-          isExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0 pointer-events-none"
+          isExpanded ? "grid-rows-[1fr] opacity-100 overflow-visible" : "grid-rows-[0fr] opacity-0 pointer-events-none overflow-hidden"
         }`}
       >
-        <div className="overflow-hidden">
+        <div className={isExpanded ? "overflow-visible" : "overflow-hidden"}>
           <div className="p-5 space-y-5 text-xs">
           {/* Group 1: Plant & Tank Logistics */}
           <div className="space-y-2">
@@ -121,105 +125,90 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                 <label className="block text-[11px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">
                   Plant / Production Line
                 </label>
-                <select
+                <RadioSelect
                   disabled={isLocked}
                   value={sheet.plant_id}
-                  onChange={(e) => onUpdateHeader({ plant_id: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-xs font-medium focus:ring-2 focus:ring-amber-500 disabled:opacity-60"
-                >
-                  {plants.map((p) => (
-                    <option key={p.id} value={p.id}>{p.name}</option>
-                  ))}
-                </select>
+                  onChange={(val) => onUpdateHeader({ plant_id: val })}
+                  options={plants.map((p) => ({ value: p.id, label: p.name }))}
+                />
               </div>
 
               <div>
                 <label className="block text-[11px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">
                   Oil Product Type
                 </label>
-                <select
+                <RadioSelect
                   disabled={isLocked}
                   value={sheet.product_id}
-                  onChange={(e) => onUpdateHeader({ product_id: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-xs font-medium focus:ring-2 focus:ring-amber-500 disabled:opacity-60"
-                >
-                  {products.map((p) => (
-                    <option key={p.id} value={p.id}>{p.name}</option>
-                  ))}
-                </select>
+                  onChange={(val) => onUpdateHeader({ product_id: val })}
+                  options={products.map((p) => ({ value: p.id, label: p.name }))}
+                />
               </div>
 
               <div>
                 <label className="block text-[11px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">
                   Feed Tank
                 </label>
-                <select
+                <RadioSelect
                   disabled={isLocked}
                   value={sheet.feed_tank_id}
-                  onChange={(e) => onUpdateHeader({ feed_tank_id: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-xs font-medium focus:ring-2 focus:ring-amber-500 disabled:opacity-60"
-                >
-                  {feedTanks.map((t) => (
-                    <option key={t.id} value={t.id}>{t.name}</option>
-                  ))}
-                </select>
+                  onChange={(val) => onUpdateHeader({ feed_tank_id: val })}
+                  options={feedTanks.map((t) => ({ value: t.id, label: t.name }))}
+                />
               </div>
 
               <div>
                 <label className="block text-[11px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">
                   Discharge Tank
                 </label>
-                <select
+                <RadioSelect
                   disabled={isLocked}
                   value={sheet.discharge_tank_id}
-                  onChange={(e) => onUpdateHeader({ discharge_tank_id: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-xs font-medium focus:ring-2 focus:ring-amber-500 disabled:opacity-60"
-                >
-                  {dischargeTanks.map((t) => (
-                    <option key={t.id} value={t.id}>{t.name}</option>
-                  ))}
-                </select>
+                  onChange={(val) => onUpdateHeader({ discharge_tank_id: val })}
+                  options={dischargeTanks.map((t) => ({ value: t.id, label: t.name }))}
+                />
               </div>
             </div>
           </div>
 
           {/* Group 2: Operational Target Parameters */}
-          <div className="space-y-2 pt-2 border-t border-zinc-200/70 dark:border-zinc-800/80">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500 flex items-center gap-1.5">
+          <div className="space-y-2.5 pt-2 border-t border-zinc-200/70 dark:border-white/10">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5 font-display">
+              <Sliders className="w-3.5 h-3.5 text-amber-500" />
               <span>2. Operating Specs &amp; Chemical Dosing</span>
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {/* Card 1: Input Flowrate */}
-              <div className="p-3.5 rounded-xl bg-zinc-50/80 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 space-y-2">
+              <div className="telemetry-card p-4 rounded-xl space-y-2.5">
                 <div className="flex items-center justify-between font-bold text-zinc-900 dark:text-zinc-100">
-                  <span className="flex items-center gap-1.5">
+                  <span className="flex items-center gap-1.5 font-display text-xs">
                     <Factory className="w-3.5 h-3.5 text-amber-500" />
                     <span>Flowrate Targets</span>
                   </span>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <span className="text-[10px] font-bold uppercase text-zinc-500 block mb-0.5">MT / Hour</span>
+                    <span className="text-[10px] font-bold uppercase text-zinc-500 dark:text-zinc-400 block mb-1">MT / Hour</span>
                     <input
                       type="number"
                       step="0.1"
                       disabled={isLocked}
                       value={sheet.input_mt_hr ?? ""}
                       onChange={(e) => onUpdateHeader({ input_mt_hr: parseFloat(e.target.value) || null })}
-                      className="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 font-mono text-xs font-bold text-zinc-900 dark:text-white"
+                      className="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 font-mono text-xs font-bold text-zinc-900 dark:text-white shadow-inner focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
                       placeholder="45.0"
                     />
                   </div>
                   <div>
-                    <span className="text-[10px] font-bold uppercase text-zinc-500 block mb-0.5">MT / Day</span>
+                    <span className="text-[10px] font-bold uppercase text-zinc-500 dark:text-zinc-400 block mb-1">MT / Day</span>
                     <input
                       type="number"
                       step="1"
                       disabled={isLocked}
                       value={sheet.input_mt_day ?? ""}
                       onChange={(e) => onUpdateHeader({ input_mt_day: parseFloat(e.target.value) || null })}
-                      className="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 font-mono text-xs font-bold text-zinc-900 dark:text-white"
+                      className="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 font-mono text-xs font-bold text-zinc-900 dark:text-white shadow-inner focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
                       placeholder="1080"
                     />
                   </div>
@@ -227,54 +216,58 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
               </div>
 
               {/* Card 2: Degumming Acid */}
-              <div className="p-3.5 rounded-xl bg-zinc-50/80 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 space-y-2">
+              <div className="telemetry-card p-4 rounded-xl space-y-2.5">
                 <div className="flex items-center justify-between font-bold text-zinc-900 dark:text-zinc-100">
-                  <span className="flex items-center gap-1.5">
+                  <span className="flex items-center gap-1.5 font-display text-xs">
                     <Beaker className="w-3.5 h-3.5 text-sky-500" />
                     <span>Degumming Acid</span>
                   </span>
-                  <select
-                    disabled={isLocked}
-                    value={sheet.acid_type}
-                    onChange={(e) => onUpdateHeader({ acid_type: e.target.value })}
-                    className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700"
-                  >
-                    <option value="Phosphoric Acid">Phosphoric</option>
-                    <option value="Citric Acid">Citric</option>
-                  </select>
+                  <div className="w-32">
+                    <RadioSelect
+                      disabled={isLocked}
+                      size="xs"
+                      value={sheet.acid_type}
+                      onChange={(val) => onUpdateHeader({ acid_type: val })}
+                      options={[
+                        { value: "Phosphoric Acid", label: "Phosphoric" },
+                        { value: "Citric Acid", label: "Citric" }
+                      ]}
+                      className="py-1 px-2.5 text-[11px] font-bold"
+                    />
+                  </div>
                 </div>
                 <div className="grid grid-cols-3 gap-1.5">
                   <div>
-                    <span className="text-[10px] font-bold uppercase text-zinc-500 block mb-0.5">Mm</span>
+                    <span className="text-[10px] font-bold uppercase text-zinc-500 dark:text-zinc-400 block mb-1">Mm</span>
                     <input
                       type="number"
                       disabled={isLocked}
                       value={sheet.acid_mm ?? ""}
                       onChange={(e) => onUpdateHeader({ acid_mm: parseFloat(e.target.value) || null })}
-                      className="w-full px-2 py-1.5 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 font-mono text-xs font-bold text-zinc-900 dark:text-white"
+                      className="w-full px-2 py-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 font-mono text-xs font-bold text-zinc-900 dark:text-white shadow-inner focus:border-amber-500"
                       placeholder="12.5"
                     />
                   </div>
                   <div>
-                    <span className="text-[10px] font-bold uppercase text-zinc-500 block mb-0.5">Cm/Hr</span>
+                    <span className="text-[10px] font-bold uppercase text-zinc-500 dark:text-zinc-400 block mb-1">Cm/Hr</span>
                     <input
                       type="number"
                       disabled={isLocked}
                       value={sheet.acid_cm_hr ?? ""}
                       onChange={(e) => onUpdateHeader({ acid_cm_hr: parseFloat(e.target.value) || null })}
-                      className="w-full px-2 py-1.5 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 font-mono text-xs font-bold text-zinc-900 dark:text-white"
+                      className="w-full px-2 py-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 font-mono text-xs font-bold text-zinc-900 dark:text-white shadow-inner focus:border-amber-500"
                       placeholder="24.0"
                     />
                   </div>
                   <div>
-                    <span className="text-[10px] font-bold uppercase text-zinc-500 block mb-0.5">%</span>
+                    <span className="text-[10px] font-bold uppercase text-zinc-500 dark:text-zinc-400 block mb-1">%</span>
                     <input
                       type="number"
                       step="0.01"
                       disabled={isLocked}
                       value={sheet.acid_pct ?? ""}
                       onChange={(e) => onUpdateHeader({ acid_pct: parseFloat(e.target.value) || null })}
-                      className="w-full px-2 py-1.5 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 font-mono text-xs font-bold text-zinc-900 dark:text-white"
+                      className="w-full px-2 py-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 font-mono text-xs font-bold text-zinc-900 dark:text-white shadow-inner focus:border-amber-500"
                       placeholder="0.06"
                     />
                   </div>
@@ -282,46 +275,46 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
               </div>
 
               {/* Card 3: Bleaching Earth */}
-              <div className="p-3.5 rounded-xl bg-zinc-50/80 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 space-y-2">
+              <div className="telemetry-card p-4 rounded-xl space-y-2.5">
                 <div className="flex items-center justify-between font-bold text-zinc-900 dark:text-zinc-100">
-                  <span className="flex items-center gap-1.5">
+                  <span className="flex items-center gap-1.5 font-display text-xs">
                     <Droplet className="w-3.5 h-3.5 text-amber-500" />
                     <span>Bleaching Earth (BE)</span>
                   </span>
                 </div>
                 <div className="grid grid-cols-3 gap-1.5">
                   <div>
-                    <span className="text-[10px] font-bold uppercase text-zinc-500 block mb-0.5">Setting</span>
+                    <span className="text-[10px] font-bold uppercase text-zinc-500 dark:text-zinc-400 block mb-1">Setting</span>
                     <input
                       type="number"
                       step="0.05"
                       disabled={isLocked}
                       value={sheet.earth_setting ?? ""}
                       onChange={(e) => onUpdateHeader({ earth_setting: parseFloat(e.target.value) || null })}
-                      className="w-full px-2 py-1.5 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 font-mono text-xs font-bold text-zinc-900 dark:text-white"
+                      className="w-full px-2 py-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 font-mono text-xs font-bold text-zinc-900 dark:text-white shadow-inner focus:border-amber-500"
                       placeholder="1.25"
                     />
                   </div>
                   <div>
-                    <span className="text-[10px] font-bold uppercase text-zinc-500 block mb-0.5">Min %</span>
+                    <span className="text-[10px] font-bold uppercase text-zinc-500 dark:text-zinc-400 block mb-1">Min %</span>
                     <input
                       type="number"
                       step="0.01"
                       disabled={isLocked}
                       value={sheet.earth_min_pct ?? ""}
                       onChange={(e) => onUpdateHeader({ earth_min_pct: parseFloat(e.target.value) || null })}
-                      className="w-full px-2 py-1.5 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 font-mono text-xs font-bold text-zinc-900 dark:text-white"
+                      className="w-full px-2 py-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 font-mono text-xs font-bold text-zinc-900 dark:text-white shadow-inner focus:border-amber-500"
                       placeholder="0.80"
                     />
                   </div>
                   <div>
-                    <span className="text-[10px] font-bold uppercase text-zinc-500 block mb-0.5">Kgs/Day</span>
+                    <span className="text-[10px] font-bold uppercase text-zinc-500 dark:text-zinc-400 block mb-1">Kgs/Day</span>
                     <input
                       type="number"
                       disabled={isLocked}
                       value={sheet.earth_kgs_day ?? ""}
                       onChange={(e) => onUpdateHeader({ earth_kgs_day: parseFloat(e.target.value) || null })}
-                      className="w-full px-2 py-1.5 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 font-mono text-xs font-bold text-zinc-900 dark:text-white"
+                      className="w-full px-2 py-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 font-mono text-xs font-bold text-zinc-900 dark:text-white shadow-inner focus:border-amber-500"
                       placeholder="9180"
                     />
                   </div>
@@ -329,23 +322,23 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
               </div>
 
               {/* Card 4: Filter Aids */}
-              <div className="p-3.5 rounded-xl bg-zinc-50/80 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 space-y-2">
+              <div className="telemetry-card p-4 rounded-xl space-y-2.5">
                 <div className="flex items-center justify-between font-bold text-zinc-900 dark:text-zinc-100">
-                  <span className="flex items-center gap-1.5">
+                  <span className="flex items-center gap-1.5 font-display text-xs">
                     <Layers className="w-3.5 h-3.5 text-emerald-500" />
                     <span>Filter Aids</span>
                   </span>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <span className="text-[10px] font-bold uppercase text-zinc-500 block mb-0.5">Aid 1 (Type / Qty)</span>
+                    <span className="text-[10px] font-bold uppercase text-zinc-500 dark:text-zinc-400 block mb-1">Aid 1 (Type / Qty)</span>
                     <div className="flex gap-1">
                       <input
                         type="text"
                         disabled={isLocked}
                         value={sheet.aid1_type}
                         onChange={(e) => onUpdateHeader({ aid1_type: e.target.value })}
-                        className="w-1/2 px-1.5 py-1.5 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-xs font-medium"
+                        className="w-1/2 px-1.5 py-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 text-xs font-medium shadow-inner"
                         placeholder="Type"
                       />
                       <input
@@ -353,20 +346,20 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                         disabled={isLocked}
                         value={sheet.aid1_qty ?? ""}
                         onChange={(e) => onUpdateHeader({ aid1_qty: parseFloat(e.target.value) || null })}
-                        className="w-1/2 px-1.5 py-1.5 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 font-mono text-xs font-bold"
+                        className="w-1/2 px-1.5 py-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 font-mono text-xs font-bold shadow-inner"
                         placeholder="Qty"
                       />
                     </div>
                   </div>
                   <div>
-                    <span className="text-[10px] font-bold uppercase text-zinc-500 block mb-0.5">Aid 2 (Type / Qty)</span>
+                    <span className="text-[10px] font-bold uppercase text-zinc-500 dark:text-zinc-400 block mb-1">Aid 2 (Type / Qty)</span>
                     <div className="flex gap-1">
                       <input
                         type="text"
                         disabled={isLocked}
                         value={sheet.aid2_type}
                         onChange={(e) => onUpdateHeader({ aid2_type: e.target.value })}
-                        className="w-1/2 px-1.5 py-1.5 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-xs font-medium"
+                        className="w-1/2 px-1.5 py-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 text-xs font-medium shadow-inner"
                         placeholder="Type"
                       />
                       <input
@@ -374,7 +367,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                         disabled={isLocked}
                         value={sheet.aid2_qty ?? ""}
                         onChange={(e) => onUpdateHeader({ aid2_qty: parseFloat(e.target.value) || null })}
-                        className="w-1/2 px-1.5 py-1.5 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 font-mono text-xs font-bold"
+                        className="w-1/2 px-1.5 py-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 font-mono text-xs font-bold shadow-inner"
                         placeholder="Qty"
                       />
                     </div>

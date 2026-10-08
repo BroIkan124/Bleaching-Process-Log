@@ -47,7 +47,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
 
   return (
     <div 
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm transition-opacity duration-200 overflow-y-auto ${
+      className={`modal-backdrop-animate fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md transition-opacity duration-200 overflow-y-auto ${
         isClosing ? "opacity-0 pointer-events-none" : "opacity-100"
       }`}
       onClick={(e) => {
@@ -55,15 +55,17 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
       }}
     >
       <div 
-        className={`w-full max-w-6xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-300 dark:border-slate-800 flex flex-col my-auto max-h-[95vh] overflow-hidden transform transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        className={`modal-card-animate w-full max-w-6xl bg-white dark:bg-[#0A0F1C] rounded-3xl shadow-[0_24px_80px_rgba(0,0,0,0.6),0_12px_36px_rgba(0,0,0,0.4)] border border-zinc-200/90 dark:border-white/10 flex flex-col my-auto max-h-[95vh] overflow-hidden [transform-style:preserve-3d] ${
           isClosing ? "scale-95 opacity-0" : "scale-100 opacity-100"
         }`}
       >
-        {/* Modal Controls Bar (Hidden during Print) */}
-        <div className="px-6 py-3 border-b border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-800 flex items-center justify-between print:hidden">
-          <div className="flex items-center gap-2">
-            <Printer className="w-5 h-5 text-amber-600" />
-            <span className="font-bold text-sm text-slate-800 dark:text-slate-200 font-display">
+        {/* Modal Controls Bar with 3D Specular Highlight (Hidden during Print) */}
+        <div className="px-6 py-3.5 border-b border-zinc-200/90 dark:border-white/10 bg-gradient-to-r from-zinc-50 via-zinc-100/70 to-zinc-50 dark:from-[#0A0F1C] dark:via-[#11182B] dark:to-[#0A0F1C] flex items-center justify-between print:hidden">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-amber-500/15 text-amber-500 border border-amber-500/20 shadow-xs">
+              <Printer className="w-4 h-4" />
+            </div>
+            <span className="font-bold text-sm text-zinc-900 dark:text-zinc-100 font-display">
               A4 Landscape Official Print &amp; PDF Export (RF-FR-003 Rev 03)
             </span>
           </div>
@@ -71,14 +73,14 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
           <div className="flex items-center gap-3">
             <button
               onClick={handlePrint}
-              className="btn-premium-amber px-4 py-1.5 rounded-xl font-bold text-xs shadow-md flex items-center gap-1.5 cursor-pointer group"
+              className="btn-premium-amber px-4 py-2 rounded-xl font-bold text-xs shadow-md flex items-center gap-1.5 cursor-pointer group"
             >
               <Printer className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
               <span>Print / Save as PDF</span>
             </button>
             <button
               onClick={handleSmoothClose}
-              className="btn-tactile p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer group"
+              className="btn-tactile p-2 rounded-xl text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/5 cursor-pointer group transition-all"
             >
               <X className="w-5 h-5 transition-transform duration-200 group-hover:rotate-90" />
             </button>

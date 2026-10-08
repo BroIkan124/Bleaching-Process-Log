@@ -427,35 +427,35 @@ export default function BleachingProcessLogApp() {
         onLogout={handleLogout}
       />
 
-      {/* Notification Toast */}
+      {/* Notification Toast with 3D Depth */}
       {notification && (
-        <div className={`fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl shadow-xl border flex items-center gap-2.5 text-xs font-semibold animate-in slide-in-from-bottom duration-300 ${
+        <div className={`fixed bottom-6 right-6 z-50 px-4 py-3 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.25)] dark:shadow-[0_24px_60px_rgba(0,0,0,0.6)] backdrop-blur-xl border flex items-center gap-2.5 text-xs font-bold animate-in slide-in-from-bottom duration-300 [transform-style:preserve-3d] ${
           notification.type === 'success' 
-            ? 'bg-emerald-600 text-white border-emerald-500' 
+            ? 'bg-emerald-600/95 text-white border-emerald-400/50 shadow-[0_0_24px_rgba(16,185,129,0.3)]' 
             : notification.type === 'error'
-              ? 'bg-rose-600 text-white border-rose-500'
-              : 'bg-zinc-900 text-white border-zinc-700'
+              ? 'bg-rose-600/95 text-white border-rose-400/50 shadow-[0_0_24px_rgba(239,68,68,0.3)]'
+              : 'bg-zinc-900/95 text-white border-zinc-700/60 shadow-[0_0_24px_rgba(245,158,11,0.2)]'
         }`}>
-          {notification.type === 'success' && <CheckCircle className="w-4 h-4" />}
-          {notification.type === 'error' && <AlertCircle className="w-4 h-4" />}
-          {notification.type === 'info' && <Info className="w-4 h-4 text-amber-400" />}
+          {notification.type === 'success' && <CheckCircle className="w-4 h-4 text-emerald-200" />}
+          {notification.type === 'error' && <AlertCircle className="w-4 h-4 text-rose-200" />}
+          {notification.type === 'info' && <Info className="w-4 h-4 text-amber-300" />}
           <span>{notification.message}</span>
         </div>
       )}
 
       {/* Main Workspace Body */}
-      <main className="flex-1 max-w-[1680px] w-full mx-auto p-3 sm:p-5 pb-28 sm:pb-32">
+      <main className="flex-1 max-w-[1680px] w-full mx-auto p-3 sm:p-5 pb-28 sm:pb-32 [perspective:1400px]">
         <div key={activeTab} className="fade-in-tactile">
           {/* Tab 1: Bleaching Process Log (RF-FR-003) */}
           {activeTab === 'bleaching' && (
             <>
-              {/* Banner if Sheet was Returned */}
+              {/* Banner if Sheet was Returned with 3D Neon Alert */}
               {sheet.status === 'Returned' && sheet.review_note && (
-                <div className="mb-4 p-4 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-200 flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+                <div className="mb-5 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-rose-50 to-rose-100/70 dark:from-rose-950/70 dark:to-rose-900/40 border border-rose-400 dark:border-rose-700/80 text-rose-800 dark:text-rose-200 flex items-start gap-3.5 shadow-[0_8px_24px_rgba(239,68,68,0.15)] [transform-style:preserve-3d]">
+                  <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5 animate-pulse" />
                   <div>
-                    <span className="font-bold">Sheet Returned by Supervisor ({sheet.reviewed_by_name}):</span>
-                    <p className="text-xs mt-1 font-mono">{sheet.review_note}</p>
+                    <span className="font-bold font-display text-sm">Sheet Returned by Supervisor ({sheet.reviewed_by_name}):</span>
+                    <p className="text-xs mt-1 font-mono leading-relaxed">{sheet.review_note}</p>
                   </div>
                 </div>
               )}

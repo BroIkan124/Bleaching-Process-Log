@@ -22,6 +22,7 @@ import {
   Search,
   MessageSquare
 } from "lucide-react";
+import { RadioSelect } from "./RadioSelect";
 
 interface SupervisorMonitoringViewProps {
   currentUser: UserProfile;
@@ -114,12 +115,12 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
   };
 
   return (
-    <div className="space-y-6">
-      {/* 1. Header Bar with Luxury Glassmorphism Overview */}
-      <div className="glass-panel flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl shadow-sm">
+    <div className="space-y-6 [transform-style:preserve-3d]">
+      {/* 1. Header Bar with Luxury Glassmorphism & 3D Specular Highlight */}
+      <div className="glass-panel flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl shadow-md border border-zinc-200/90 dark:border-white/10 bg-gradient-to-r from-zinc-50 via-zinc-100/70 to-zinc-50 dark:from-[#0A0F1C] dark:via-[#11182B] dark:to-[#0A0F1C]">
         <div>
           <div className="flex items-center gap-2.5">
-            <span className="p-2.5 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shadow-xs">
+            <span className="p-2.5 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 shadow-[0_2px_10px_rgba(245,158,11,0.2)]">
               <ShieldCheck className="w-5 h-5" />
             </span>
             <h1 className="text-xl font-bold font-display text-zinc-900 dark:text-zinc-100">
@@ -142,7 +143,7 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
 
           <button
             onClick={onOpenPdfModal}
-            className="btn-tactile flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-zinc-700 dark:text-zinc-300 bg-zinc-100 hover:bg-zinc-200/80 dark:bg-white/5 dark:hover:bg-white/10 border border-zinc-200 dark:border-white/10 cursor-pointer group shrink-0 transition-all"
+            className="btn-tactile btn-premium-glass flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-zinc-700 dark:text-zinc-300 cursor-pointer group shrink-0 transition-all"
           >
             <FileText className="w-4 h-4 text-amber-500 transition-transform duration-200 group-hover:scale-110" />
             <span>Preview PDF</span>
@@ -150,10 +151,10 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
         </div>
       </div>
 
-      {/* 2. Live Shift Health Progress Cards */}
+      {/* 2. Live Shift Health Progress Cards with 3D Depth */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Shift 1 */}
-        <div className="telemetry-card p-4 rounded-2xl space-y-3">
+        <div className="telemetry-card p-4 sm:p-5 rounded-2xl space-y-3.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="relative flex h-2.5 w-2.5">
@@ -169,21 +170,21 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
             </span>
           </div>
 
-          <div className="w-full bg-zinc-200/80 dark:bg-white/10 rounded-full h-2 overflow-hidden">
+          <div className="w-full bg-zinc-200/90 dark:bg-white/10 rounded-full h-2.5 overflow-hidden shadow-inner p-0.5">
             <div 
-              className="bg-amber-500 h-2 rounded-full transition-all duration-500 shadow-sm"
+              className="bg-gradient-to-r from-amber-500 to-amber-400 h-1.5 rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]"
               style={{ width: `${(s1Completed / 8) * 100}%` }}
             />
           </div>
 
           <div className="flex items-center justify-between text-xs text-zinc-500 pt-1">
             <span>Technician: <strong className="text-zinc-800 dark:text-zinc-200">Ahmad Razif</strong></span>
-            <span className="font-mono">{s1Completed} / 8 Hours Logged</span>
+            <span className="font-mono font-bold">{s1Completed} / 8 Hours Logged</span>
           </div>
         </div>
 
         {/* Shift 2 */}
-        <div className="telemetry-card p-4 rounded-2xl space-y-3">
+        <div className="telemetry-card p-4 sm:p-5 rounded-2xl space-y-3.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-zinc-400" />
@@ -196,21 +197,21 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
             </span>
           </div>
 
-          <div className="w-full bg-zinc-200/80 dark:bg-white/10 rounded-full h-2 overflow-hidden">
+          <div className="w-full bg-zinc-200/90 dark:bg-white/10 rounded-full h-2.5 overflow-hidden shadow-inner p-0.5">
             <div 
-              className="bg-zinc-400 h-2 rounded-full transition-all duration-500"
+              className="bg-zinc-400 h-1.5 rounded-full transition-all duration-500"
               style={{ width: `${(s2Completed / 8) * 100}%` }}
             />
           </div>
 
           <div className="flex items-center justify-between text-xs text-zinc-500 pt-1">
             <span>Technician: <strong className="text-zinc-800 dark:text-zinc-200">Mohd Danial</strong></span>
-            <span className="font-mono">{s2Completed} / 8 Hours Logged</span>
+            <span className="font-mono font-bold">{s2Completed} / 8 Hours Logged</span>
           </div>
         </div>
 
         {/* Shift 3 */}
-        <div className="telemetry-card p-4 rounded-2xl space-y-3">
+        <div className="telemetry-card p-4 sm:p-5 rounded-2xl space-y-3.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-zinc-400" />
@@ -223,16 +224,16 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
             </span>
           </div>
 
-          <div className="w-full bg-zinc-200/80 dark:bg-white/10 rounded-full h-2 overflow-hidden">
+          <div className="w-full bg-zinc-200/90 dark:bg-white/10 rounded-full h-2.5 overflow-hidden shadow-inner p-0.5">
             <div 
-              className="bg-zinc-400 h-2 rounded-full transition-all duration-500"
+              className="bg-zinc-400 h-1.5 rounded-full transition-all duration-500"
               style={{ width: `${(s3Completed / 8) * 100}%` }}
             />
           </div>
 
           <div className="flex items-center justify-between text-xs text-zinc-500 pt-1">
             <span>Technician: <strong className="text-zinc-800 dark:text-zinc-200">K. Subramaniam</strong></span>
-            <span className="font-mono">{s3Completed} / 8 Hours Logged</span>
+            <span className="font-mono font-bold">{s3Completed} / 8 Hours Logged</span>
           </div>
         </div>
       </div>
@@ -251,31 +252,35 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center gap-1.5">
-            <Filter className="w-3.5 h-3.5 text-zinc-400" />
-            <select
+          <div className="w-52">
+            <RadioSelect
               value={filterSeverity}
-              onChange={(e) => setFilterSeverity(e.target.value)}
-              className="px-3 py-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-black/30 text-xs font-bold text-zinc-800 dark:text-zinc-200 focus:outline-none"
-            >
-              <option value="ALL">All Severity Levels</option>
-              <option value="alert">Alert (Critical)</option>
-              <option value="warning">Warning (Attention)</option>
-              <option value="success">Success (In-Spec)</option>
-              <option value="info">Info</option>
-            </select>
+              onChange={(val) => setFilterSeverity(val)}
+              options={[
+                { value: "ALL", label: "All Severity Levels" },
+                { value: "alert", label: "Alert (Critical)" },
+                { value: "warning", label: "Warning (Attention)" },
+                { value: "success", label: "Success (In-Spec)" },
+                { value: "info", label: "Info" },
+              ]}
+              icon={<Filter className="w-3.5 h-3.5 text-zinc-400" />}
+              size="sm"
+            />
           </div>
 
-          <select
-            value={filterSource}
-            onChange={(e) => setFilterSource(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-black/30 text-xs font-bold text-zinc-800 dark:text-zinc-200 focus:outline-none"
-          >
-            <option value="ALL">All Sources</option>
-            <option value="Bleaching Log">Bleaching Log (RF-FR-003)</option>
-            <option value="QC Lab">QC Lab (RF-FR-001)</option>
-            <option value="Operating Parameters">Operating Parameters</option>
-          </select>
+          <div className="w-56">
+            <RadioSelect
+              value={filterSource}
+              onChange={(val) => setFilterSource(val)}
+              options={[
+                { value: "ALL", label: "All Sources" },
+                { value: "Bleaching Log", label: "Bleaching Log (RF-FR-003)" },
+                { value: "QC Lab", label: "QC Lab (RF-FR-001)" },
+                { value: "Operating Parameters", label: "Operating Parameters" },
+              ]}
+              size="sm"
+            />
+          </div>
         </div>
       </div>
 
@@ -322,12 +327,12 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
               return (
                 <div
                   key={evt.id}
-                  className={`p-4 rounded-xl border transition-all ${
+                  className={`telemetry-card p-4 rounded-xl border transition-all ${
                     evt.severity === "alert"
-                      ? "bg-rose-500/5 dark:bg-rose-950/20 border-rose-500/30"
+                      ? "bg-rose-500/5 dark:bg-rose-950/25 border-rose-500/40 shadow-[0_4px_16px_rgba(239,68,68,0.15)]"
                       : evt.severity === "warning"
-                      ? "bg-amber-500/5 dark:bg-amber-950/20 border-amber-500/30"
-                      : "bg-zinc-50/60 dark:bg-white/5 border-zinc-200/80 dark:border-white/10"
+                      ? "bg-amber-500/5 dark:bg-amber-950/25 border-amber-500/40 shadow-[0_4px_16px_rgba(245,158,11,0.15)]"
+                      : "bg-white/80 dark:bg-white/[0.04] border-zinc-200/90 dark:border-white/10 shadow-sm"
                   }`}
                 >
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">

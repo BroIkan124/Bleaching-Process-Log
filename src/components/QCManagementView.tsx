@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { UserProfile, SampleReport, SampleResult, QCDecisionType, Disposition } from "@/types";
 import { QC_SNAPSHOT_DATA } from "@/lib/qcSampleData";
 import { 
@@ -25,6 +26,7 @@ import {
   Sparkles
 } from "lucide-react";
 import { syncQcSampleToInsForge, logActivityToInsForge } from "@/lib/dbService";
+import { RadioSelect } from "./RadioSelect";
 
 interface QCManagementViewProps {
   currentUser: UserProfile;
@@ -35,6 +37,11 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
   currentUser,
   isDark,
 }) => {
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   // Load sample reports from the real snapshot data
   const [reports, setReports] = useState<SampleReport[]>(() => {
     return (QC_SNAPSHOT_DATA.samples as any[]) || [];
@@ -712,18 +719,18 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
 
               <div>
                 <label className="block text-zinc-700 dark:text-zinc-300 font-semibold mb-1">Produk</label>
-                <select
+                <RadioSelect
                   value={newSample.product_name}
-                  onChange={(e) => setNewSample({ ...newSample, product_name: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-zinc-50 dark:bg-black/40 border border-zinc-300 dark:border-white/10 text-xs text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
-                >
-                  <option value="RBD Palm Oil">RBD Palm Oil</option>
-                  <option value="PL 65 Matsuyama">PL 65 Matsuyama</option>
-                  <option value="Chocohi 357A NPHO">Chocohi 357A NPHO</option>
-                  <option value="Daisy Soft PM180602 I2">Daisy Soft PM180602 I2</option>
-                  <option value="DF 20">DF 20</option>
-                  <option value="Farm Cow R2">Farm Cow R2</option>
-                </select>
+                  onChange={(val) => setNewSample({ ...newSample, product_name: val })}
+                  options={[
+                    "RBD Palm Oil",
+                    "PL 65 Matsuyama",
+                    "Chocohi 357A NPHO",
+                    "Daisy Soft PM180602 I2",
+                    "DF 20",
+                    "Farm Cow R2"
+                  ]}
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-3">

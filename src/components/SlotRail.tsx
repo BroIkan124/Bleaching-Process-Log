@@ -19,7 +19,7 @@ export const SlotRail: React.FC<SlotRailProps> = ({
   activeCurrentHourIndex,
 }) => {
   return (
-    <div className="glass-panel p-4 sm:p-5 rounded-2xl mb-5 shadow-sm">
+    <div className="glass-panel p-4 sm:p-5 rounded-2xl mb-5 shadow-[0_8px_32px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_48px_rgba(0,0,0,0.4)]">
       {/* Title & Legend Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3.5 pb-3 border-b border-zinc-200/80 dark:border-white/10">
         <div className="flex items-center gap-2.5">
@@ -64,15 +64,15 @@ export const SlotRail: React.FC<SlotRailProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {SHIFTS.map((shift, sIdx) => {
           const shiftBorderClass = sIdx === 0 
-            ? "border-amber-500/20 bg-amber-500/[0.03] dark:bg-amber-500/[0.04]"
+            ? "border-amber-500/30 bg-amber-500/[0.03] dark:bg-amber-500/[0.04]"
             : sIdx === 1 
-              ? "border-sky-500/20 bg-sky-500/[0.03] dark:bg-sky-500/[0.04]"
-              : "border-purple-500/20 bg-purple-500/[0.03] dark:bg-purple-500/[0.04]";
+              ? "border-sky-500/30 bg-sky-500/[0.03] dark:bg-sky-500/[0.04]"
+              : "border-purple-500/30 bg-purple-500/[0.03] dark:bg-purple-500/[0.04]";
 
           return (
             <div 
               key={shift.id} 
-              className={`p-3 rounded-xl border ${shiftBorderClass} transition-all`}
+              className={`p-3 rounded-xl border ${shiftBorderClass} shadow-sm transition-all`}
             >
               <div className="flex items-center justify-between text-xs font-extrabold text-zinc-800 dark:text-zinc-200 mb-2.5 px-1">
                 <span className="tracking-tight">{shift.name}</span>
@@ -92,13 +92,13 @@ export const SlotRail: React.FC<SlotRailProps> = ({
                   let stateClass = "bg-white dark:bg-[#0D1424] border-zinc-200/90 dark:border-white/[0.08] text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-white/20";
 
                   if (hasOutOfSpec) {
-                    stateClass = "bg-rose-50/90 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 font-bold shadow-[0_0_12px_rgba(239,68,68,0.2)]";
+                    stateClass = "bg-rose-50/90 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 font-bold shadow-[0_0_16px_rgba(239,68,68,0.25)]";
                   } else if (isDone) {
-                    stateClass = "bg-emerald-50/90 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 font-bold shadow-[0_0_10px_rgba(16,185,129,0.15)]";
+                    stateClass = "bg-emerald-50/90 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 font-bold shadow-[0_0_14px_rgba(16,185,129,0.2)]";
                   }
 
                   if (isSelected) {
-                    stateClass = "ring-2 ring-amber-500 shadow-[0_0_16px_rgba(245,158,11,0.35)] z-10 font-extrabold bg-amber-500/15 dark:bg-amber-500/25 border-amber-500 text-zinc-900 dark:text-amber-300";
+                    stateClass = "ring-2 ring-amber-500 shadow-[0_4px_24px_rgba(245,158,11,0.4),0_0_12px_rgba(245,158,11,0.2)] z-10 font-extrabold bg-amber-500/15 dark:bg-amber-500/25 border-amber-500 text-zinc-900 dark:text-amber-300";
                   }
 
                   return (

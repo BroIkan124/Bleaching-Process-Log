@@ -67,7 +67,7 @@ export const SupervisorReviewModal: React.FC<SupervisorReviewModalProps> = ({
 
   return (
     <div 
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm transition-opacity duration-200 ${
+      className={`modal-backdrop-animate fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md transition-opacity duration-200 ${
         isClosing ? "opacity-0 pointer-events-none" : "opacity-100"
       }`}
       onClick={(e) => {
@@ -75,14 +75,14 @@ export const SupervisorReviewModal: React.FC<SupervisorReviewModalProps> = ({
       }}
     >
       <div 
-        className={`w-full max-w-2xl bg-white dark:bg-[#0D1424] rounded-2xl border border-zinc-200/90 dark:border-white/10 shadow-[0_25px_60px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col max-h-[90vh] transform transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        className={`modal-card-animate w-full max-w-2xl bg-white dark:bg-[#0A0F1C] rounded-3xl border border-zinc-200/90 dark:border-white/10 shadow-[0_24px_80px_rgba(0,0,0,0.6),0_12px_36px_rgba(0,0,0,0.4)] overflow-hidden flex flex-col max-h-[90vh] [transform-style:preserve-3d] ${
           isClosing ? "scale-95 opacity-0" : "scale-100 opacity-100"
         }`}
       >
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-zinc-200 dark:border-white/10 bg-zinc-50/80 dark:bg-black/30 flex items-center justify-between">
+        {/* Header with 3D Specular Highlight */}
+        <div className="px-6 py-4 border-b border-zinc-200/90 dark:border-white/10 bg-gradient-to-r from-zinc-50 via-zinc-100/70 to-zinc-50 dark:from-[#0A0F1C] dark:via-[#11182B] dark:to-[#0A0F1C] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-xs">
+            <div className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 shadow-[0_2px_10px_rgba(16,185,129,0.2)]">
               <ShieldCheck className="w-6 h-6" />
             </div>
             <div>

@@ -29,9 +29,9 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
   selectedSlotIndex,
 }) => {
   return (
-    <div className="glass-panel rounded-2xl overflow-hidden mb-8 shadow-sm">
+    <div className="glass-panel rounded-2xl overflow-hidden mb-8 shadow-[0_8px_32px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_48px_rgba(0,0,0,0.4)]">
       {/* Table Header Bar */}
-      <div className="px-5 py-3.5 bg-zinc-50/80 dark:bg-[#121A2A]/80 border-b border-zinc-200/80 dark:border-zinc-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+      <div className="px-5 py-3.5 bg-gradient-to-r from-zinc-50 via-zinc-100/80 to-zinc-50 dark:from-[#0E1626] dark:via-[#121A30] dark:to-[#0E1626] border-b border-zinc-200/80 dark:border-zinc-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
         <div className="flex items-center gap-2.5">
           <div className="p-2 rounded-xl bg-amber-500/15 text-amber-500 border border-amber-500/20 shadow-2xs">
             <Clock className="w-4 h-4" />
@@ -101,21 +101,21 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
                 <React.Fragment key={entry.id}>
                   {/* Shift Divider Banners */}
                   {isShift1Start && (
-                    <tr className="bg-amber-500/[0.06] dark:bg-amber-500/[0.08] text-zinc-800 dark:text-zinc-200 border-y border-amber-500/20 select-none">
+                    <tr className="bg-amber-500/[0.06] dark:bg-amber-500/[0.08] text-zinc-800 dark:text-zinc-200 border-y border-amber-500/20 select-none shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
                       <td colSpan={14} className="py-2 px-4 font-bold text-[11px] tracking-wide">
                         <span className="text-amber-600 dark:text-amber-400 font-mono font-bold">SHIFT 1 (0800 - 1500 HRS)</span> - On-Duty Technician: <strong className="text-zinc-900 dark:text-white">Ahmad Razif</strong>
                       </td>
                     </tr>
                   )}
                   {isShift2Start && (
-                    <tr className="bg-sky-500/[0.06] dark:bg-sky-500/[0.08] text-zinc-800 dark:text-zinc-200 border-y border-sky-500/20 select-none">
+                    <tr className="bg-sky-500/[0.06] dark:bg-sky-500/[0.08] text-zinc-800 dark:text-zinc-200 border-y border-sky-500/20 select-none shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
                       <td colSpan={14} className="py-2 px-4 font-bold text-[11px] tracking-wide">
                         <span className="text-sky-600 dark:text-sky-400 font-mono font-bold">SHIFT 2 (1600 - 2300 HRS)</span> - On-Duty Technician: <strong className="text-zinc-900 dark:text-white">Mohd Danial</strong>
                       </td>
                     </tr>
                   )}
                   {isShift3Start && (
-                    <tr className="bg-purple-500/[0.06] dark:bg-purple-500/[0.08] text-zinc-800 dark:text-zinc-200 border-y border-purple-500/20 select-none">
+                    <tr className="bg-purple-500/[0.06] dark:bg-purple-500/[0.08] text-zinc-800 dark:text-zinc-200 border-y border-purple-500/20 select-none shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
                       <td colSpan={14} className="py-2 px-4 font-bold text-[11px] tracking-wide">
                         <span className="text-purple-600 dark:text-purple-400 font-mono font-bold">SHIFT 3 (2400 - 0700 HRS)</span> - On-Duty Technician: <strong className="text-zinc-900 dark:text-white">K. Subramaniam</strong>
                       </td>
@@ -127,12 +127,12 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
                     onClick={() => onSelectSlot(idx)}
                     className={`cursor-pointer transition-colors select-none ${
                       isSelected
-                        ? "bg-amber-500/15 dark:bg-amber-500/20 border-l-4 border-l-amber-500 font-semibold shadow-inner"
+                        ? "bg-amber-500/15 dark:bg-amber-500/20 border-l-4 border-l-amber-500 font-semibold shadow-[inset_4px_0_0_rgba(245,158,11,1),0_2px_12px_rgba(245,158,11,0.1)]"
                         : hasOutOfSpec
-                        ? "bg-rose-50/70 dark:bg-rose-950/30 hover:bg-rose-100/70 dark:hover:bg-rose-950/50 border-l-4 border-l-rose-500"
+                        ? "bg-rose-50/70 dark:bg-rose-950/30 hover:bg-rose-100/70 dark:hover:bg-rose-950/50 border-l-4 border-l-transparent shadow-[inset_4px_0_0_rgba(239,68,68,1),0_0_12px_rgba(239,68,68,0.2)]"
                         : isSaved
-                        ? "bg-white/80 dark:bg-[#0D1424]/80 hover:bg-zinc-50 dark:hover:bg-white/[0.03]"
-                        : "bg-zinc-50/50 dark:bg-zinc-900/30 hover:bg-zinc-100/70 dark:hover:bg-white/[0.02]"
+                        ? "bg-white/80 dark:bg-[#0D1424]/80 hover:bg-zinc-50 dark:hover:bg-white/[0.03] border-l-4 border-l-transparent"
+                        : "bg-zinc-50/50 dark:bg-zinc-900/30 hover:bg-zinc-100/70 dark:hover:bg-white/[0.02] border-l-4 border-l-transparent"
                     }`}
                   >
                     {/* Time */}

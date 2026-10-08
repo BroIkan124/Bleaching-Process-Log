@@ -135,7 +135,7 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
 
   return (
     <div 
-      className={`fixed inset-0 z-50 flex items-center justify-end bg-black/65 backdrop-blur-sm transition-opacity duration-240 ${
+      className={`fixed inset-0 z-50 flex items-center justify-end bg-black/75 backdrop-blur-md transition-opacity duration-240 ${
         isMounted && !isClosing ? "opacity-100" : "opacity-0 pointer-events-none"
       }`}
       onClick={(e) => {
@@ -143,19 +143,19 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
       }}
     >
       <div 
-        className={`w-full max-w-2xl h-full bg-white dark:bg-[#0D1424] shadow-[0_0_60px_rgba(0,0,0,0.6)] flex flex-col border-l border-zinc-200/90 dark:border-white/10 overflow-hidden transform transition-transform duration-260 ease-[cubic-bezier(0.32,0.72,0,1)] ${
+        className={`w-full max-w-2xl h-full bg-white dark:bg-[#0A0F1C] shadow-[-20px_0_60px_rgba(0,0,0,0.35)] dark:shadow-[-28px_0_100px_rgba(0,0,0,0.85)] flex flex-col border-l border-zinc-200/90 dark:border-white/10 overflow-hidden transform transition-transform duration-260 ease-[cubic-bezier(0.32,0.72,0,1)] [transform-style:preserve-3d] ${
           isMounted && !isClosing ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        {/* Top Drawer Navigation */}
-        <div className="px-6 py-4 border-b border-zinc-200 dark:border-white/10 flex items-center justify-between bg-zinc-50/80 dark:bg-black/30 backdrop-blur-md">
-          <div className="flex items-center gap-3">
-            <div className={`w-11 h-11 rounded-xl flex items-center justify-center font-mono font-bold text-base shadow-sm ${
+        {/* Top Drawer Navigation with 3D Depth */}
+        <div className="px-6 py-4 border-b border-zinc-200/90 dark:border-white/10 flex items-center justify-between bg-gradient-to-r from-zinc-50 via-zinc-100/70 to-zinc-50 dark:from-[#0A0F1C] dark:via-[#11182B] dark:to-[#0A0F1C] backdrop-blur-md">
+          <div className="flex items-center gap-3.5">
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-mono font-bold text-lg [transform-style:preserve-3d] ${
               hasOutOfSpec 
-                ? 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/30'
+                ? 'bg-gradient-to-br from-rose-500/20 to-rose-600/10 text-rose-700 dark:text-rose-300 border border-rose-500/40 shadow-[0_4px_16px_rgba(239,68,68,0.25)]'
                 : formData.is_saved
-                  ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30'
-                  : 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30'
+                  ? 'bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/40 shadow-[0_4px_16px_rgba(16,185,129,0.25)]'
+                  : 'bg-gradient-to-br from-amber-500/20 to-amber-600/10 text-amber-700 dark:text-amber-300 border border-amber-500/40 shadow-[0_4px_16px_rgba(245,158,11,0.25)]'
             }`}>
               {formData.time_label}
             </div>
@@ -299,8 +299,8 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
             </div>
           </div>
 
-          {/* Group 2: Critical Telemetry (HE Temp & Vacuum) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-2xl bg-zinc-50/80 dark:bg-black/25 border border-zinc-200/90 dark:border-white/10 shadow-inner">
+          {/* Group 2: Critical Telemetry (HE Temp & Vacuum) with 3D Specular Depth */}
+          <div className="telemetry-card grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 sm:p-5 rounded-2xl bg-zinc-50/90 dark:bg-black/35 border border-zinc-200/90 dark:border-white/10 shadow-inner">
             {/* HE Temp */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
@@ -590,15 +590,15 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
           )}
         </form>
 
-        {/* Bottom Drawer Actions */}
-        <div className="px-6 py-4 border-t border-zinc-200/90 dark:border-white/10 bg-zinc-50/80 dark:bg-black/30 backdrop-blur-md flex items-center justify-between gap-3">
+        {/* Bottom Drawer Actions with 3D Frosted Glass */}
+        <div className="px-6 py-4 border-t border-zinc-200/90 dark:border-white/10 bg-gradient-to-r from-zinc-50 via-zinc-100/70 to-zinc-50 dark:from-[#0A0F1C] dark:via-[#11182B] dark:to-[#0A0F1C] backdrop-blur-md flex items-center justify-between gap-3 shadow-[0_-4px_20px_rgba(0,0,0,0.04)] dark:shadow-[0_-4px_30px_rgba(0,0,0,0.5)]">
           <div className="text-xs text-zinc-500 dark:text-zinc-400">
             {formData.is_saved ? (
-              <span className="text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1.5 font-mono">
-                <Check className="w-4 h-4" /> Saved by {formData.entered_by_name || currentUser.name}
+              <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1.5 font-mono">
+                <Check className="w-4 h-4 text-emerald-500" /> Saved by {formData.entered_by_name || currentUser.name}
               </span>
             ) : (
-              <span className="font-mono">Slot not yet saved</span>
+              <span className="font-mono text-zinc-400">Slot not yet saved</span>
             )}
           </div>
 
@@ -606,7 +606,7 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
             <button
               type="button"
               onClick={handleSmoothClose}
-              className="btn-tactile px-4 py-2.5 rounded-xl text-sm font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200/60 dark:hover:bg-white/5 border border-zinc-200 dark:border-white/10 cursor-pointer transition-all"
+              className="btn-tactile btn-premium-glass px-4 py-2.5 rounded-xl text-sm font-bold text-zinc-700 dark:text-zinc-300 cursor-pointer transition-all"
             >
               Cancel
             </button>

@@ -107,11 +107,11 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-30 w-full border-b border-zinc-200/80 dark:border-white/[0.08] bg-white/90 dark:bg-[#080C14]/90 backdrop-blur-2xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.5)]">
+    <header className="sticky top-0 z-30 w-full border-b border-zinc-200/80 dark:border-white/[0.08] bg-white/90 dark:bg-[#080C14]/90 backdrop-blur-2xl shadow-[0_4px_24px_rgba(0,0,0,0.06),0_1px_3px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_32px_rgba(0,0,0,0.5),0_0_20px_rgba(0,0,0,0.3)]">
       <div className="max-w-[1680px] mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3">
         {/* Left: Brand Identity & Active Section */}
         <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 flex items-center justify-center text-white shadow-[0_2px_10px_rgba(217,119,6,0.35)] font-display font-bold shrink-0 border border-amber-400/40">
+          <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-700 flex items-center justify-center text-white shadow-[0_4px_24px_rgba(245,158,11,0.6)] font-display font-bold shrink-0 border border-amber-400/40">
             <Building2 className="w-5 h-5" />
           </div>
           <div>
@@ -132,7 +132,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
         </div>
 
         {/* Center: Shift & Telemetry Badge */}
-        <div className="hidden md:flex items-center gap-3 bg-zinc-100/90 dark:bg-zinc-900/80 px-3.5 py-1.5 rounded-xl border border-zinc-200/80 dark:border-zinc-700/60 text-xs shadow-xs">
+        <div className="hidden md:flex items-center gap-3 bg-zinc-100/95 dark:bg-zinc-900/90 shadow-inner px-3.5 py-1.5 rounded-xl border border-zinc-200/80 dark:border-zinc-700/60 text-xs">
           <div className="flex items-center gap-2 font-medium">
             <Clock className="w-3.5 h-3.5 text-amber-500" />
             <span className="text-zinc-500 dark:text-zinc-400">Shift:</span>
@@ -201,7 +201,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
 
           {/* User Identity Chip */}
           <div
-            className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-800/90 pl-1.5 pr-2.5 py-1 rounded-xl border border-zinc-200 dark:border-zinc-700/80 text-left select-none transition-all hover:border-zinc-300 dark:hover:border-zinc-600"
+            className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-800/90 pl-1.5 pr-2.5 py-1 rounded-xl border border-zinc-200 dark:border-zinc-700/80 text-left select-none transition-all hover:border-amber-500/50 hover:shadow-[0_0_12px_rgba(245,158,11,0.25)] dark:hover:border-amber-500/50 dark:hover:shadow-[0_0_12px_rgba(245,158,11,0.2)]"
             title={`Active User: ${currentRole.name} (${currentRole.role})`}
           >
             <div className="h-6 w-6 rounded-lg bg-amber-600 text-white flex items-center justify-center font-bold text-[10px] uppercase shrink-0 shadow-2xs">

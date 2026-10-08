@@ -19,6 +19,7 @@ import {
   Filter
 } from "lucide-react";
 import { recordReportExport } from "@/lib/dbService";
+import { RadioSelect } from "./RadioSelect";
 
 interface ReportsViewProps {
   sheet: LogSheet;
@@ -176,12 +177,12 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
   };
 
   return (
-    <div className="space-y-6">
-      {/* 1. Header Bar with Actions & Glassmorphism */}
-      <div className="glass-panel flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl shadow-sm">
+    <div className="space-y-6 [transform-style:preserve-3d]">
+      {/* 1. Header Bar with Actions & 3D Specular Highlight */}
+      <div className="glass-panel flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl shadow-md border border-zinc-200/90 dark:border-white/10 bg-gradient-to-r from-zinc-50 via-zinc-100/70 to-zinc-50 dark:from-[#0A0F1C] dark:via-[#11182B] dark:to-[#0A0F1C]">
         <div>
           <div className="flex items-center gap-2.5">
-            <span className="p-2.5 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shadow-xs">
+            <span className="p-2.5 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 shadow-[0_2px_10px_rgba(245,158,11,0.2)]">
               <BarChart3 className="w-5 h-5" />
             </span>
             <h1 className="text-xl font-bold font-display text-zinc-900 dark:text-zinc-100">
@@ -194,22 +195,23 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
-          <div className="btn-tactile flex items-center gap-1.5 px-3 py-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-black/30 text-xs font-bold">
-            <Calendar className="w-3.5 h-3.5 text-zinc-400" />
-            <select
+          <div className="w-56">
+            <RadioSelect
               value={timeRange}
-              onChange={(e) => setTimeRange(e.target.value)}
-              className="bg-transparent focus:outline-none cursor-pointer text-zinc-800 dark:text-zinc-200"
-            >
-              <option value="today">Today ({sheet?.sheet_date || "2026-10-01"})</option>
-              <option value="7days">Past 7 Days (Weekly)</option>
-              <option value="month">This Month (October 2026)</option>
-            </select>
+              onChange={(val) => setTimeRange(val)}
+              options={[
+                { value: "today", label: `Today (${sheet?.sheet_date || "2026-10-01"})` },
+                { value: "7days", label: "Past 7 Days (Weekly)" },
+                { value: "month", label: "This Month (October 2026)" },
+              ]}
+              icon={<Calendar className="w-3.5 h-3.5 text-zinc-400" />}
+              size="sm"
+            />
           </div>
 
           <button
             onClick={handleExportCSV}
-            className="btn-tactile flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-100 text-xs font-bold shadow-sm cursor-pointer group transition-all"
+            className="btn-tactile btn-premium-glass flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold cursor-pointer group transition-all"
             title="Export full data in CSV format"
           >
             <Download className="w-4 h-4 transition-transform duration-200 group-hover:translate-y-0.5" />
@@ -453,16 +455,19 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
 
           <div className="flex items-center gap-2">
             <span className="text-xs text-zinc-500 font-bold font-display">Filter Shift:</span>
-            <select
-              value={selectedShift}
-              onChange={(e) => setSelectedShift(e.target.value)}
-              className="px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-black/30 text-xs font-bold"
-            >
-              <option value="ALL">All 24 Hours</option>
-              <option value="1">Shift 1 (0800-1500)</option>
-              <option value="2">Shift 2 (1600-2300)</option>
-              <option value="3">Shift 3 (2400-0700)</option>
-            </select>
+            <div className="w-52">
+              <RadioSelect
+                value={selectedShift}
+                onChange={(val) => setSelectedShift(val)}
+                options={[
+                  { value: "ALL", label: "All 24 Hours" },
+                  { value: "1", label: "Shift 1 (0800-1500)" },
+                  { value: "2", label: "Shift 2 (1600-2300)" },
+                  { value: "3", label: "Shift 3 (2400-0700)" },
+                ]}
+                size="sm"
+              />
+            </div>
           </div>
         </div>
 

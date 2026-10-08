@@ -26,6 +26,7 @@ import {
   LogOut
 } from "lucide-react";
 import { syncUserToInsForge, logActivityToInsForge } from "@/lib/dbService";
+import { RadioSelect } from "./RadioSelect";
 
 interface UserManagementViewProps {
   currentUser: UserProfile;
@@ -258,12 +259,12 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
   const supCount = users.filter(u => u.role === 'supervisor' || u.role === 'admin').length;
 
   return (
-    <div className="space-y-6">
-      {/* 1. Header & Actions Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm">
+    <div className="space-y-6 [transform-style:preserve-3d]">
+      {/* 1. Header & Actions Bar with 3D Specular Highlight */}
+      <div className="glass-panel flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl border border-zinc-200/90 dark:border-white/10 bg-gradient-to-r from-zinc-50 via-zinc-100/70 to-zinc-50 dark:from-[#0A0F1C] dark:via-[#11182B] dark:to-[#0A0F1C] shadow-md">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
+          <div className="flex items-center gap-2.5">
+            <span className="p-2.5 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/10 text-purple-600 dark:text-purple-400 border border-purple-500/30 shadow-[0_2px_10px_rgba(168,85,247,0.2)]">
               <Users className="w-5 h-5" />
             </span>
             <h1 className="text-xl font-bold font-display text-zinc-900 dark:text-zinc-100">
@@ -284,42 +285,42 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
         </button>
       </div>
 
-      {/* 2. Top Statistic KPI Cards */}
+      {/* 2. Top Statistic KPI Cards with 3D Telemetry */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-        <div className="p-3.5 rounded-xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm">
-          <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider block">Total Staff</span>
+        <div className="telemetry-card p-4 rounded-xl">
+          <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider block font-display">Total Staff</span>
           <div className="flex items-baseline gap-2 mt-1">
-            <span className="text-2xl font-bold font-display text-zinc-900 dark:text-zinc-100">{totalCount}</span>
+            <span className="text-2xl font-bold font-display text-zinc-900 dark:text-zinc-100 font-mono tabular-nums">{totalCount}</span>
             <span className="text-xs text-emerald-500 font-bold">{activeCount} Active</span>
           </div>
         </div>
 
-        <div className="p-3.5 rounded-xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm">
-          <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider block">Operations Technicians</span>
+        <div className="telemetry-card p-4 rounded-xl">
+          <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider block font-display">Operations Technicians</span>
           <div className="flex items-baseline gap-2 mt-1">
-            <span className="text-2xl font-bold font-display text-amber-500">{techCount}</span>
+            <span className="text-2xl font-bold font-display text-amber-500 font-mono tabular-nums">{techCount}</span>
             <span className="text-xs text-zinc-500 font-mono">Shift 1-3</span>
           </div>
         </div>
 
-        <div className="p-3.5 rounded-xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm">
-          <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider block">QC Lab &amp; QA</span>
+        <div className="telemetry-card p-4 rounded-xl">
+          <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider block font-display">QC Lab &amp; QA</span>
           <div className="flex items-baseline gap-2 mt-1">
-            <span className="text-2xl font-bold font-display text-sky-500">{qcCount}</span>
+            <span className="text-2xl font-bold font-display text-sky-500 font-mono tabular-nums">{qcCount}</span>
             <span className="text-xs text-zinc-500 font-mono">RF-FR-001</span>
           </div>
         </div>
 
-        <div className="p-3.5 rounded-xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm">
-          <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider block">Supervisors &amp; Admin</span>
+        <div className="telemetry-card p-4 rounded-xl">
+          <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider block font-display">Supervisors &amp; Admin</span>
           <div className="flex items-baseline gap-2 mt-1">
-            <span className="text-2xl font-bold font-display text-purple-500">{supCount}</span>
+            <span className="text-2xl font-bold font-display text-purple-500 font-mono tabular-nums">{supCount}</span>
             <span className="text-xs text-zinc-500 font-mono">Control</span>
           </div>
         </div>
 
-        <div className="p-3.5 rounded-xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm col-span-2 sm:col-span-1">
-          <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider block">Authentication Status</span>
+        <div className="telemetry-card p-4 rounded-xl col-span-2 sm:col-span-1">
+          <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider block font-display">Authentication Status</span>
           <div className="flex items-center gap-1.5 mt-2 text-xs font-bold text-emerald-500">
             <CheckCircle2 className="w-4 h-4" />
             <span>2FA &amp; Audit Active</span>
@@ -341,32 +342,36 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center gap-1.5">
-            <Filter className="w-3.5 h-3.5 text-zinc-400" />
-            <select
+          <div className="w-52">
+            <RadioSelect
               value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value)}
-              className="px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-xs font-bold text-zinc-800 dark:text-zinc-200 focus:outline-none"
-            >
-              <option value="ALL">All Roles</option>
-              <option value="technician">Operations Technician</option>
-              <option value="supervisor">Plant Supervisor</option>
-              <option value="chemist">QC Chemist</option>
-              <option value="manager_qa">QA Manager</option>
-              <option value="admin">System Administrator</option>
-            </select>
+              onChange={(val) => setRoleFilter(val)}
+              options={[
+                { value: "ALL", label: "All Roles" },
+                { value: "technician", label: "Operations Technician" },
+                { value: "supervisor", label: "Plant Supervisor" },
+                { value: "chemist", label: "QC Chemist" },
+                { value: "manager_qa", label: "QA Manager" },
+                { value: "admin", label: "System Administrator" },
+              ]}
+              icon={<Filter className="w-3.5 h-3.5 text-zinc-400" />}
+              size="sm"
+            />
           </div>
 
-          <select
-            value={shiftFilter}
-            onChange={(e) => setShiftFilter(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-xs font-bold text-zinc-800 dark:text-zinc-200 focus:outline-none"
-          >
-            <option value="ALL">All Shifts</option>
-            <option value="1">Shift 1 (0800-1500)</option>
-            <option value="2">Shift 2 (1600-2300)</option>
-            <option value="3">Shift 3 (2400-0700)</option>
-          </select>
+          <div className="w-52">
+            <RadioSelect
+              value={shiftFilter}
+              onChange={(val) => setShiftFilter(val)}
+              options={[
+                { value: "ALL", label: "All Shifts" },
+                { value: "1", label: "Shift 1 (0800-1500)" },
+                { value: "2", label: "Shift 2 (1600-2300)" },
+                { value: "3", label: "Shift 3 (2400-0700)" },
+              ]}
+              size="sm"
+            />
+          </div>
         </div>
       </div>
 
@@ -550,39 +555,38 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
                   <label className="block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1">
                     Role (RBAC)
                   </label>
-                  <select
+                  <RadioSelect
                     value={formData.role}
-                    onChange={(e) => setFormData({ ...formData, role: e.target.value as UserRole })}
-                    className="w-full px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-xs font-bold focus:outline-none"
-                  >
-                    <option value="technician">Operations Technician</option>
-                    <option value="supervisor">Plant Supervisor</option>
-                    <option value="chemist">QC Chemist</option>
-                    <option value="manager_qa">QA Manager</option>
-                    <option value="admin">System Administrator</option>
-                  </select>
+                    onChange={(val) => setFormData({ ...formData, role: val as UserRole })}
+                    options={[
+                      { value: "technician", label: "Operations Technician" },
+                      { value: "supervisor", label: "Plant Supervisor" },
+                      { value: "chemist", label: "QC Chemist" },
+                      { value: "manager_qa", label: "QA Manager" },
+                      { value: "admin", label: "System Administrator" },
+                    ]}
+                  />
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1">
                     Shift
                   </label>
-                  <select
+                  <RadioSelect
                     value={String(formData.shift)}
-                    onChange={(e) => {
-                      const val = e.target.value;
+                    onChange={(val) => {
                       setFormData({ 
                         ...formData, 
-                        shift: val === 'ALL' ? 'ALL' : (Number(val) as 1 | 2 | 3) 
+                        shift: val === "ALL" ? "ALL" : (Number(val) as 1 | 2 | 3) 
                       });
                     }}
-                    className="w-full px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-xs font-bold focus:outline-none"
-                  >
-                    <option value="1">Shift 1 (0800-1500)</option>
-                    <option value="2">Shift 2 (1600-2300)</option>
-                    <option value="3">Shift 3 (2400-0700)</option>
-                    <option value="ALL">All Shifts (Flexible)</option>
-                  </select>
+                    options={[
+                      { value: "1", label: "Shift 1 (0800-1500)" },
+                      { value: "2", label: "Shift 2 (1600-2300)" },
+                      { value: "3", label: "Shift 3 (2400-0700)" },
+                      { value: "ALL", label: "All Shifts (Flexible)" },
+                    ]}
+                  />
                 </div>
               </div>
 

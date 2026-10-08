@@ -45,7 +45,7 @@ export const FloatingBottomDock: React.FC<FloatingBottomDockProps> = ({
       <nav 
         role="tablist"
         aria-label="Dashboard Views"
-        className="glass-panel flex items-center gap-1 sm:gap-1.5 p-1.5 rounded-2xl bg-white/90 dark:bg-[#080C14]/90 backdrop-blur-2xl border border-zinc-200/90 dark:border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.14),inset_0_1px_0_rgba(255,255,255,0.9)] dark:shadow-[0_24px_60px_rgba(0,0,0,0.75),inset_0_1px_0_rgba(255,255,255,0.1)] ring-1 ring-black/5 dark:ring-white/5"
+        className="glass-panel flex items-center gap-1 sm:gap-1.5 p-1.5 rounded-2xl bg-white/90 dark:bg-[#080C14]/90 backdrop-blur-2xl border border-zinc-200/90 dark:border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.2),0_8px_24px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.9)] dark:shadow-[0_24px_80px_rgba(0,0,0,0.7),0_12px_36px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.08)] ring-1 ring-black/[0.03] dark:ring-amber-500/[0.06] [transform-style:preserve-3d]"
       >
         {/* Tab 1: Bleaching Process Log */}
         <button

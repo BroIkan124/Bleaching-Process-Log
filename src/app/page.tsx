@@ -891,6 +891,7 @@ export default function BleachingProcessLogApp() {
           {/* Tab 4: Master Data & Quality Analytics View */}
           {activeTab === 'masterdata' && (
             <MasterDataView
+              sheet={sheet}
               currentUser={currentUser}
               isDark={isDark}
               reports={qcReports}

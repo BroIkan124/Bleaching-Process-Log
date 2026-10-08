@@ -10,7 +10,9 @@ import {
   Tank,
   ProductSpec,
   RejectionReasonCode,
-  DashboardTab
+  DashboardTab,
+  LogSheet,
+  LogEntry
 } from "@/types";
 import { 
   DEFAULT_PRODUCT_SPECS, 
@@ -34,24 +36,31 @@ import {
   ArrowUpRight, 
   Plus, 
   RefreshCw, 
-  Sparkles,
-  ShieldAlert,
-  Search,
-  ExternalLink,
-  Clock,
-  ChevronDown,
-  Calendar,
-  X,
-  Printer,
-  Eye,
-  Activity,
-  Check,
-  Shield,
-  Droplets
+  Sparkles, 
+  ShieldAlert, 
+  Search, 
+  ExternalLink, 
+  Clock, 
+  ChevronDown, 
+  Calendar, 
+  X, 
+  Printer, 
+  Eye, 
+  Activity, 
+  Check, 
+  Shield, 
+  Droplets,
+  Thermometer,
+  Gauge,
+  Flame,
+  Zap,
+  ArrowDown,
+  ArrowUp
 } from "lucide-react";
 import { RadioSelect } from "./RadioSelect";
 
 interface MasterDataViewProps {
+  sheet?: LogSheet;
   currentUser: UserProfile;
   isDark: boolean;
   reports: SampleReport[];
@@ -66,7 +75,8 @@ interface MasterDataViewProps {
 }
 
 type MasterSubTab = "pareto_frequency" | "product_specs" | "reason_codes" | "plants_tanks";
-type ChartTab = "trays" | "bc101" | "chilling" | "steam" | "vacuum";
+type ProcessChartTab = "combined" | "he_temp" | "vacuum";
+type ProcessShiftFilter = "all" | "1" | "2" | "3";
 type NonConformityFilter = "rejects_only" | "all_non_conformances";
 
 // Helper to normalize reason descriptions for Pareto aggregation matching RF-FR-001 standard
@@ -136,6 +146,7 @@ function formatMonthLabel(monthKey: string): string {
 }
 
 export const MasterDataView: React.FC<MasterDataViewProps> = ({
+  sheet,
   currentUser,
   isDark,
   reports,
@@ -160,7 +171,9 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
   
   // Navigation & Sub-Tabs
   const [activeSubTab, setActiveSubTab] = useState<MasterSubTab>("pareto_frequency");
-  const [activeChartTab, setActiveChartTab] = useState<ChartTab>("trays");
+  const [activeProcessTab, setActiveProcessTab] = useState<ProcessChartTab>("combined");
+  const [selectedShiftFilter, setSelectedShiftFilter] = useState<ProcessShiftFilter>("all");
+  const [hoveredEntry, setHoveredEntry] = useState<LogEntry | null>(null);
   
   // Pareto & Frequency Filters
   const [selectedMonth, setSelectedMonth] = useState<string>("all");
@@ -382,32 +395,170 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
   }, [productFrequencyData]);
 
   // =========================================================================
-  // 5. PROCESS TRENDS TELEMETRY DATA (SAMPLE HOURLY PROFILES)
+  // 5. PROCESS TRENDS TELEMETRY DATA (SYNCHRONIZED WITH BLEACHING LOG)
   // =========================================================================
-  const trendPoints = useMemo(() => {
-    const hours = ["0800", "0900", "1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900", "2000", "2100", "2200", "2300"];
-    return hours.map((hour, idx) => {
-      const step = idx * 0.15;
-      return {
-        time: hour,
-        tray1: 252 + Math.sin(step) * 2.5,
-        tray2: 255 + Math.cos(step) * 2.8,
-        tray3: 259 + Math.sin(step * 1.2) * 3.1,
-        tray4: 264.5 + Math.cos(step * 0.9) * 3.4, // Tray 4 peak
-        tray5: 261 + Math.sin(step * 1.1) * 2.9,
-        tray6: 256 + Math.cos(step * 1.3) * 2.4,
-        tray7: 251.5 + Math.sin(step) * 2.1,
-        bc101In: 32 + Math.sin(step) * 2.0,
-        bc101Out: 41.5 + Math.cos(step) * 2.5,
-        chillIn: 9.5 + Math.sin(step * 0.8) * 1.5,
-        chillOut: 13.2 + Math.cos(step * 0.8) * 1.8,
-        traySteam: 3.02 + Math.sin(step) * 0.12,
-        boosterPress: 2.85 + Math.cos(step) * 0.15,
-        ejectorPress: 2.4 + Math.sin(step * 0.7) * 0.18,
-        vacuum: 3.2 + Math.sin(step * 1.4) * 0.65,
-      };
-    });
-  }, []);
+  const sheetEntries: LogEntry[] = useMemo(() => {
+    return sheet?.entries || [];
+  }, [sheet?.entries]);
+
+  // Filter entries based on selected shift
+  const filteredProcessEntries = useMemo(() => {
+    if (selectedShiftFilter === "1") {
+      return sheetEntries.filter((e) => e.shift === 1);
+    }
+    if (selectedShiftFilter === "2") {
+      return sheetEntries.filter((e) => e.shift === 2);
+    }
+    if (selectedShiftFilter === "3") {
+      return sheetEntries.filter((e) => e.shift === 3);
+    }
+    return sheetEntries;
+  }, [sheetEntries, selectedShiftFilter]);
+
+  // Saved entries metrics
+  const savedEntries = useMemo(() => {
+    return sheetEntries.filter((e) => e.is_saved);
+  }, [sheetEntries]);
+
+  // HE Temp metrics (spec: 70.0 - 115.0 °C)
+  const heTempEntries = useMemo(() => {
+    return savedEntries.filter((e) => typeof e.he_temp_c === "number" && !isNaN(e.he_temp_c));
+  }, [savedEntries]);
+
+  const latestHeTemp = heTempEntries.length > 0 ? heTempEntries[heTempEntries.length - 1].he_temp_c : null;
+  const avgHeTemp = heTempEntries.length > 0
+    ? (heTempEntries.reduce((sum, e) => sum + (e.he_temp_c || 0), 0) / heTempEntries.length).toFixed(1)
+    : null;
+  const minHeTemp = heTempEntries.length > 0
+    ? Math.min(...heTempEntries.map((e) => e.he_temp_c as number)).toFixed(1)
+    : null;
+  const maxHeTemp = heTempEntries.length > 0
+    ? Math.max(...heTempEntries.map((e) => e.he_temp_c as number)).toFixed(1)
+    : null;
+  const outOfSpecHeTempCount = heTempEntries.filter((e) => (e.he_temp_c as number) < 70 || (e.he_temp_c as number) > 115).length;
+
+  // Bleacher Vacuum metrics (spec: >= 600.0 mmHg)
+  const vacuumEntries = useMemo(() => {
+    return savedEntries.filter((e) => typeof e.vacuum_mmhg === "number" && !isNaN(e.vacuum_mmhg));
+  }, [savedEntries]);
+
+  const latestVacuum = vacuumEntries.length > 0 ? vacuumEntries[vacuumEntries.length - 1].vacuum_mmhg : null;
+  const avgVacuum = vacuumEntries.length > 0
+    ? (vacuumEntries.reduce((sum, e) => sum + (e.vacuum_mmhg || 0), 0) / vacuumEntries.length).toFixed(1)
+    : null;
+  const minVacuum = vacuumEntries.length > 0
+    ? Math.min(...vacuumEntries.map((e) => e.vacuum_mmhg as number)).toFixed(1)
+    : null;
+  const maxVacuum = vacuumEntries.length > 0
+    ? Math.max(...vacuumEntries.map((e) => e.vacuum_mmhg as number)).toFixed(1)
+    : null;
+  const outOfSpecVacuumCount = vacuumEntries.filter((e) => (e.vacuum_mmhg as number) < 600).length;
+
+  // Overall Process Compliance Rate (%)
+  const totalLoggedParams = heTempEntries.length + vacuumEntries.length;
+  const totalProcessViolations = outOfSpecHeTempCount + outOfSpecVacuumCount;
+  const processComplianceRate = totalLoggedParams > 0
+    ? Math.max(0, Math.round(((totalLoggedParams - totalProcessViolations) / totalLoggedParams) * 100))
+    : 100;
+
+  // =========================================================================
+  // 5B. SVG TELEMETRY CHART GEOMETRY & PATH GENERATION
+  // =========================================================================
+  const chartWidth = 920;
+  const chartHeight = 280;
+  const padLeft = 65;
+  const padRight = 65;
+  const padTop = 35;
+  const padBottom = 45;
+  const plotWidth = chartWidth - padLeft - padRight; // 790
+  const plotHeight = chartHeight - padTop - padBottom; // 200
+
+  // HE Temp Scale: 50°C to 130°C (range 80)
+  const minTempY = 50;
+  const maxTempY = 130;
+  const getTempY = (val: number) => {
+    const clamped = Math.max(minTempY, Math.min(maxTempY, val));
+    return padTop + (1 - (clamped - minTempY) / (maxTempY - minTempY)) * plotHeight;
+  };
+
+  // Bleacher Vacuum Scale: 500 mmHg to 760 mmHg (range 260)
+  const minVacY = 500;
+  const maxVacY = 760;
+  const getVacY = (val: number) => {
+    const clamped = Math.max(minVacY, Math.min(maxVacY, val));
+    return padTop + (1 - (clamped - minVacY) / (maxVacY - minVacY)) * plotHeight;
+  };
+
+  const getSlotX = (index: number, total: number) => {
+    if (total <= 1) return padLeft + plotWidth / 2;
+    return padLeft + (index / (total - 1)) * plotWidth;
+  };
+
+  // Mapped HE Temp Points for filtered entries
+  const mappedTempPoints = useMemo(() => {
+    const total = filteredProcessEntries.length;
+    return filteredProcessEntries
+      .map((entry, idx) => {
+        const hasVal = typeof entry.he_temp_c === "number" && !isNaN(entry.he_temp_c);
+        return {
+          entry,
+          index: idx,
+          hasVal,
+          x: getSlotX(idx, total),
+          y: hasVal ? getTempY(entry.he_temp_c as number) : null,
+          val: entry.he_temp_c,
+          inSpec: hasVal ? (entry.he_temp_c as number) >= 70 && (entry.he_temp_c as number) <= 115 : true,
+        };
+      })
+      .filter((pt) => pt.hasVal && pt.y !== null);
+  }, [filteredProcessEntries, padLeft, plotWidth, padTop, plotHeight]);
+
+  // Mapped Bleacher Vacuum Points for filtered entries
+  const mappedVacPoints = useMemo(() => {
+    const total = filteredProcessEntries.length;
+    return filteredProcessEntries
+      .map((entry, idx) => {
+        const hasVal = typeof entry.vacuum_mmhg === "number" && !isNaN(entry.vacuum_mmhg);
+        return {
+          entry,
+          index: idx,
+          hasVal,
+          x: getSlotX(idx, total),
+          y: hasVal ? getVacY(entry.vacuum_mmhg as number) : null,
+          val: entry.vacuum_mmhg,
+          inSpec: hasVal ? (entry.vacuum_mmhg as number) >= 600 : true,
+        };
+      })
+      .filter((pt) => pt.hasVal && pt.y !== null);
+  }, [filteredProcessEntries, padLeft, plotWidth, padTop, plotHeight]);
+
+  const tempLinePath = useMemo(() => {
+    if (mappedTempPoints.length === 0) return "";
+    if (mappedTempPoints.length === 1) {
+      return `M ${mappedTempPoints[0].x} ${mappedTempPoints[0].y} L ${mappedTempPoints[0].x + 0.1} ${mappedTempPoints[0].y}`;
+    }
+    return mappedTempPoints.reduce((acc, pt, i) => (i === 0 ? `M ${pt.x} ${pt.y}` : `${acc} L ${pt.x} ${pt.y}`), "");
+  }, [mappedTempPoints]);
+
+  const tempAreaPath = useMemo(() => {
+    if (mappedTempPoints.length < 2) return "";
+    const baseY = padTop + plotHeight;
+    return `${tempLinePath} L ${mappedTempPoints[mappedTempPoints.length - 1].x} ${baseY} L ${mappedTempPoints[0].x} ${baseY} Z`;
+  }, [mappedTempPoints, tempLinePath, padTop, plotHeight]);
+
+  const vacLinePath = useMemo(() => {
+    if (mappedVacPoints.length === 0) return "";
+    if (mappedVacPoints.length === 1) {
+      return `M ${mappedVacPoints[0].x} ${mappedVacPoints[0].y} L ${mappedVacPoints[0].x + 0.1} ${mappedVacPoints[0].y}`;
+    }
+    return mappedVacPoints.reduce((acc, pt, i) => (i === 0 ? `M ${pt.x} ${pt.y}` : `${acc} L ${pt.x} ${pt.y}`), "");
+  }, [mappedVacPoints]);
+
+  const vacAreaPath = useMemo(() => {
+    if (mappedVacPoints.length < 2) return "";
+    const baseY = padTop + plotHeight;
+    return `${vacLinePath} L ${mappedVacPoints[mappedVacPoints.length - 1].x} ${baseY} L ${mappedVacPoints[0].x} ${baseY} Z`;
+  }, [mappedVacPoints, vacLinePath, padTop, plotHeight]);
 
   // =========================================================================
   // 6. QUICK ACTIONS & SIMULATIONS
@@ -634,273 +785,564 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
           </div>
 
           {/* ========================================================================= */}
-          {/* PROCESS TRENDS & QUALITY PARETO ANALYTICS CHART                           */}
+          {/* BLEACHING PROCESS TELEMETRY & DYNAMIC TREND CURVES (HE TEMP & VACUUM)     */}
           {/* ========================================================================= */}
           <div className="glass-panel p-5 sm:p-6 rounded-3xl bg-white/90 dark:bg-[#0A0F1C]/90 border border-zinc-200/90 dark:border-white/10 shadow-xl space-y-5">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-zinc-200 dark:border-white/10 pb-4">
+            {/* Top Header with Title, Live Sync Badge & Controls */}
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-zinc-200 dark:border-white/10 pb-4">
               <div>
-                <h2 className="text-base font-bold font-display text-zinc-900 dark:text-white">
-                  Process trends and quality Pareto analytics
-                </h2>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                  Banded tolerance shading, multi-tray temperature overlays, statistical rejection Pareto
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <h2 className="text-base sm:text-lg font-bold font-display text-zinc-900 dark:text-white">
+                    Bleaching Process Telemetry &amp; Dynamic Trend Curves
+                  </h2>
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold font-mono bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Bleaching Log Synced: {savedEntries.length} / {sheetEntries.length || 24} Hours Logged
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+                  Live Heat Exchanger Temperature (HE Temp °C) and Bleacher Vacuum (mmHg) mapped dynamically from operator hourly log records.
+                </p>
+                <div className="flex flex-wrap items-center gap-2 mt-2 text-xs font-mono text-zinc-600 dark:text-zinc-400">
+                  <span className="px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-white/10">
+                    Line: {sheet?.plant_name || sheet?.plant_id || "Plant 1"}
+                  </span>
+                  <span className="px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-white/10">
+                    Product: {sheet?.product_name || "Refined Oil"}
+                  </span>
+                  <span className="px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-white/10">
+                    Shift Date: {sheet?.sheet_date || "Current Log"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Chart Series and Shift Controls */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2.5">
+                {/* Series Selector */}
+                <div className="flex items-center gap-1 bg-zinc-100 dark:bg-black/40 p-1 rounded-2xl border border-zinc-200 dark:border-white/10 overflow-x-auto">
+                  <button
+                    type="button"
+                    onClick={() => setActiveProcessTab("combined")}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
+                      activeProcessTab === "combined"
+                        ? "bg-amber-500 text-white shadow-xs"
+                        : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                    }`}
+                  >
+                    <Layers className="w-3.5 h-3.5" />
+                    <span>Dual Series</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveProcessTab("he_temp")}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
+                      activeProcessTab === "he_temp"
+                        ? "bg-amber-500 text-white shadow-xs"
+                        : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                    }`}
+                  >
+                    <Thermometer className="w-3.5 h-3.5 text-amber-500" />
+                    <span>HE Temp (°C)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveProcessTab("vacuum")}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
+                      activeProcessTab === "vacuum"
+                        ? "bg-amber-500 text-white shadow-xs"
+                        : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                    }`}
+                  >
+                    <Gauge className="w-3.5 h-3.5 text-sky-500" />
+                    <span>Vacuum (mmHg)</span>
+                  </button>
+                </div>
+
+                {/* Shift Selector */}
+                <div className="flex items-center gap-1 bg-zinc-100 dark:bg-black/40 p-1 rounded-2xl border border-zinc-200 dark:border-white/10">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedShiftFilter("all")}
+                    className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      selectedShiftFilter === "all"
+                        ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs"
+                        : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                    }`}
+                  >
+                    All 24h
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedShiftFilter("1")}
+                    className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      selectedShiftFilter === "1"
+                        ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs"
+                        : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                    }`}
+                  >
+                    Shift 1
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedShiftFilter("2")}
+                    className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      selectedShiftFilter === "2"
+                        ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs"
+                        : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                    }`}
+                  >
+                    Shift 2
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedShiftFilter("3")}
+                    className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      selectedShiftFilter === "3"
+                        ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs"
+                        : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                    }`}
+                  >
+                    Shift 3
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* 4 Real-time Telemetry Highlights Cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+              {/* Card 1: HE Temperature */}
+              <div className="telemetry-card p-4 rounded-2xl border border-zinc-200/80 dark:border-white/10 bg-zinc-50/70 dark:bg-white/5">
+                <div className="flex items-center justify-between text-zinc-500 mb-1">
+                  <span className="text-xs font-bold uppercase tracking-wider font-display">HE Temp (°C)</span>
+                  <Thermometer className="w-4 h-4 text-amber-500" />
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-bold font-mono text-amber-600 dark:text-amber-400 tabular-nums">
+                    {latestHeTemp !== null ? `${latestHeTemp}°C` : "--"}
+                  </span>
+                  {latestHeTemp !== null && (
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-md ${
+                      latestHeTemp >= 70 && latestHeTemp <= 115
+                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                        : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20"
+                    }`}>
+                      {latestHeTemp >= 70 && latestHeTemp <= 115 ? "In-Spec" : "Alarm"}
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-zinc-500 mt-1 font-mono">
+                  Spec: 70.0 - 115.0 °C (Avg: {avgHeTemp ?? "--"}°C)
                 </p>
               </div>
 
-              {/* Chart Series Selector */}
-              <div className="flex items-center gap-1.5 bg-zinc-100 dark:bg-black/40 p-1 rounded-2xl border border-zinc-200 dark:border-white/10 overflow-x-auto">
-                <button
-                  type="button"
-                  onClick={() => setActiveChartTab("trays")}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
-                    activeChartTab === "trays"
-                      ? "bg-amber-500 text-white shadow-xs"
-                      : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-                  }`}
-                >
-                  Tray temps (1-7)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveChartTab("bc101")}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
-                    activeChartTab === "bc101"
-                      ? "bg-amber-500 text-white shadow-xs"
-                      : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-                  }`}
-                >
-                  BC 101 (°C)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveChartTab("chilling")}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
-                    activeChartTab === "chilling"
-                      ? "bg-amber-500 text-white shadow-xs"
-                      : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-                  }`}
-                >
-                  Chilling (°C)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveChartTab("steam")}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
-                    activeChartTab === "steam"
-                      ? "bg-amber-500 text-white shadow-xs"
-                      : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-                  }`}
-                >
-                  Steam Press (Bar)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveChartTab("vacuum")}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
-                    activeChartTab === "vacuum"
-                      ? "bg-amber-500 text-white shadow-xs"
-                      : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-                  }`}
-                >
-                  Deodorizer vacuum
-                </button>
+              {/* Card 2: Bleacher Vacuum */}
+              <div className="telemetry-card p-4 rounded-2xl border border-zinc-200/80 dark:border-white/10 bg-zinc-50/70 dark:bg-white/5">
+                <div className="flex items-center justify-between text-zinc-500 mb-1">
+                  <span className="text-xs font-bold uppercase tracking-wider font-display">Bleacher Vacuum</span>
+                  <Gauge className="w-4 h-4 text-sky-500" />
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-bold font-mono text-sky-600 dark:text-sky-400 tabular-nums">
+                    {latestVacuum !== null ? `${latestVacuum} mmHg` : "--"}
+                  </span>
+                  {latestVacuum !== null && (
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-md ${
+                      latestVacuum >= 600
+                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                        : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20"
+                    }`}>
+                      {latestVacuum >= 600 ? "Optimal" : "Low Vac"}
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-zinc-500 mt-1 font-mono">
+                  Spec: ≥ 600.0 mmHg (Avg: {avgVacuum ?? "--"} mmHg)
+                </p>
+              </div>
+
+              {/* Card 3: Out of Spec Alarms */}
+              <div className="telemetry-card p-4 rounded-2xl border border-zinc-200/80 dark:border-white/10 bg-zinc-50/70 dark:bg-white/5">
+                <div className="flex items-center justify-between text-zinc-500 mb-1">
+                  <span className="text-xs font-bold uppercase tracking-wider font-display">Alarm Deviations</span>
+                  <AlertTriangle className={`w-4 h-4 ${totalProcessViolations > 0 ? "text-rose-500 animate-pulse" : "text-emerald-500"}`} />
+                </div>
+                <div className="text-2xl font-bold font-mono tabular-nums">
+                  <span className={totalProcessViolations > 0 ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400"}>
+                    {totalProcessViolations}
+                  </span>
+                  <span className="text-xs font-medium text-zinc-500 ml-2">violations</span>
+                </div>
+                <p className="text-xs text-zinc-500 mt-1">
+                  {outOfSpecHeTempCount} Temp alarms, {outOfSpecVacuumCount} Vacuum alarms
+                </p>
+              </div>
+
+              {/* Card 4: Parameter Stability */}
+              <div className="telemetry-card p-4 rounded-2xl border border-zinc-200/80 dark:border-white/10 bg-zinc-50/70 dark:bg-white/5">
+                <div className="flex items-center justify-between text-zinc-500 mb-1">
+                  <span className="text-xs font-bold uppercase tracking-wider font-display">Process Stability</span>
+                  <Activity className="w-4 h-4 text-indigo-500" />
+                </div>
+                <div className="text-2xl font-bold font-mono text-indigo-600 dark:text-indigo-400 tabular-nums">
+                  {processComplianceRate}%
+                </div>
+                <p className="text-xs text-zinc-500 mt-1">
+                  {savedEntries.length} of {sheetEntries.length || 24} hourly readings verified
+                </p>
               </div>
             </div>
 
-            {/* Sub-header description & hint */}
-            <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
-              <span className="font-medium">
-                {activeChartTab === "trays" && "Deodorizer tray temperatures (°C) for Trays 1 to 7 with configured operating bands (250 - 268°C)"}
-                {activeChartTab === "bc101" && "BC 101 Condenser Water Temperatures (°C) - Water In vs Water Out with soft warning threshold (45°C)"}
-                {activeChartTab === "chilling" && "Chilling Water Temperatures (°C) - Water In vs Water Out with target limit (Max 16°C)"}
-                {activeChartTab === "steam" && "Steam Supply Pressures (Bar) - Tray Steam (Set 3.00 Bar), Booster & Ejector Pressures"}
-                {activeChartTab === "vacuum" && "Deodorizer vacuum (Torr) with operating limit (Soft Max 4.5 Torr)"}
-              </span>
-              <span className="font-mono text-zinc-600 dark:text-zinc-300">
-                Shift 24-Hour Telemetry, live process data
-              </span>
-            </div>
-
             {/* High-Resolution SVG Responsive Graph */}
-            <div className="w-full h-72 sm:h-80 bg-zinc-50 dark:bg-black/30 rounded-2xl border border-zinc-200/80 dark:border-white/5 p-4 relative overflow-hidden flex flex-col justify-between">
+            <div className="w-full h-80 sm:h-96 bg-zinc-50 dark:bg-black/40 rounded-2xl border border-zinc-200/80 dark:border-white/10 p-4 relative overflow-hidden flex flex-col justify-between">
               {/* SVG Curve Canvas */}
-              <svg className="w-full h-full overflow-visible" viewBox="0 0 800 240" preserveAspectRatio="none">
+              <svg className="w-full h-full overflow-visible" viewBox={`0 0 ${chartWidth} ${chartHeight}`} preserveAspectRatio="none">
                 <defs>
-                  <linearGradient id="bandGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#10b981" stopOpacity="0.18" />
+                  {/* HE Temp Area Gradient */}
+                  <linearGradient id="heTempGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.32" />
+                    <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.02" />
+                  </linearGradient>
+
+                  {/* Vacuum Area Gradient */}
+                  <linearGradient id="vacGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#0284c7" stopOpacity="0.30" />
+                    <stop offset="100%" stopColor="#0284c7" stopOpacity="0.02" />
+                  </linearGradient>
+
+                  {/* HE Temp Target Band (70 - 115 C) */}
+                  <linearGradient id="heBandGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#10b981" stopOpacity="0.14" />
                     <stop offset="100%" stopColor="#10b981" stopOpacity="0.04" />
                   </linearGradient>
-                  <linearGradient id="vacGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#d81f2c" stopOpacity="0.25" />
-                    <stop offset="100%" stopColor="#d81f2c" stopOpacity="0.02" />
+
+                  {/* Vacuum Optimal Band (620 - 720 mmHg) */}
+                  <linearGradient id="vacBandGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.12" />
+                    <stop offset="100%" stopColor="#38bdf8" stopOpacity="0.03" />
                   </linearGradient>
                 </defs>
 
-                {/* Grid horizontal lines */}
-                {[40, 90, 140, 190].map((y, i) => (
-                  <line key={i} x1="40" y1={y} x2="780" y2={y} stroke={isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)"} strokeDasharray="4 4" />
-                ))}
-
-                {/* Operating Band Shading for Trays (250-268 C) */}
-                {activeChartTab === "trays" && (
-                  <>
-                    <rect x="40" y="55" width="740" height="95" fill="url(#bandGrad)" rx="4" />
-                    <line x1="40" y1="55" x2="780" y2="55" stroke="#10b981" strokeDasharray="3 3" strokeWidth="1.2" opacity="0.8" />
-                    <text x="770" y="50" fill="#10b981" fontSize="10" fontWeight="600" textAnchor="end">Band Max 268°C</text>
-                    <line x1="40" y1="150" x2="780" y2="150" stroke="#10b981" strokeDasharray="3 3" strokeWidth="1.2" opacity="0.8" />
-                    <text x="770" y="163" fill="#10b981" fontSize="10" fontWeight="600" textAnchor="end">Band Min 250°C</text>
-
-                    {/* Tray 4 Peak (Red Line) */}
-                    <path
-                      d="M 50 78 Q 200 68 400 62 T 770 70"
-                      fill="none"
-                      stroke="#d81f2c"
-                      strokeWidth="2.8"
-                    />
-                    {/* Tray 2 (Blue Line) */}
-                    <path
-                      d="M 50 120 Q 200 115 400 110 T 770 118"
-                      fill="none"
-                      stroke="#0284c7"
-                      strokeWidth="1.8"
-                    />
-                    {/* Tray 7 (Emerald Line) */}
-                    <path
-                      d="M 50 145 Q 200 142 400 140 T 770 144"
-                      fill="none"
-                      stroke="#10b981"
-                      strokeWidth="2"
-                    />
-                  </>
-                )}
-
-                {/* BC 101 Temperature Lines */}
-                {activeChartTab === "bc101" && (
-                  <>
-                    <line x1="40" y1="80" x2="780" y2="80" stroke="#f59e0b" strokeDasharray="4 4" strokeWidth="1.2" />
-                    <text x="770" y="75" fill="#f59e0b" fontSize="10" fontWeight="600" textAnchor="end">Warn Max 45°C</text>
-
-                    <path
-                      d="M 50 100 Q 220 95 400 92 T 770 98"
-                      fill="none"
-                      stroke="#f43f5e"
-                      strokeWidth="2.2"
-                    />
-                    <path
-                      d="M 50 160 Q 220 156 400 152 T 770 158"
-                      fill="none"
-                      stroke="#00d2ff"
-                      strokeWidth="2.2"
-                    />
-                  </>
-                )}
-
-                {/* Chilling Water Lines */}
-                {activeChartTab === "chilling" && (
-                  <>
-                    <line x1="40" y1="85" x2="780" y2="85" stroke="#10b981" strokeDasharray="4 4" strokeWidth="1.2" />
-                    <text x="770" y="80" fill="#10b981" fontSize="10" fontWeight="600" textAnchor="end">Target Max 16°C</text>
-
-                    <path
-                      d="M 50 115 Q 220 110 400 108 T 770 114"
-                      fill="none"
-                      stroke="#009fe3"
-                      strokeWidth="2.2"
-                    />
-                    <path
-                      d="M 50 165 Q 220 160 400 155 T 770 162"
-                      fill="none"
-                      stroke="#38bdf8"
-                      strokeWidth="2.2"
-                    />
-                  </>
-                )}
-
-                {/* Steam Pressure Lines */}
-                {activeChartTab === "steam" && (
-                  <>
-                    <line x1="40" y1="90" x2="780" y2="90" stroke="#10b981" strokeDasharray="3 3" strokeWidth="1.2" />
-                    <text x="770" y="85" fill="#10b981" fontSize="10" fontWeight="600" textAnchor="end">Tray Set 3.00 Bar</text>
-
-                    <path
-                      d="M 50 88 Q 220 90 400 89 T 770 88"
-                      fill="none"
-                      stroke="#eab308"
-                      strokeWidth="2.2"
-                    />
-                    <path
-                      d="M 50 120 Q 220 125 400 122 T 770 118"
-                      fill="none"
-                      stroke="#d81f2c"
-                      strokeWidth="2.2"
-                    />
-                  </>
-                )}
-
-                {/* Vacuum Area & Curve */}
-                {activeChartTab === "vacuum" && (
-                  <>
-                    <line x1="40" y1="80" x2="780" y2="80" stroke="#f59e0b" strokeDasharray="4 4" strokeWidth="1.2" />
-                    <text x="770" y="75" fill="#f59e0b" fontSize="10" fontWeight="600" textAnchor="end">Soft Max: 4.5 Torr</text>
-
-                    <path
-                      d="M 50 135 Q 200 145 400 125 T 770 130 L 770 210 L 50 210 Z"
-                      fill="url(#vacGrad)"
-                    />
-                    <path
-                      d="M 50 135 Q 200 145 400 125 T 770 130"
-                      fill="none"
-                      stroke="#d81f2c"
-                      strokeWidth="2.4"
-                    />
-                  </>
-                )}
-
-                {/* Time markers on X-Axis */}
-                {trendPoints.filter((_, i) => i % 3 === 0).map((pt, i) => {
-                  const x = 50 + (i * 140);
+                {/* Grid horizontal reference lines */}
+                {[130, 115, 100, 85, 70, 50].map((temp, i) => {
+                  const y = getTempY(temp);
                   return (
-                    <text key={i} x={x} y="228" fill="var(--muted, #888)" fontSize="11" fontFamily="monospace" textAnchor="middle">
-                      {pt.time}
+                    <line
+                      key={`grid-${i}`}
+                      x1={padLeft}
+                      y1={y}
+                      x2={padLeft + plotWidth}
+                      y2={y}
+                      stroke={isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)"}
+                      strokeDasharray="4 4"
+                    />
+                  );
+                })}
+
+                {/* HE Temp Target Operating Band (70.0 - 115.0 °C) */}
+                <rect
+                  x={padLeft}
+                  y={getTempY(115)}
+                  width={plotWidth}
+                  height={Math.max(0, getTempY(70) - getTempY(115))}
+                  fill="url(#heBandGrad)"
+                  rx="4"
+                />
+                {/* 115°C Max Limit Line */}
+                <line
+                  x1={padLeft}
+                  y1={getTempY(115)}
+                  x2={padLeft + plotWidth}
+                  y2={getTempY(115)}
+                  stroke="#10b981"
+                  strokeDasharray="3 3"
+                  strokeWidth="1.2"
+                  opacity="0.85"
+                />
+                {/* 70°C Min Limit Line */}
+                <line
+                  x1={padLeft}
+                  y1={getTempY(70)}
+                  x2={padLeft + plotWidth}
+                  y2={getTempY(70)}
+                  stroke="#10b981"
+                  strokeDasharray="3 3"
+                  strokeWidth="1.2"
+                  opacity="0.85"
+                />
+                {/* 100°C Setpoint Target Guide */}
+                <line
+                  x1={padLeft}
+                  y1={getTempY(100)}
+                  x2={padLeft + plotWidth}
+                  y2={getTempY(100)}
+                  stroke="#f59e0b"
+                  strokeDasharray="2 2"
+                  strokeWidth="1"
+                  opacity="0.5"
+                />
+
+                {/* Vacuum Optimal Zone (620 - 720 mmHg) */}
+                <rect
+                  x={padLeft}
+                  y={getVacY(720)}
+                  width={plotWidth}
+                  height={Math.max(0, getVacY(620) - getVacY(720))}
+                  fill="url(#vacBandGrad)"
+                  rx="4"
+                />
+                {/* Vacuum Critical Minimum Limit Line (600.0 mmHg) */}
+                <line
+                  x1={padLeft}
+                  y1={getVacY(600)}
+                  x2={padLeft + plotWidth}
+                  y2={getVacY(600)}
+                  stroke="#ef4444"
+                  strokeDasharray="4 4"
+                  strokeWidth="1.5"
+                  opacity="0.9"
+                />
+
+                {/* Y-Axis Left Labels (HE Temp °C in Amber) */}
+                <text x={padLeft - 10} y={getTempY(130) + 4} fill="#f59e0b" fontSize="11" fontFamily="monospace" textAnchor="end">130°C</text>
+                <text x={padLeft - 10} y={getTempY(115) + 4} fill="#10b981" fontSize="11" fontWeight="bold" fontFamily="monospace" textAnchor="end">115°C (Max)</text>
+                <text x={padLeft - 10} y={getTempY(100) + 4} fill="#f59e0b" fontSize="11" fontFamily="monospace" textAnchor="end">100°C (Set)</text>
+                <text x={padLeft - 10} y={getTempY(70) + 4} fill="#10b981" fontSize="11" fontWeight="bold" fontFamily="monospace" textAnchor="end">70°C (Min)</text>
+                <text x={padLeft - 10} y={getTempY(50) + 4} fill="#f59e0b" fontSize="11" fontFamily="monospace" textAnchor="end">50°C</text>
+
+                {/* Y-Axis Right Labels (Bleacher Vacuum mmHg in Sky) */}
+                <text x={padLeft + plotWidth + 10} y={getVacY(760) + 4} fill="#0284c7" fontSize="11" fontFamily="monospace" textAnchor="start">760</text>
+                <text x={padLeft + plotWidth + 10} y={getVacY(720) + 4} fill="#38bdf8" fontSize="11" fontFamily="monospace" textAnchor="start">720 (Opt)</text>
+                <text x={padLeft + plotWidth + 10} y={getVacY(650) + 4} fill="#0284c7" fontSize="11" fontFamily="monospace" textAnchor="start">650</text>
+                <text x={padLeft + plotWidth + 10} y={getVacY(600) + 4} fill="#ef4444" fontSize="11" fontWeight="bold" fontFamily="monospace" textAnchor="start">600 (Min)</text>
+                <text x={padLeft + plotWidth + 10} y={getVacY(500) + 4} fill="#0284c7" fontSize="11" fontFamily="monospace" textAnchor="start">500 mmHg</text>
+
+                {/* HE Temp Area & Curve Rendering */}
+                {(activeProcessTab === "combined" || activeProcessTab === "he_temp") && (
+                  <>
+                    {tempAreaPath && (
+                      <path d={tempAreaPath} fill="url(#heTempGrad)" />
+                    )}
+                    {tempLinePath && (
+                      <path
+                        d={tempLinePath}
+                        fill="none"
+                        stroke="#f59e0b"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    )}
+                    {/* HE Temp Data Point Nodes */}
+                    {mappedTempPoints.map((pt, i) => {
+                      const isHovered = hoveredEntry?.slot_index === pt.entry.slot_index;
+                      return (
+                        <g
+                          key={`temp-pt-${i}`}
+                          className="cursor-pointer transition-transform duration-150"
+                          onMouseEnter={() => setHoveredEntry(pt.entry)}
+                          onClick={() => setHoveredEntry(pt.entry)}
+                        >
+                          {isHovered && (
+                            <circle
+                              cx={pt.x}
+                              cy={pt.y!}
+                              r="10"
+                              fill="#f59e0b"
+                              fillOpacity="0.25"
+                              className="animate-ping"
+                            />
+                          )}
+                          <circle
+                            cx={pt.x}
+                            cy={pt.y!}
+                            r={isHovered ? "6" : "4.5"}
+                            fill={pt.inSpec ? "#f59e0b" : "#ef4444"}
+                            stroke="#ffffff"
+                            strokeWidth="2"
+                            className="drop-shadow-md"
+                          />
+                        </g>
+                      );
+                    })}
+                  </>
+                )}
+
+                {/* Bleacher Vacuum Area & Curve Rendering */}
+                {(activeProcessTab === "combined" || activeProcessTab === "vacuum") && (
+                  <>
+                    {vacAreaPath && (
+                      <path d={vacAreaPath} fill="url(#vacGrad)" />
+                    )}
+                    {vacLinePath && (
+                      <path
+                        d={vacLinePath}
+                        fill="none"
+                        stroke="#0284c7"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    )}
+                    {/* Vacuum Data Point Nodes */}
+                    {mappedVacPoints.map((pt, i) => {
+                      const isHovered = hoveredEntry?.slot_index === pt.entry.slot_index;
+                      return (
+                        <g
+                          key={`vac-pt-${i}`}
+                          className="cursor-pointer transition-transform duration-150"
+                          onMouseEnter={() => setHoveredEntry(pt.entry)}
+                          onClick={() => setHoveredEntry(pt.entry)}
+                        >
+                          {isHovered && (
+                            <circle
+                              cx={pt.x}
+                              cy={pt.y!}
+                              r="10"
+                              fill="#0284c7"
+                              fillOpacity="0.25"
+                              className="animate-ping"
+                            />
+                          )}
+                          <circle
+                            cx={pt.x}
+                            cy={pt.y!}
+                            r={isHovered ? "6" : "4.5"}
+                            fill={pt.inSpec ? "#00d2ff" : "#ef4444"}
+                            stroke="#ffffff"
+                            strokeWidth="2"
+                            className="drop-shadow-md"
+                          />
+                        </g>
+                      );
+                    })}
+                  </>
+                )}
+
+                {/* X-Axis Timeline Markers */}
+                {filteredProcessEntries.map((entry, idx) => {
+                  const step = filteredProcessEntries.length <= 8 ? 1 : filteredProcessEntries.length <= 16 ? 2 : 3;
+                  if (idx % step !== 0 && idx !== filteredProcessEntries.length - 1) return null;
+                  const x = getSlotX(idx, filteredProcessEntries.length);
+                  return (
+                    <text
+                      key={`time-axis-${idx}`}
+                      x={x}
+                      y={chartHeight - 12}
+                      fill={isDark ? "#94a3b8" : "#64748b"}
+                      fontSize="11"
+                      fontFamily="monospace"
+                      textAnchor="middle"
+                      fontWeight="600"
+                    >
+                      {entry.time_label}
                     </text>
                   );
                 })}
               </svg>
 
-              {/* Chart Legend Footer */}
-              <div className="flex flex-wrap items-center justify-between text-xs font-mono text-zinc-500 pt-2 border-t border-zinc-200 dark:border-white/5">
-                <div className="flex items-center gap-4">
-                  {activeChartTab === "trays" && (
-                    <>
-                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#d81f2c]" /> Tray 4 Peak (264.5°C)</span>
-                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#0284c7]" /> Tray 2 Interm (255.0°C)</span>
-                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#10b981]" /> Tray 7 Final (251.5°C)</span>
-                    </>
-                  )}
-                  {activeChartTab === "bc101" && (
-                    <>
-                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#f43f5e]" /> BC 101 Out (41.5°C)</span>
-                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#00d2ff]" /> BC 101 In (32.0°C)</span>
-                    </>
-                  )}
-                  {activeChartTab === "chilling" && (
-                    <>
-                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#009fe3]" /> Chilling Water Out (13.2°C)</span>
-                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#38bdf8]" /> Chilling Water In (9.5°C)</span>
-                    </>
-                  )}
-                  {activeChartTab === "steam" && (
-                    <>
-                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#eab308]" /> Tray Steam (3.02 Bar)</span>
-                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#d81f2c]" /> Booster Steam (2.85 Bar)</span>
-                    </>
-                  )}
-                  {activeChartTab === "vacuum" && (
-                    <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#d81f2c]" /> Deodorizer Operating Vacuum (3.2 Torr)</span>
+              {/* Zero-Entries Fallback Banner when no logs are saved */}
+              {mappedTempPoints.length === 0 && mappedVacPoints.length === 0 && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/70 dark:bg-black/70 backdrop-blur-xs p-6 text-center z-10">
+                  <div className="p-3 rounded-2xl bg-amber-500/10 text-amber-500 border border-amber-500/20 mb-3">
+                    <Activity className="w-8 h-8 animate-pulse" />
+                  </div>
+                  <h3 className="text-base font-bold font-display text-zinc-900 dark:text-white">
+                    No Hourly Operator Logs Recorded for Selected Range
+                  </h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-md mt-1 mb-4 font-medium">
+                    When operators input hourly Heat Exchanger Temperature (°C) and Bleacher Vacuum (mmHg) in the Bleaching Log tab, this trend graph will dynamically plot real-time curves.
+                  </p>
+                  {onNavigateTab && (
+                    <button
+                      type="button"
+                      onClick={() => onNavigateTab("bleaching")}
+                      className="btn-premium-amber px-4 py-2 rounded-xl text-xs font-bold text-white shadow-md flex items-center gap-2 cursor-pointer"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>Open Bleaching Log to Enter Readings</span>
+                    </button>
                   )}
                 </div>
-                <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
-                  100% Parameter Stability
+              )}
+            </div>
+
+            {/* Interactive Inspection HUD (Active when hovering or clicking a node) */}
+            {hoveredEntry && (
+              <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-zinc-100 to-sky-500/10 dark:from-amber-500/10 dark:via-zinc-900 dark:to-sky-500/10 border border-zinc-200 dark:border-white/10 flex flex-wrap items-center justify-between gap-3 animate-fade-in">
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="px-2.5 py-1 rounded-lg bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 text-xs font-mono font-bold">
+                    Slot {hoveredEntry.time_label} (Shift {hoveredEntry.shift})
+                  </span>
+                  <div className="flex items-center gap-1.5 text-xs">
+                    <Thermometer className="w-4 h-4 text-amber-500" />
+                    <span className="text-zinc-500">HE Temp:</span>
+                    <span className="font-mono font-bold text-zinc-900 dark:text-white">
+                      {hoveredEntry.he_temp_c !== null ? `${hoveredEntry.he_temp_c}°C` : "Not logged"}
+                    </span>
+                    {hoveredEntry.he_temp_c !== null && (
+                      <span className={`px-1.5 py-0.2 rounded text-xs font-semibold ${
+                        hoveredEntry.he_temp_c >= 70 && hoveredEntry.he_temp_c <= 115
+                          ? "text-emerald-600 bg-emerald-500/10"
+                          : "text-rose-600 bg-rose-500/10"
+                      }`}>
+                        {hoveredEntry.he_temp_c >= 70 && hoveredEntry.he_temp_c <= 115 ? "70-115°C (In-Spec)" : "Out of Spec"}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs">
+                    <Gauge className="w-4 h-4 text-sky-500" />
+                    <span className="text-zinc-500">Vacuum:</span>
+                    <span className="font-mono font-bold text-zinc-900 dark:text-white">
+                      {hoveredEntry.vacuum_mmhg !== null ? `${hoveredEntry.vacuum_mmhg} mmHg` : "Not logged"}
+                    </span>
+                    {hoveredEntry.vacuum_mmhg !== null && (
+                      <span className={`px-1.5 py-0.2 rounded text-xs font-semibold ${
+                        hoveredEntry.vacuum_mmhg >= 600
+                          ? "text-emerald-600 bg-emerald-500/10"
+                          : "text-rose-600 bg-rose-500/10"
+                      }`}>
+                        {hoveredEntry.vacuum_mmhg >= 600 ? "≥600 mmHg (Optimal)" : "Low Vacuum"}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-xs text-zinc-500">
+                    Operator: <span className="text-zinc-800 dark:text-zinc-200 font-medium">{hoveredEntry.entered_by_name || hoveredEntry.entered_by || "Assigned Operator"}</span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setHoveredEntry(null)}
+                  className="text-xs font-semibold text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 cursor-pointer"
+                >
+                  Clear Inspection
+                </button>
+              </div>
+            )}
+
+            {/* Chart Legend & Telemetry Status Footer */}
+            <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-mono text-zinc-500 pt-3 border-t border-zinc-200 dark:border-white/5">
+              <div className="flex flex-wrap items-center gap-4">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded-full bg-[#f59e0b]" />
+                  <span>HE Temp (°C) [70.0 - 115.0 °C Target Band]</span>
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded-full bg-[#0284c7]" />
+                  <span>Bleacher Vacuum (mmHg) [≥ 600.0 mmHg Alarm Limit]</span>
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-3.5 h-2 rounded bg-emerald-500/20 border border-emerald-500/40" />
+                  <span>Safe Operating Bands</span>
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-3.5 h-0.5 border-t border-dashed border-rose-500" />
+                  <span>Alarm Trigger Limit (600 mmHg)</span>
+                </span>
+              </div>
+              <div className="flex items-center gap-2 font-semibold">
+                <span className={processComplianceRate >= 95 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}>
+                  {processComplianceRate}% In-Spec Compliance
                 </span>
               </div>
             </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { LogSheet, LogEntry, UserProfile, DashboardTab, SupervisorUpdateEvent, SampleReport } from "@/types";
+import { LogSheet, LogEntry, UserProfile, DashboardTab, SupervisorUpdateEvent, SampleReport, Product } from "@/types";
 import { 
   MOCK_USERS, 
   MOCK_PLANTS, 
@@ -15,7 +15,8 @@ import { getShiftForSlot } from "@/lib/utils";
 import { 
   getRealtimeClockState, 
   RealtimeClockState, 
-  evaluateSlotAccess 
+  evaluateSlotAccess,
+  getHourForSlotIndex
 } from "@/lib/realtimeTimeline";
 import { 
   createOrUpdateQcSampleFromLogEntry, 
@@ -133,18 +134,73 @@ export default function BleachingProcessLogApp() {
   }, []);
 
   // 5. Interaction State
-  const [selectedSlotIndex, setSelectedSlotIndex] = useState<number>(0);
+  const [selectedSlotIndex, setSelectedSlotIndex] = useState<number>(() => getRealtimeClockState().slotIndex);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [isPdfOpen, setIsPdfOpen] = useState(false);
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
 
-  // 6. Realtime Clock, Slot Rule & Simulation State
-  const [simulatedHour, setSimulatedHour] = useState<number | null>(null);
-  const [clockState, setClockState] = useState<RealtimeClockState>(() => getRealtimeClockState(null));
+  // 6. Dynamic Refinery Products Catalog (45 Standard Products, Persisted in LocalStorage)
+  const [products, setProducts] = useState<Product[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("nisshin_products");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch {}
+    }
+    return MOCK_PRODUCTS;
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("nisshin_products", JSON.stringify(products));
+    } catch {}
+  }, [products]);
+
+  // Handler to dynamically register a custom product into the catalog
+  const handleAddProduct = (newProductName: string): Product | null => {
+    const trimmed = newProductName.trim();
+    if (!trimmed) {
+      showNotice("Product name cannot be empty.", "error");
+      return null;
+    }
+    const existing = products.find(p => p.name.toLowerCase() === trimmed.toLowerCase());
+    if (existing) {
+      showNotice(`Product "${existing.name}" is already in the refinery catalog.`, "info");
+      handleUpdateHeader({
+        product_id: existing.id,
+        product_name: existing.name,
+      });
+      return existing;
+    }
+
+    const newProd: Product = {
+      id: `prd-${Date.now()}`,
+      name: trimmed,
+    };
+    const updated = [...products, newProd];
+    setProducts(updated);
+    try {
+      localStorage.setItem("nisshin_products", JSON.stringify(updated));
+    } catch {}
+
+    handleUpdateHeader({
+      product_id: newProd.id,
+      product_name: newProd.name,
+    });
+
+    showNotice(`New oil product "${trimmed}" added to refinery catalog and selected.`, "success");
+    return newProd;
+  };
+
+  // 7. Realtime Clock, Slot Rule & Override State (Strict 100% Live Clock)
+  const [clockState, setClockState] = useState<RealtimeClockState>(() => getRealtimeClockState());
   const [supervisorUnlockedSlots, setSupervisorUnlockedSlots] = useState<number[]>([]);
 
-  // 7. Centralized QC Reports for Multi-Department Workflow Handover (Stage 1 -> Stage 4, Persisted, Starts with Real Empty Set)
+  // 8. Centralized QC Reports for Multi-Department Workflow Handover (Stage 1 -> Stage 4, Persisted, Starts with Real Empty Set)
   const [qcReports, setQcReports] = useState<SampleReport[]>(() => {
     if (typeof window !== "undefined") {
       try {
@@ -161,15 +217,15 @@ export default function BleachingProcessLogApp() {
     } catch {}
   }, [qcReports]);
 
-  // Real-time ticking 1-second clock
+  // Real-time ticking 1-second clock (Strictly Live Plant Clock)
   useEffect(() => {
     const updateClock = () => {
-      setClockState(getRealtimeClockState(simulatedHour));
+      setClockState(getRealtimeClockState());
     };
     updateClock();
     const interval = setInterval(updateClock, 1000);
     return () => clearInterval(interval);
-  }, [simulatedHour]);
+  }, []);
 
   // Active current real hour slot & shift from synchronized clock state
   const currentSlotIndex = clockState.slotIndex;
@@ -221,8 +277,21 @@ export default function BleachingProcessLogApp() {
   );
   const canEditSlot = !isSheetLocked && selectedSlotAccess.canEdit;
 
-  // Handle Slot Select
+  // Handle Slot Select (Strict Realtime Enforcement: Only active real-time slot can be opened)
   const handleSelectSlot = (slotIdx: number) => {
+    const isUnlocked = supervisorUnlockedSlots.includes(slotIdx);
+    if (slotIdx !== currentSlotIndex && !isUnlocked) {
+      const slotHour = getHourForSlotIndex(slotIdx);
+      const slotLabel = `${String(slotHour).padStart(2, '0')}:00`;
+      const isPast = slotIdx < currentSlotIndex;
+      showNotice(
+        isPast 
+          ? `Access Denied: Slot ${slotLabel} Hrs is locked (recording window closed). In compliance with plant SOP, only the current active real-time slot can be accessed.`
+          : `Access Denied: Slot ${slotLabel} Hrs is locked (upcoming hour). Only the current active real-time slot can be accessed.`,
+        'error'
+      );
+      return;
+    }
     setSelectedSlotIndex(slotIdx);
     setIsDrawerOpen(true);
   };
@@ -369,14 +438,6 @@ export default function BleachingProcessLogApp() {
     );
   };
 
-  const handleSetSimulatedHour = (hour: number | null) => {
-    setSimulatedHour(hour);
-    if (hour !== null) {
-      showNotice(`Active time simulation set to ${hour.toString().padStart(2, '0')}:00 to test slot locking rules.`, 'info');
-    } else {
-      showNotice("Clock returned to live real-time mode.", 'success');
-    }
-  };
 
   // Update Header Parameter
   const handleUpdateHeader = (updates: Partial<LogSheet>) => {
@@ -632,7 +693,8 @@ export default function BleachingProcessLogApp() {
               <SheetHeaderParameters
                 sheet={sheet}
                 plants={MOCK_PLANTS}
-                products={MOCK_PRODUCTS}
+                products={products}
+                onAddProduct={handleAddProduct}
                 tanks={MOCK_TANKS}
                 isLocked={isSheetLocked}
                 onUpdateHeader={handleUpdateHeader}
@@ -641,8 +703,8 @@ export default function BleachingProcessLogApp() {
               {/* Realtime Clock & Timeline Slot Locking Banner */}
               <RealtimeTimelineBanner
                 clockState={clockState}
-                simulatedHour={simulatedHour}
-                onSetSimulatedHour={handleSetSimulatedHour}
+                supervisorUnlockedCount={supervisorUnlockedSlots.length}
+                userRole={currentUser?.role}
                 isSupervisor={currentUser.role === 'supervisor' || currentUser.role === 'admin'}
               />
 
@@ -677,6 +739,8 @@ export default function BleachingProcessLogApp() {
               currentUser={currentUser}
               isDark={isDark}
               reports={qcReports}
+              products={products}
+              onAddProduct={handleAddProduct}
               onUpdateReport={handleUpdateQcReport}
               onCreateReport={handleCreateQcReport}
             />
@@ -697,6 +761,7 @@ export default function BleachingProcessLogApp() {
               currentUser={currentUser}
               isDark={isDark}
               reports={qcReports}
+              products={products}
               onNavigateTab={setActiveTab}
               onUpdateReport={handleUpdateQcReport}
               onResetCleanData={handleResetCleanShift}
@@ -742,6 +807,13 @@ export default function BleachingProcessLogApp() {
           onNavigateSlot={(direction) => {
             const nextIdx = selectedSlotIndex + direction;
             if (nextIdx >= 0 && nextIdx < 24) {
+              const isUnlocked = supervisorUnlockedSlots.includes(nextIdx);
+              if (nextIdx !== currentSlotIndex && !isUnlocked) {
+                const slotHour = getHourForSlotIndex(nextIdx);
+                const slotLabel = `${String(slotHour).padStart(2, '0')}:00`;
+                showNotice(`Cannot switch to Slot ${slotLabel} Hrs: Access locked by SOP realtime policy.`, 'error');
+                return;
+              }
               setSelectedSlotIndex(nextIdx);
             }
           }}

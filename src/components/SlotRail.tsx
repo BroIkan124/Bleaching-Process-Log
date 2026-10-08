@@ -97,20 +97,25 @@ export const SlotRail: React.FC<SlotRailProps> = ({
                   const hasOutOfSpec = entry.out_of_spec && entry.out_of_spec.length > 0;
                   const isDone = entry.is_saved;
 
-                  let stateClass = "bg-white dark:bg-[#0D1424] border-zinc-200/90 dark:border-white/[0.08] text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-white/20";
+                  const isAccessible = isCurrent || isSupervisorOverride;
+                  let stateClass = "bg-white dark:bg-[#0D1424] border-zinc-200/90 dark:border-white/[0.08] text-zinc-700 dark:text-zinc-300";
 
                   if (hasOutOfSpec) {
                     stateClass = "bg-rose-50/90 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 font-bold shadow-[0_0_16px_rgba(239,68,68,0.25)]";
                   } else if (isDone) {
                     stateClass = "bg-emerald-50/90 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 font-bold shadow-[0_0_14px_rgba(16,185,129,0.2)]";
                   } else if (access.status === 'future_locked') {
-                    stateClass = "bg-zinc-100/60 dark:bg-zinc-900/40 border-dashed border-zinc-300/80 dark:border-zinc-800 text-zinc-400 dark:text-zinc-500 opacity-60";
+                    stateClass = "bg-zinc-100/50 dark:bg-zinc-900/30 border-dashed border-zinc-300/70 dark:border-zinc-800 text-zinc-400 dark:text-zinc-500 opacity-50";
                   } else if (access.status === 'past_locked' && !isDone) {
-                    stateClass = "bg-zinc-100/90 dark:bg-zinc-900/80 border-zinc-300 dark:border-zinc-800 text-zinc-500 opacity-70";
+                    stateClass = "bg-zinc-100/80 dark:bg-zinc-900/70 border-zinc-300 dark:border-zinc-800 text-zinc-400 opacity-60";
                   }
 
                   if (isCurrent) {
-                    stateClass = "ring-2 ring-amber-500 shadow-[0_4px_24px_rgba(245,158,11,0.5),0_0_12px_rgba(245,158,11,0.3)] z-10 font-extrabold bg-amber-500/15 dark:bg-amber-500/25 border-amber-500 text-zinc-900 dark:text-amber-300";
+                    stateClass = "ring-2 ring-amber-500 shadow-[0_4px_24px_rgba(245,158,11,0.5),0_0_12px_rgba(245,158,11,0.3)] z-10 font-extrabold bg-amber-500/15 dark:bg-amber-500/25 border-amber-500 text-zinc-900 dark:text-amber-300 cursor-pointer animate-pulse-subtle";
+                  } else if (isSupervisorOverride) {
+                    stateClass = "ring-2 ring-emerald-500 shadow-[0_4px_20px_rgba(16,185,129,0.4)] z-10 font-bold bg-emerald-500/15 border-emerald-500 text-emerald-800 dark:text-emerald-300 cursor-pointer";
+                  } else {
+                    stateClass += " cursor-not-allowed hover:border-zinc-400/50";
                   }
 
                   if (isSelected && !isCurrent) {
@@ -121,12 +126,16 @@ export const SlotRail: React.FC<SlotRailProps> = ({
                     <button
                       key={slotIdx}
                       type="button"
+                      disabled={!isAccessible}
                       onClick={() => onSelectSlot(slotIdx)}
-                      className={`slot-tile-btn h-12 rounded-lg flex flex-col items-center justify-center p-0.5 border text-center select-none relative cursor-pointer transition-all ${stateClass}`}
-                      title={`Slot ${entry.time_label} - ${access.badgeText} - ${access.reasonMessage}`}
+                      className={`slot-tile-btn h-12 rounded-lg flex flex-col items-center justify-center p-0.5 border text-center select-none relative transition-all ${stateClass}`}
+                      title={isAccessible 
+                        ? `Slot ${entry.time_label} Hrs - ${isSupervisorOverride ? 'SUPERVISOR OVERRIDE' : 'ACTIVE REAL-TIME LOGGING'}`
+                        : `Slot ${entry.time_label} Hrs - LOCKED (Only real-time active hour can be logged)`}
                     >
-                      <span className="font-mono text-xs leading-tight font-extrabold">
+                      <span className="font-mono text-xs leading-tight font-extrabold flex items-center gap-0.5">
                         {entry.time_label}
+                        {!isAccessible && <Lock className="w-2.5 h-2.5 text-zinc-400 flex-shrink-0" />}
                       </span>
 
                       <div className="mt-0.5 h-3 flex items-center justify-center gap-0.5">

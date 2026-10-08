@@ -13,7 +13,10 @@ import {
   Sparkles,
   Droplet,
   CheckCircle2,
-  Settings2
+  Settings2,
+  Plus,
+  X,
+  Tag
 } from "lucide-react";
 import { RadioSelect } from "./RadioSelect";
 
@@ -24,6 +27,7 @@ interface SheetHeaderParametersProps {
   tanks: Tank[];
   isLocked: boolean;
   onUpdateHeader: (updates: Partial<LogSheet>) => void;
+  onAddProduct?: (productName: string) => Product | null;
 }
 
 export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
@@ -33,8 +37,11 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
   tanks,
   isLocked,
   onUpdateHeader,
+  onAddProduct,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
+  const [customProductName, setCustomProductName] = useState("");
 
   const feedTanks = tanks.filter((t) => t.kind === "feed");
   const dischargeTanks = tanks.filter((t) => t.kind === "discharge");
@@ -134,14 +141,36 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-zinc-600 dark:text-zinc-400 mb-1">
-                  Oil Product Type
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-bold text-zinc-600 dark:text-zinc-400">
+                    Oil Product Type ({products.length})
+                  </label>
+                  {onAddProduct && !isLocked && (
+                    <button
+                      type="button"
+                      onClick={() => setIsAddProductModalOpen(true)}
+                      className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 flex items-center gap-1 cursor-pointer transition-colors"
+                      title="Register a new oil product into the plant catalog"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>+ Add Product</span>
+                    </button>
+                  )}
+                </div>
                 <RadioSelect
                   disabled={isLocked}
                   value={sheet.product_id}
-                  onChange={(val) => onUpdateHeader({ product_id: val })}
+                  onChange={(val) => {
+                    const chosen = products.find((p) => p.id === val);
+                    onUpdateHeader({
+                      product_id: val,
+                      product_name: chosen?.name || sheet.product_name,
+                    });
+                  }}
                   options={products.map((p) => ({ value: p.id, label: p.name }))}
+                  searchable={true}
+                  onAddCustom={onAddProduct && !isLocked ? () => setIsAddProductModalOpen(true) : undefined}
+                  addCustomLabel="+ Register New Product..."
                 />
               </div>
 
@@ -379,6 +408,96 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
         </div>
       </div>
     </div>
-  </div>
+
+      {/* Modal: Add New Oil Product */}
+      {isAddProductModalOpen && onAddProduct && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsAddProductModalOpen(false);
+          }}
+        >
+          <div className="w-full max-w-md bg-white dark:bg-[#0E1626] rounded-2xl shadow-2xl border border-zinc-200 dark:border-white/10 p-5 space-y-4 animate-scale-in">
+            <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/10 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                  <Tag className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold font-display text-zinc-900 dark:text-white">
+                    Register New Oil Product
+                  </h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    Add custom product to refinery catalog
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAddProductModalOpen(false)}
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+                Product Name / Grade Specification
+              </label>
+              <input
+                type="text"
+                value={customProductName}
+                onChange={(e) => setCustomProductName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    if (customProductName.trim()) {
+                      onAddProduct(customProductName.trim());
+                      setCustomProductName("");
+                      setIsAddProductModalOpen(false);
+                    }
+                  }
+                }}
+                placeholder="e.g. SUPER OLEIN IV65 or NBD STEARIN"
+                autoFocus
+                className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-300 dark:border-white/15 bg-zinc-50 dark:bg-black/40 text-sm font-bold text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-500/40 uppercase"
+              />
+              <p className="text-xs text-zinc-500 mt-1">
+                New products are synchronized across Bleaching Log, QC Lab, and Master Data Pareto analytics.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-zinc-200 dark:border-white/10">
+              <button
+                type="button"
+                onClick={() => {
+                  setCustomProductName("");
+                  setIsAddProductModalOpen(false);
+                }}
+                className="btn-tactile px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={!customProductName.trim()}
+                onClick={() => {
+                  if (customProductName.trim()) {
+                    onAddProduct(customProductName.trim());
+                    setCustomProductName("");
+                    setIsAddProductModalOpen(false);
+                  }
+                }}
+                className="btn-premium-amber px-5 py-2 rounded-xl text-xs font-bold shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Save to Catalog &amp; Select</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };

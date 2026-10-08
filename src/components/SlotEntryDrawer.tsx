@@ -115,7 +115,7 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
 
   const handleSaveClick = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!canEdit) return;
+    if (!isEditable) return;
 
     const flags = validateReadingSpecs(formData);
     if (flags.length > 0 && (!formData.remarks || formData.remarks.trim() === '')) {
@@ -319,10 +319,11 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                 <input
                   type="number"
                   step="0.1"
-                  readOnly={!canEdit}
+                  readOnly={!isEditable}
+                  disabled={!isEditable}
                   value={formData.flowrate_set ?? ''}
                   onChange={(e) => handleFieldChange('flowrate_set', parseFloat(e.target.value) || null)}
-                  className="w-full bg-transparent font-mono text-base font-bold tabular-nums text-zinc-900 dark:text-white focus:outline-none"
+                  className="w-full bg-transparent font-mono text-base font-bold tabular-nums text-zinc-900 dark:text-white focus:outline-none disabled:opacity-60"
                   placeholder="e.g. 45.0"
                 />
                 <span className="text-xs text-zinc-400 font-mono">MT/HR</span>
@@ -336,9 +337,11 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
               </label>
               <button
                 type="button"
-                disabled={!canEdit}
+                disabled={!isEditable}
                 onClick={() => handleFieldChange('acid_dosage_ok', !formData.acid_dosage_ok)}
-                className={`btn-tactile touch-target w-full rounded-xl border flex items-center justify-center gap-2 font-semibold text-sm select-none cursor-pointer group transition-all ${
+                className={`btn-tactile touch-target w-full rounded-xl border flex items-center justify-center gap-2 font-semibold text-sm select-none transition-all ${
+                  !isEditable ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
+                } ${
                   formData.acid_dosage_ok
                     ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 shadow-sm'
                     : 'bg-zinc-100 dark:bg-white/5 border-zinc-300 dark:border-white/10 text-zinc-500 hover:border-zinc-400'
@@ -360,9 +363,11 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
               </label>
               <button
                 type="button"
-                disabled={!canEdit}
+                disabled={!isEditable}
                 onClick={() => handleFieldChange('earth_dosage_ok', !formData.earth_dosage_ok)}
-                className={`btn-tactile touch-target w-full rounded-xl border flex items-center justify-center gap-2 font-semibold text-sm select-none cursor-pointer group transition-all ${
+                className={`btn-tactile touch-target w-full rounded-xl border flex items-center justify-center gap-2 font-semibold text-sm select-none transition-all ${
+                  !isEditable ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
+                } ${
                   formData.earth_dosage_ok
                     ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 shadow-sm'
                     : 'bg-zinc-100 dark:bg-white/5 border-zinc-300 dark:border-white/10 text-zinc-500 hover:border-zinc-400'
@@ -393,8 +398,10 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                 </span>
               </div>
               <div
-                onClick={() => setActiveNumpadField('he_temp_c')}
-                className={`touch-target flex items-center justify-between px-3.5 py-2.5 rounded-xl border cursor-pointer transition-all ${
+                onClick={() => isEditable && setActiveNumpadField('he_temp_c')}
+                className={`touch-target flex items-center justify-between px-3.5 py-2.5 rounded-xl border transition-all ${
+                  !isEditable ? 'cursor-not-allowed opacity-60 bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800' : 'cursor-pointer'
+                } ${
                   isHeTempOutOfSpec
                     ? 'bg-rose-500/10 border-rose-500/60 text-rose-800 dark:text-rose-200 ring-2 ring-rose-500/30'
                     : activeNumpadField === 'he_temp_c'
@@ -405,10 +412,11 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                 <input
                   type="number"
                   step="0.1"
-                  readOnly={!canEdit}
+                  readOnly={!isEditable}
+                  disabled={!isEditable}
                   value={formData.he_temp_c ?? ''}
                   onChange={(e) => handleFieldChange('he_temp_c', parseFloat(e.target.value) || null)}
-                  className="w-full bg-transparent font-mono text-xl font-bold tabular-nums text-zinc-900 dark:text-white focus:outline-none"
+                  className="w-full bg-transparent font-mono text-xl font-bold tabular-nums text-zinc-900 dark:text-white focus:outline-none disabled:opacity-60"
                   placeholder="e.g. 105.0"
                 />
                 <span className="font-mono text-sm font-semibold text-zinc-400">°C</span>
@@ -433,8 +441,10 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                 </span>
               </div>
               <div
-                onClick={() => setActiveNumpadField('vacuum_mmhg')}
-                className={`touch-target flex items-center justify-between px-3.5 py-2.5 rounded-xl border cursor-pointer transition-all ${
+                onClick={() => isEditable && setActiveNumpadField('vacuum_mmhg')}
+                className={`touch-target flex items-center justify-between px-3.5 py-2.5 rounded-xl border transition-all ${
+                  !isEditable ? 'cursor-not-allowed opacity-60 bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800' : 'cursor-pointer'
+                } ${
                   isVacOutOfSpec
                     ? 'bg-rose-500/10 border-rose-500/60 text-rose-800 dark:text-rose-200 ring-2 ring-rose-500/30'
                     : activeNumpadField === 'vacuum_mmhg'
@@ -445,10 +455,11 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                 <input
                   type="number"
                   step="1"
-                  readOnly={!canEdit}
+                  readOnly={!isEditable}
+                  disabled={!isEditable}
                   value={formData.vacuum_mmhg ?? ''}
                   onChange={(e) => handleFieldChange('vacuum_mmhg', parseFloat(e.target.value) || null)}
-                  className="w-full bg-transparent font-mono text-xl font-bold tabular-nums text-zinc-900 dark:text-white focus:outline-none"
+                  className="w-full bg-transparent font-mono text-xl font-bold tabular-nums text-zinc-900 dark:text-white focus:outline-none disabled:opacity-60"
                   placeholder="e.g. 640"
                 />
                 <span className="font-mono text-sm font-semibold text-zinc-400">mmHg</span>
@@ -473,9 +484,11 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                   <button
                     key={lvl}
                     type="button"
-                    disabled={!canEdit}
+                    disabled={!isEditable}
                     onClick={() => handleFieldChange('bleacher_level', lvl)}
-                    className={`btn-tactile touch-target rounded-xl border font-bold text-base select-none cursor-pointer transition-all ${
+                    className={`btn-tactile touch-target rounded-xl border font-bold text-base select-none transition-all ${
+                      !isEditable ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
+                    } ${
                       formData.bleacher_level === lvl
                         ? 'btn-premium-amber text-white shadow-md ring-2 ring-amber-500/30'
                         : 'bg-white dark:bg-white/5 border-zinc-300 dark:border-white/10 text-zinc-700 dark:text-zinc-300 hover:border-zinc-400'
@@ -497,9 +510,11 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                   <button
                     key={nf}
                     type="button"
-                    disabled={!canEdit}
+                    disabled={!isEditable}
                     onClick={() => handleFieldChange('niagara_filter', nf)}
-                    className={`btn-tactile touch-target rounded-xl border text-xs font-bold font-mono select-none cursor-pointer transition-all ${
+                    className={`btn-tactile touch-target rounded-xl border text-xs font-bold font-mono select-none transition-all ${
+                      !isEditable ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
+                    } ${
                       formData.niagara_filter === nf
                         ? 'btn-premium-amber text-white shadow-md ring-2 ring-amber-500/30'
                         : 'bg-white dark:bg-white/5 border-zinc-300 dark:border-white/10 text-zinc-700 dark:text-zinc-300 hover:border-zinc-400'
@@ -519,13 +534,16 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
               <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
                 Filter Change Time
               </label>
-              <div className="touch-target flex items-center px-3 rounded-xl border border-zinc-300 dark:border-white/10 bg-white dark:bg-white/5">
+              <div className={`touch-target flex items-center px-3 rounded-xl border border-zinc-300 dark:border-white/10 ${
+                !isEditable ? 'bg-zinc-100 dark:bg-zinc-900 opacity-60 cursor-not-allowed' : 'bg-white dark:bg-white/5'
+              }`}>
                 <input
                   type="text"
-                  readOnly={!canEdit}
+                  readOnly={!isEditable}
+                  disabled={!isEditable}
                   value={formData.filter_change_time ?? ''}
                   onChange={(e) => handleFieldChange('filter_change_time', e.target.value)}
-                  className="w-full bg-transparent font-mono text-sm text-zinc-900 dark:text-white focus:outline-none"
+                  className="w-full bg-transparent font-mono text-sm text-zinc-900 dark:text-white focus:outline-none disabled:opacity-60"
                   placeholder="HH:mm"
                 />
               </div>
@@ -537,8 +555,10 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                 Quality: FFA (%)
               </label>
               <div 
-                onClick={() => setActiveNumpadField('ffa_pct')}
-                className={`touch-target flex items-center px-3 rounded-xl border cursor-pointer transition-all ${
+                onClick={() => isEditable && setActiveNumpadField('ffa_pct')}
+                className={`touch-target flex items-center px-3 rounded-xl border transition-all ${
+                  !isEditable ? 'cursor-not-allowed opacity-60 bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800' : 'cursor-pointer'
+                } ${
                   activeNumpadField === 'ffa_pct'
                     ? 'border-amber-500 ring-2 ring-amber-500/30 bg-amber-500/5'
                     : 'border-zinc-300 dark:border-white/10 bg-white dark:bg-white/5 hover:border-zinc-400'
@@ -547,10 +567,11 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                 <input
                   type="number"
                   step="0.001"
-                  readOnly={!canEdit}
+                  readOnly={!isEditable}
+                  disabled={!isEditable}
                   value={formData.ffa_pct ?? ''}
                   onChange={(e) => handleFieldChange('ffa_pct', parseFloat(e.target.value) || null)}
-                  className="w-full bg-transparent font-mono text-sm font-semibold tabular-nums text-zinc-900 dark:text-white focus:outline-none"
+                  className="w-full bg-transparent font-mono text-sm font-semibold tabular-nums text-zinc-900 dark:text-white focus:outline-none disabled:opacity-60"
                   placeholder="0.045"
                 />
               </div>
@@ -562,8 +583,10 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                 Colour (R)
               </label>
               <div 
-                onClick={() => setActiveNumpadField('colour_r')}
-                className={`touch-target flex items-center px-3 rounded-xl border cursor-pointer transition-all ${
+                onClick={() => isEditable && setActiveNumpadField('colour_r')}
+                className={`touch-target flex items-center px-3 rounded-xl border transition-all ${
+                  !isEditable ? 'cursor-not-allowed opacity-60 bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800' : 'cursor-pointer'
+                } ${
                   activeNumpadField === 'colour_r'
                     ? 'border-amber-500 ring-2 ring-amber-500/30 bg-amber-500/5'
                     : 'border-zinc-300 dark:border-white/10 bg-white dark:bg-white/5 hover:border-zinc-400'
@@ -572,10 +595,11 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                 <input
                   type="number"
                   step="0.1"
-                  readOnly={!canEdit}
+                  readOnly={!isEditable}
+                  disabled={!isEditable}
                   value={formData.colour_r ?? ''}
                   onChange={(e) => handleFieldChange('colour_r', parseFloat(e.target.value) || null)}
-                  className="w-full bg-transparent font-mono text-sm font-semibold tabular-nums text-zinc-900 dark:text-white focus:outline-none"
+                  className="w-full bg-transparent font-mono text-sm font-semibold tabular-nums text-zinc-900 dark:text-white focus:outline-none disabled:opacity-60"
                   placeholder="2.1"
                 />
               </div>
@@ -587,8 +611,10 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                 Colour (Y)
               </label>
               <div 
-                onClick={() => setActiveNumpadField('colour_y')}
-                className={`touch-target flex items-center px-3 rounded-xl border cursor-pointer transition-all ${
+                onClick={() => isEditable && setActiveNumpadField('colour_y')}
+                className={`touch-target flex items-center px-3 rounded-xl border transition-all ${
+                  !isEditable ? 'cursor-not-allowed opacity-60 bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800' : 'cursor-pointer'
+                } ${
                   activeNumpadField === 'colour_y'
                     ? 'border-amber-500 ring-2 ring-amber-500/30 bg-amber-500/5'
                     : 'border-zinc-300 dark:border-white/10 bg-white dark:bg-white/5 hover:border-zinc-400'
@@ -597,10 +623,11 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                 <input
                   type="number"
                   step="0.1"
-                  readOnly={!canEdit}
+                  readOnly={!isEditable}
+                  disabled={!isEditable}
                   value={formData.colour_y ?? ''}
                   onChange={(e) => handleFieldChange('colour_y', parseFloat(e.target.value) || null)}
-                  className="w-full bg-transparent font-mono text-sm font-semibold tabular-nums text-zinc-900 dark:text-white focus:outline-none"
+                  className="w-full bg-transparent font-mono text-sm font-semibold tabular-nums text-zinc-900 dark:text-white focus:outline-none disabled:opacity-60"
                   placeholder="18.0"
                 />
               </div>
@@ -622,10 +649,13 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
             </div>
             <textarea
               rows={2}
-              readOnly={!canEdit}
+              readOnly={!isEditable}
+              disabled={!isEditable}
               value={formData.remarks || ''}
               onChange={(e) => handleFieldChange('remarks', e.target.value)}
-              className={`w-full p-3 rounded-xl border text-sm transition-all focus:outline-none ${
+              className={`w-full p-3 rounded-xl border text-sm transition-all focus:outline-none disabled:opacity-60 ${
+                !isEditable ? 'cursor-not-allowed bg-zinc-100 dark:bg-zinc-900' : ''
+              } ${
                 hasOutOfSpec && (!formData.remarks || formData.remarks.trim() === '')
                   ? 'border-rose-500/80 bg-rose-500/10 text-zinc-900 dark:text-white ring-2 ring-rose-500/30'
                   : 'border-zinc-300 dark:border-white/10 bg-white dark:bg-white/5 text-zinc-900 dark:text-white focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20'
@@ -685,9 +715,9 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
             <button
               type="button"
               onClick={handleSmoothClose}
-              className="btn-tactile btn-premium-glass px-4 py-2.5 rounded-xl text-sm font-bold text-zinc-700 dark:text-zinc-300 cursor-pointer transition-all"
+              className="btn-tactile btn-premium-glass px-5 py-2.5 rounded-xl text-sm font-bold text-zinc-700 dark:text-zinc-300 cursor-pointer transition-all"
             >
-              Cancel
+              {isEditable ? "Cancel" : "Close (Review Mode)"}
             </button>
             {isEditable ? (
               <button
@@ -699,14 +729,12 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                 <span>Save Slot ({formData.time_label} Hrs)</span>
               </button>
             ) : (
-              <button
-                type="button"
-                disabled
-                className="bg-zinc-200 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500 px-5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 cursor-not-allowed border border-zinc-300 dark:border-zinc-700/60 shadow-inner"
+              <div
+                className="bg-zinc-200 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 cursor-not-allowed border border-zinc-300 dark:border-zinc-700/60 shadow-inner"
               >
                 <Lock className="w-4 h-4 text-zinc-400" />
-                <span>Log Locked (Review Only)</span>
-              </button>
+                <span>Slot Locked (Window Closed)</span>
+              </div>
             )}
           </div>
         </div>

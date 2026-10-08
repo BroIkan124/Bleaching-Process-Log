@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { UserProfile, SampleReport, SampleResult, QCDecisionType, Disposition } from "@/types";
+import { UserProfile, SampleReport, SampleResult, QCDecisionType, Disposition, Product } from "@/types";
 import { QC_SNAPSHOT_DATA } from "@/lib/qcSampleData";
 import { 
   FlaskConical, 
@@ -23,16 +23,19 @@ import {
   Calendar, 
   Database,
   Building2,
-  Sparkles
+  Sparkles,
+  Tag
 } from "lucide-react";
 import { syncQcSampleToInsForge, logActivityToInsForge } from "@/lib/dbService";
 import { RadioSelect } from "./RadioSelect";
-import { DEFAULT_REJECTION_REASONS } from "@/lib/mockData";
+import { DEFAULT_REJECTION_REASONS, MOCK_PRODUCTS } from "@/lib/mockData";
 
 interface QCManagementViewProps {
   currentUser: UserProfile;
   isDark: boolean;
   reports?: SampleReport[];
+  products?: Product[];
+  onAddProduct?: (productName: string) => Product | null;
   onUpdateReport?: (report: SampleReport) => void;
   onCreateReport?: (report: SampleReport) => void;
 }
@@ -41,6 +44,8 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
   currentUser,
   isDark,
   reports: externalReports,
+  products: externalProducts,
+  onAddProduct,
   onUpdateReport,
   onCreateReport,
 }) => {
@@ -62,7 +67,10 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
   const [selectedReport, setSelectedReport] = useState<SampleReport | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [isCertificateOpen, setIsCertificateOpen] = useState(false);
+  const availableProducts = externalProducts || MOCK_PRODUCTS;
   const [isNewSampleOpen, setIsNewSampleOpen] = useState(false);
+  const [isAddProdModalOpen, setIsAddProdModalOpen] = useState(false);
+  const [customQcProdName, setCustomQcProdName] = useState("");
   const [isClosingNewSample, setIsClosingNewSample] = useState(false);
   const [isClosingEditor, setIsClosingEditor] = useState(false);
   const [isClosingCertificate, setIsClosingCertificate] = useState(false);
@@ -820,18 +828,29 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
               </div>
 
               <div>
-                <label className="block text-zinc-700 dark:text-zinc-300 font-semibold mb-1">Product</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-zinc-700 dark:text-zinc-300 font-semibold text-xs">
+                    Product Oil ({availableProducts.length})
+                  </label>
+                  {onAddProduct && (
+                    <button
+                      type="button"
+                      onClick={() => setIsAddProdModalOpen(true)}
+                      className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:text-amber-700 flex items-center gap-1 cursor-pointer transition-colors"
+                      title="Add a custom oil product to the catalog"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>+ Add Product</span>
+                    </button>
+                  )}
+                </div>
                 <RadioSelect
                   value={newSample.product_name}
                   onChange={(val) => setNewSample({ ...newSample, product_name: val })}
-                  options={[
-                    "RBD Palm Oil",
-                    "PL 65 Matsuyama",
-                    "Chocohi 357A NPHO",
-                    "Daisy Soft PM180602 I2",
-                    "DF 20",
-                    "Farm Cow R2"
-                  ]}
+                  options={availableProducts.map((p) => p.name)}
+                  searchable={true}
+                  onAddCustom={onAddProduct ? () => setIsAddProdModalOpen(true) : undefined}
+                  addCustomLabel="+ Register New Product..."
                 />
               </div>
 
@@ -882,6 +901,102 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Add Custom Product in QC Management */}
+      {isAddProdModalOpen && onAddProduct && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsAddProdModalOpen(false);
+          }}
+        >
+          <div className="w-full max-w-md bg-white dark:bg-[#0E1626] rounded-2xl shadow-2xl border border-zinc-200 dark:border-white/10 p-5 space-y-4 animate-scale-in">
+            <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/10 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                  <Tag className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold font-display text-zinc-900 dark:text-white">
+                    Register New Oil Product (QC Lab)
+                  </h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    Add custom product to laboratory &amp; plant catalog
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAddProdModalOpen(false)}
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+                Product Name / Grade Specification
+              </label>
+              <input
+                type="text"
+                value={customQcProdName}
+                onChange={(e) => setCustomQcProdName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    if (customQcProdName.trim()) {
+                      const added = onAddProduct(customQcProdName.trim());
+                      if (added) {
+                        setNewSample(prev => ({ ...prev, product_name: added.name }));
+                      }
+                      setCustomQcProdName("");
+                      setIsAddProdModalOpen(false);
+                    }
+                  }
+                }}
+                placeholder="e.g. SUPER OLEIN IV65 or NBD STEARIN"
+                autoFocus
+                className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-300 dark:border-white/15 bg-zinc-50 dark:bg-black/40 text-sm font-bold text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-500/40 uppercase"
+              />
+              <p className="text-xs text-zinc-500 mt-1">
+                Synchronized directly across Bleaching Log and Master Data analytics.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-zinc-200 dark:border-white/10">
+              <button
+                type="button"
+                onClick={() => {
+                  setCustomQcProdName("");
+                  setIsAddProdModalOpen(false);
+                }}
+                className="btn-tactile px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={!customQcProdName.trim()}
+                onClick={() => {
+                  if (customQcProdName.trim()) {
+                    const added = onAddProduct(customQcProdName.trim());
+                    if (added) {
+                      setNewSample(prev => ({ ...prev, product_name: added.name }));
+                    }
+                    setCustomQcProdName("");
+                    setIsAddProdModalOpen(false);
+                  }
+                }}
+                className="btn-premium-amber px-5 py-2 rounded-xl text-xs font-bold shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Save &amp; Select</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

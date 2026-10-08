@@ -59,9 +59,7 @@ export function evaluateSlotAccess(
   isSupervisorOverride: boolean = false,
   userRole?: string
 ): SlotAccessInfo {
-  const isSuperUser = userRole === 'admin' || userRole === 'supervisor';
-
-  // If supervisor has unlocked this slot or is authorized override
+  // If supervisor has explicitly unlocked this slot via emergency override
   if (isSupervisorOverride) {
     return {
       status: 'current_active',
@@ -69,14 +67,14 @@ export function evaluateSlotAccess(
       canEdit: true,
       badgeText: 'SUPERVISOR OVERRIDE',
       badgeColor: 'emerald',
-      reasonMessage: 'Special access granted by authorized Supervisor Override.',
+      reasonMessage: 'Special recording access granted via authorized Supervisor Emergency Override.',
       isCurrent: slotIndex === activeCurrentSlotIndex,
       isPast: slotIndex < activeCurrentSlotIndex,
       isFuture: slotIndex > activeCurrentSlotIndex,
     };
   }
 
-  // 1. Past Hour Slot (Expired)
+  // 1. Past Hour Slot (Strictly Locked - SOP Realtime Policy)
   if (slotIndex < activeCurrentSlotIndex) {
     const slotHour = getHourForSlotIndex(slotIndex);
     const activeHour = getHourForSlotIndex(activeCurrentSlotIndex);
@@ -85,11 +83,11 @@ export function evaluateSlotAccess(
 
     return {
       status: 'past_locked',
-      isEditable: isSuperUser, // Supervisors can review or edit if needed
-      canEdit: isSuperUser,
-      badgeText: 'LOCKED (EXPIRED)',
+      isEditable: false, // Strictly locked - operators cannot edit past logs
+      canEdit: false,
+      badgeText: 'LOCKED (PAST)',
       badgeColor: 'zinc',
-      reasonMessage: `The entry window for slot ${formattedSlot} closed at ${formattedActive}. This log is locked for operators and available in Read-Only review mode.`,
+      reasonMessage: `The recording window for slot ${formattedSlot} expired at ${formattedActive}. In compliance with plant SOP, past logs are strictly locked.`,
       isCurrent: false,
       isPast: true,
       isFuture: false,
@@ -105,7 +103,7 @@ export function evaluateSlotAccess(
       status: 'current_active',
       isEditable: true,
       canEdit: true,
-      badgeText: 'ACTIVE (OPEN)',
+      badgeText: 'ACTIVE (LIVE NOW)',
       badgeColor: 'amber',
       reasonMessage: `Hour slot ${formattedSlot} is currently active in the real-time window. Operators are authorized to record process telemetry now.`,
       isCurrent: true,
@@ -114,7 +112,7 @@ export function evaluateSlotAccess(
     };
   }
 
-  // 3. Future Hour Slot (Upcoming)
+  // 3. Future Hour Slot (Strictly Locked - Upcoming)
   const slotHour = getHourForSlotIndex(slotIndex);
   const formattedSlot = `${String(slotHour).padStart(2, '0')}:00`;
 
@@ -124,7 +122,7 @@ export function evaluateSlotAccess(
     canEdit: false,
     badgeText: 'LOCKED (UPCOMING)',
     badgeColor: 'zinc',
-    reasonMessage: `Hour slot ${formattedSlot} is not yet open. In accordance with plant SOP, future operating parameters cannot be recorded before scheduled operating hours.`,
+    reasonMessage: `Hour slot ${formattedSlot} is upcoming. In accordance with plant SOP, future operating parameters cannot be recorded before scheduled operating hours.`,
     isCurrent: false,
     isPast: false,
     isFuture: true,
@@ -149,13 +147,13 @@ export interface RealtimeClockState {
 
 /**
  * Returns complete real-time clock and slot calculations.
- * Supports simulating a specific hour for testing and live factory demonstrations.
+ * Runs strictly on live system clock synchronized with refinery operations.
  */
-export function getRealtimeClockState(simulatedHour: number | null = null): RealtimeClockState {
+export function getRealtimeClockState(): RealtimeClockState {
   const now = new Date();
-  const effectiveHour = simulatedHour !== null ? simulatedHour : now.getHours();
-  const effectiveMinute = simulatedHour !== null ? 0 : now.getMinutes();
-  const effectiveSecond = simulatedHour !== null ? 0 : now.getSeconds();
+  const effectiveHour = now.getHours();
+  const effectiveMinute = now.getMinutes();
+  const effectiveSecond = now.getSeconds();
 
   const slotIndex = getSlotIndexForHour(effectiveHour);
   const slotLabel = SLOT_HOURS[slotIndex];
@@ -186,7 +184,7 @@ export function getRealtimeClockState(simulatedHour: number | null = null): Real
     shiftLabel,
     formattedTime,
     formattedDate,
-    isSimulated: simulatedHour !== null,
+    isSimulated: false,
   };
 }
 

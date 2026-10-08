@@ -43,6 +43,7 @@ interface MasterDataViewProps {
   currentUser: UserProfile;
   isDark: boolean;
   reports: SampleReport[];
+  products?: Product[];
   onNavigateTab?: (tab: DashboardTab) => void;
   onUpdateReport?: (report: SampleReport) => void;
   onResetCleanData?: () => void;
@@ -54,10 +55,12 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
   currentUser,
   isDark,
   reports,
+  products: externalProducts,
   onNavigateTab,
   onUpdateReport,
   onResetCleanData,
 }) => {
+  const availableProducts = externalProducts || MOCK_PRODUCTS;
   const [activeSubTab, setActiveSubTab] = useState<MasterSubTab>("pareto_frequency");
   const [selectedProductFilter, setSelectedProductFilter] = useState<string>("all");
   const [specSearchQuery, setSpecSearchQuery] = useState<string>("");
@@ -165,7 +168,7 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
     const productStats = new Map<string, { total: number; rejected: number; accepted: number; topReason: string }>();
 
     // Seed with all catalog products
-    MOCK_PRODUCTS.forEach(p => {
+    availableProducts.forEach(p => {
       productStats.set(p.name, { total: 0, rejected: 0, accepted: 0, topReason: "None" });
     });
 

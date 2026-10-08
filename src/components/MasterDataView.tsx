@@ -56,6 +56,10 @@ interface MasterDataViewProps {
   isDark: boolean;
   reports: SampleReport[];
   products?: Product[];
+  plants?: Plant[];
+  tanks?: Tank[];
+  onAddPlant?: (plantName: string) => Plant | null;
+  onAddTank?: (tankName: string, kind?: 'feed' | 'discharge' | 'both') => Tank | null;
   onNavigateTab?: (tab: DashboardTab) => void;
   onUpdateReport?: (report: SampleReport) => void;
   onResetCleanData?: () => void;
@@ -136,11 +140,23 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
   isDark,
   reports,
   products: externalProducts,
+  plants: externalPlants,
+  tanks: externalTanks,
+  onAddPlant,
+  onAddTank,
   onNavigateTab,
   onUpdateReport,
   onResetCleanData,
 }) => {
   const availableProducts = externalProducts || MOCK_PRODUCTS;
+  const plantList = externalPlants || MOCK_PLANTS;
+  const tankList = externalTanks || MOCK_TANKS;
+
+  const [isAddPlantModalOpen, setIsAddPlantModalOpen] = useState(false);
+  const [customPlantName, setCustomPlantName] = useState("");
+  const [isAddTankModalOpen, setIsAddTankModalOpen] = useState(false);
+  const [customTankName, setCustomTankName] = useState("");
+  const [customTankKind, setCustomTankKind] = useState<'feed' | 'discharge' | 'both'>('feed');
   
   // Navigation & Sub-Tabs
   const [activeSubTab, setActiveSubTab] = useState<MasterSubTab>("pareto_frequency");
@@ -1648,12 +1664,24 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Plants */}
           <div className="glass-panel p-5 sm:p-6 rounded-3xl bg-white/90 dark:bg-[#0A0F1C]/90 border border-zinc-200/90 dark:border-white/10 shadow-xl space-y-4">
-            <h2 className="text-base font-bold font-display text-zinc-900 dark:text-white flex items-center gap-2">
-              <Layers className="w-4 h-4 text-amber-500" />
-              <span>Plant Refining Lines</span>
-            </h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-bold font-display text-zinc-900 dark:text-white flex items-center gap-2">
+                <Layers className="w-4 h-4 text-amber-500" />
+                <span>Plant Refining Lines ({plantList.length})</span>
+              </h2>
+              {onAddPlant && (
+                <button
+                  type="button"
+                  onClick={() => setIsAddPlantModalOpen(true)}
+                  className="btn-premium-amber px-3 py-1.5 rounded-xl text-xs font-bold shadow flex items-center gap-1 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add Plant</span>
+                </button>
+              )}
+            </div>
             <div className="space-y-2.5">
-              {MOCK_PLANTS.map((plant) => (
+              {plantList.map((plant) => (
                 <div key={plant.id} className="p-3.5 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-50/50 dark:bg-black/20 flex items-center justify-between">
                   <div>
                     <span className="font-bold text-xs text-zinc-900 dark:text-white font-display">
@@ -1673,12 +1701,24 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
 
           {/* Tanks */}
           <div className="glass-panel p-5 sm:p-6 rounded-3xl bg-white/90 dark:bg-[#0A0F1C]/90 border border-zinc-200/90 dark:border-white/10 shadow-xl space-y-4">
-            <h2 className="text-base font-bold font-display text-zinc-900 dark:text-white flex items-center gap-2">
-              <Database className="w-4 h-4 text-emerald-500" />
-              <span>Refinery Tanks Inventory</span>
-            </h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-bold font-display text-zinc-900 dark:text-white flex items-center gap-2">
+                <Database className="w-4 h-4 text-emerald-500" />
+                <span>Refinery Tanks Inventory ({tankList.length})</span>
+              </h2>
+              {onAddTank && (
+                <button
+                  type="button"
+                  onClick={() => setIsAddTankModalOpen(true)}
+                  className="btn-premium-emerald px-3 py-1.5 rounded-xl text-xs font-bold shadow flex items-center gap-1 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add Tank</span>
+                </button>
+              )}
+            </div>
             <div className="space-y-2.5">
-              {MOCK_TANKS.map((tank) => (
+              {tankList.map((tank) => (
                 <div key={tank.id} className="p-3.5 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-50/50 dark:bg-black/20 flex items-center justify-between">
                   <div>
                     <span className="font-bold text-xs text-zinc-900 dark:text-white font-display">
@@ -1875,6 +1915,225 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
                 className="btn-tactile px-4 py-2 rounded-xl text-xs font-bold text-white btn-premium-amber cursor-pointer"
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Modal: Add New Plant Line in MasterData (Portalled to document.body) */}
+      {isAddPlantModalOpen && onAddPlant && typeof document !== "undefined" && createPortal(
+        <div 
+          className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsAddPlantModalOpen(false);
+          }}
+        >
+          <div className="w-full max-w-md bg-white dark:bg-[#0E1626] rounded-2xl shadow-2xl border border-zinc-200 dark:border-white/10 p-5 space-y-4 animate-scale-in">
+            <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/10 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                  <Layers className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold font-display text-zinc-900 dark:text-white">
+                    Register New Plant / Production Line
+                  </h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    Add new production line to refinery master data
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAddPlantModalOpen(false)}
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+                Plant / Line Name
+              </label>
+              <input
+                type="text"
+                value={customPlantName}
+                onChange={(e) => setCustomPlantName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    if (customPlantName.trim()) {
+                      onAddPlant(customPlantName.trim());
+                      setCustomPlantName("");
+                      setIsAddPlantModalOpen(false);
+                    }
+                  }
+                }}
+                placeholder="e.g. Refinery Plant 3 (Continuous Bleaching Line 3)"
+                autoFocus
+                className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-300 dark:border-white/15 bg-zinc-50 dark:bg-black/40 text-sm font-bold text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-500/40"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-zinc-200 dark:border-white/10">
+              <button
+                type="button"
+                onClick={() => {
+                  setCustomPlantName("");
+                  setIsAddPlantModalOpen(false);
+                }}
+                className="btn-tactile px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={!customPlantName.trim()}
+                onClick={() => {
+                  if (customPlantName.trim()) {
+                    onAddPlant(customPlantName.trim());
+                    setCustomPlantName("");
+                    setIsAddPlantModalOpen(false);
+                  }
+                }}
+                className="btn-premium-amber px-5 py-2 rounded-xl text-xs font-bold shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Save Plant Line</span>
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Modal: Add New Tank in MasterData (Portalled to document.body) */}
+      {isAddTankModalOpen && onAddTank && typeof document !== "undefined" && createPortal(
+        <div 
+          className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsAddTankModalOpen(false);
+          }}
+        >
+          <div className="w-full max-w-md bg-white dark:bg-[#0E1626] rounded-2xl shadow-2xl border border-zinc-200 dark:border-white/10 p-5 space-y-4 animate-scale-in">
+            <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/10 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                  <Database className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold font-display text-zinc-900 dark:text-white">
+                    Register New Storage / Transfer Tank
+                  </h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    Add new feed or discharge tank to refinery tank farm
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAddTankModalOpen(false)}
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+                  Tank Name / Identifier
+                </label>
+                <input
+                  type="text"
+                  value={customTankName}
+                  onChange={(e) => setCustomTankName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      if (customTankName.trim()) {
+                        onAddTank(customTankName.trim(), customTankKind);
+                        setCustomTankName("");
+                        setIsAddTankModalOpen(false);
+                      }
+                    }
+                  }}
+                  placeholder="e.g. Feed Tank TK-104 (Crude Feed)"
+                  autoFocus
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-300 dark:border-white/15 bg-zinc-50 dark:bg-black/40 text-sm font-bold text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-500/40"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+                  Tank Functional Role
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setCustomTankKind('feed')}
+                    className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all ${
+                      customTankKind === 'feed'
+                        ? 'bg-amber-500/20 border-amber-500 text-amber-600 dark:text-amber-400'
+                        : 'border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-600 dark:text-zinc-400'
+                    }`}
+                  >
+                    Feed Tank
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCustomTankKind('discharge')}
+                    className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all ${
+                      customTankKind === 'discharge'
+                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-600 dark:text-emerald-400'
+                        : 'border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-600 dark:text-zinc-400'
+                    }`}
+                  >
+                    Discharge Tank
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCustomTankKind('both')}
+                    className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all ${
+                      customTankKind === 'both'
+                        ? 'bg-sky-500/20 border-sky-500 text-sky-600 dark:text-sky-400'
+                        : 'border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-600 dark:text-zinc-400'
+                    }`}
+                  >
+                    Dual Purpose
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-zinc-200 dark:border-white/10">
+              <button
+                type="button"
+                onClick={() => {
+                  setCustomTankName("");
+                  setIsAddTankModalOpen(false);
+                }}
+                className="btn-tactile px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={!customTankName.trim()}
+                onClick={() => {
+                  if (customTankName.trim()) {
+                    onAddTank(customTankName.trim(), customTankKind);
+                    setCustomTankName("");
+                    setIsAddTankModalOpen(false);
+                  }
+                }}
+                className="btn-premium-emerald px-5 py-2 rounded-xl text-xs font-bold shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Save Tank</span>
               </button>
             </div>
           </div>

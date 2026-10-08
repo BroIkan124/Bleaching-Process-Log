@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { LogSheet, LogEntry, UserProfile, DashboardTab, SupervisorUpdateEvent, SampleReport, Product } from "@/types";
+import { LogSheet, LogEntry, UserProfile, DashboardTab, SupervisorUpdateEvent, SampleReport, Product, Plant, Tank } from "@/types";
 import { 
   MOCK_USERS, 
   MOCK_PLANTS, 
@@ -194,6 +194,131 @@ export default function BleachingProcessLogApp() {
 
     showNotice(`New oil product "${trimmed}" added to refinery catalog and selected.`, "success");
     return newProd;
+  };
+
+  // 6b. Dynamic Refinery Plants (Persisted in LocalStorage)
+  const [plants, setPlants] = useState<Plant[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("nisshin_plants");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch {}
+    }
+    return MOCK_PLANTS;
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("nisshin_plants", JSON.stringify(plants));
+    } catch {}
+  }, [plants]);
+
+  const handleAddPlant = (newPlantName: string): Plant | null => {
+    const trimmed = newPlantName.trim();
+    if (!trimmed) {
+      showNotice("Plant name cannot be empty.", "error");
+      return null;
+    }
+    const existing = plants.find(p => p.name.toLowerCase() === trimmed.toLowerCase());
+    if (existing) {
+      showNotice(`Plant "${existing.name}" is already registered.`, "info");
+      handleUpdateHeader({
+        plant_id: existing.id,
+        plant_name: existing.name,
+      });
+      return existing;
+    }
+
+    const newPlant: Plant = {
+      id: `plt-${Date.now()}`,
+      name: trimmed,
+    };
+    const updated = [...plants, newPlant];
+    setPlants(updated);
+    try {
+      localStorage.setItem("nisshin_plants", JSON.stringify(updated));
+    } catch {}
+
+    handleUpdateHeader({
+      plant_id: newPlant.id,
+      plant_name: newPlant.name,
+    });
+
+    showNotice(`New plant line "${trimmed}" registered into configuration and selected.`, "success");
+    return newPlant;
+  };
+
+  // 6c. Dynamic Refinery Tanks Farm (Persisted in LocalStorage)
+  const [tanks, setTanks] = useState<Tank[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("nisshin_tanks");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch {}
+    }
+    return MOCK_TANKS;
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("nisshin_tanks", JSON.stringify(tanks));
+    } catch {}
+  }, [tanks]);
+
+  const handleAddTank = (newTankName: string, kind: 'feed' | 'discharge' | 'both' = 'both'): Tank | null => {
+    const trimmed = newTankName.trim();
+    if (!trimmed) {
+      showNotice("Tank name cannot be empty.", "error");
+      return null;
+    }
+    const existing = tanks.find(t => t.name.toLowerCase() === trimmed.toLowerCase());
+    if (existing) {
+      showNotice(`Tank "${existing.name}" is already registered.`, "info");
+      if (kind === 'feed') {
+        handleUpdateHeader({ feed_tank_id: existing.id, feed_tank_name: existing.name });
+      } else if (kind === 'discharge') {
+        handleUpdateHeader({ discharge_tank_id: existing.id, discharge_tank_name: existing.name });
+      }
+      return existing;
+    }
+
+    const newTank: Tank = {
+      id: `tnk-${Date.now()}`,
+      name: trimmed,
+      kind,
+    };
+    const updated = [...tanks, newTank];
+    setTanks(updated);
+    try {
+      localStorage.setItem("nisshin_tanks", JSON.stringify(updated));
+    } catch {}
+
+    if (kind === 'feed') {
+      handleUpdateHeader({ feed_tank_id: newTank.id, feed_tank_name: newTank.name });
+    } else if (kind === 'discharge') {
+      handleUpdateHeader({ discharge_tank_id: newTank.id, discharge_tank_name: newTank.name });
+    }
+
+    showNotice(`New tank "${trimmed}" registered into refinery tank farm.`, "success");
+    return newTank;
+  };
+
+  // Two-way synchronization between Bleaching Log and QC Management product
+  const handleProductChange = (newProductName: string) => {
+    const trimmed = newProductName.trim();
+    if (!trimmed) return;
+    const prod = products.find(p => p.name.toLowerCase() === trimmed.toLowerCase());
+    handleUpdateHeader({
+      product_id: prod?.id || `prd-${Date.now()}`,
+      product_name: prod?.name || trimmed,
+    });
+    showNotice(`Active product synchronized to "${trimmed}".`, "info");
   };
 
   // 7. Realtime Clock, Slot Rule & Override State (Strict 100% Live Clock)
@@ -692,10 +817,12 @@ export default function BleachingProcessLogApp() {
               {/* Operating Parameters Header */}
               <SheetHeaderParameters
                 sheet={sheet}
-                plants={MOCK_PLANTS}
+                plants={plants}
                 products={products}
+                onAddPlant={handleAddPlant}
                 onAddProduct={handleAddProduct}
-                tanks={MOCK_TANKS}
+                tanks={tanks}
+                onAddTank={handleAddTank}
                 isLocked={isSheetLocked}
                 onUpdateHeader={handleUpdateHeader}
               />
@@ -740,6 +867,12 @@ export default function BleachingProcessLogApp() {
               isDark={isDark}
               reports={qcReports}
               products={products}
+              activeProductName={sheet.product_name}
+              onProductChange={handleProductChange}
+              plants={plants}
+              tanks={tanks}
+              onAddPlant={handleAddPlant}
+              onAddTank={handleAddTank}
               onAddProduct={handleAddProduct}
               onUpdateReport={handleUpdateQcReport}
               onCreateReport={handleCreateQcReport}
@@ -762,6 +895,10 @@ export default function BleachingProcessLogApp() {
               isDark={isDark}
               reports={qcReports}
               products={products}
+              plants={plants}
+              tanks={tanks}
+              onAddPlant={handleAddPlant}
+              onAddTank={handleAddTank}
               onNavigateTab={setActiveTab}
               onUpdateReport={handleUpdateQcReport}
               onResetCleanData={handleResetCleanShift}

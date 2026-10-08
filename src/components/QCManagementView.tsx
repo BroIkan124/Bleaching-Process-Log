@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { UserProfile, SampleReport, SampleResult, QCDecisionType, Disposition, Product } from "@/types";
+import { UserProfile, SampleReport, SampleResult, QCDecisionType, Disposition, Product, Plant, Tank } from "@/types";
 import { QC_SNAPSHOT_DATA } from "@/lib/qcSampleData";
 import { 
   FlaskConical, 
@@ -25,17 +25,24 @@ import {
   Building2,
   Sparkles,
   Tag,
-  Droplets
+  Droplets,
+  Layers
 } from "lucide-react";
 import { syncQcSampleToInsForge, logActivityToInsForge } from "@/lib/dbService";
 import { RadioSelect } from "./RadioSelect";
-import { DEFAULT_REJECTION_REASONS, MOCK_PRODUCTS } from "@/lib/mockData";
+import { DEFAULT_REJECTION_REASONS, MOCK_PRODUCTS, MOCK_TANKS, MOCK_PLANTS } from "@/lib/mockData";
 
 interface QCManagementViewProps {
   currentUser: UserProfile;
   isDark: boolean;
   reports?: SampleReport[];
   products?: Product[];
+  activeProductName?: string;
+  onProductChange?: (productName: string) => void;
+  plants?: Plant[];
+  tanks?: Tank[];
+  onAddPlant?: (plantName: string) => Plant | null;
+  onAddTank?: (tankName: string, kind?: 'feed' | 'discharge' | 'both') => Tank | null;
   onAddProduct?: (productName: string) => Product | null;
   onUpdateReport?: (report: SampleReport) => void;
   onCreateReport?: (report: SampleReport) => void;
@@ -46,6 +53,12 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
   isDark,
   reports: externalReports,
   products: externalProducts,
+  activeProductName,
+  onProductChange,
+  plants: externalPlants,
+  tanks: externalTanks,
+  onAddPlant,
+  onAddTank,
   onAddProduct,
   onUpdateReport,
   onCreateReport,
@@ -69,9 +82,25 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [isCertificateOpen, setIsCertificateOpen] = useState(false);
   const availableProducts = externalProducts || MOCK_PRODUCTS;
+  const availableTanks = externalTanks || MOCK_TANKS;
+  const availablePlants = externalPlants || MOCK_PLANTS;
+
+  // Segregate tanks by feed and discharge roles
+  const feedTanks = useMemo(() => 
+    availableTanks.filter(t => t.kind === 'feed' || t.kind === 'both'),
+    [availableTanks]
+  );
+  const dischargeTanks = useMemo(() => 
+    availableTanks.filter(t => t.kind === 'discharge' || t.kind === 'both'),
+    [availableTanks]
+  );
+
   const [isNewSampleOpen, setIsNewSampleOpen] = useState(false);
   const [isAddProdModalOpen, setIsAddProdModalOpen] = useState(false);
   const [customQcProdName, setCustomQcProdName] = useState("");
+  const [isAddTankModalOpen, setIsAddTankModalOpen] = useState(false);
+  const [customTankName, setCustomTankName] = useState("");
+  const [customTankKind, setCustomTankKind] = useState<'feed' | 'discharge' | 'both'>('feed');
   const [isClosingNewSample, setIsClosingNewSample] = useState(false);
   const [isClosingEditor, setIsClosingEditor] = useState(false);
   const [isClosingCertificate, setIsClosingCertificate] = useState(false);
@@ -100,17 +129,32 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
     }, 200);
   };
 
+  // Initial values synchronized with Bleaching Log active sheet
+  const defaultInitialProd = activeProductName || (availableProducts.length > 0 ? availableProducts[0].name : "CHOCOHI 357A NPHO");
+  const defaultFeedTank = feedTanks.length > 0 ? feedTanks[0].name : "Feed Tank TK-101 (Crude Feed)";
+  const defaultDischargeTank = dischargeTanks.length > 0 ? dischargeTanks[0].name : "Discharge Tank TK-201 (Bleached Oil)";
+
   // New sample form state
   const [newSample, setNewSample] = useState({
-    product_name: "RBD Palm Oil",
-    feed_tank_code: "TK-101A",
-    discharge_tank_code: "TK-201A",
+    product_name: defaultInitialProd,
+    feed_tank_code: defaultFeedTank,
+    discharge_tank_code: defaultDischargeTank,
     sampling_point_name: "Bleacher Outlet / Polishing Filter",
     sample_date: new Date().toISOString().split("T")[0],
     time_check: "14:00",
     lot_no: `LOT-BPO-${new Date().toISOString().slice(2, 10).replace(/-/g, "")}-1400`,
     remarks: "",
   });
+
+  // Keep newSample.product_name in 100% real-time sync with Bleaching Log active product
+  useEffect(() => {
+    if (activeProductName) {
+      setNewSample(prev => ({
+        ...prev,
+        product_name: activeProductName,
+      }));
+    }
+  }, [activeProductName]);
 
   // Filtered reports
   const filteredReports = useMemo(() => {
@@ -196,6 +240,10 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
     if (onCreateReport) {
       onCreateReport(created);
     }
+    // Synchronize product name to Bleaching Log
+    if (onProductChange && created.product_name) {
+      onProductChange(created.product_name);
+    }
     setInternalReports([created, ...reports]);
     handleCloseNewSample();
     syncQcSampleToInsForge(created, currentUser);
@@ -218,6 +266,48 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
 
   return (
     <div className="space-y-4">
+      {/* 0. Synchronized Bleaching Log Product Indicator Banner */}
+      <div className="glass-panel p-4 rounded-2xl flex flex-wrap items-center justify-between gap-3 border border-amber-500/25 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-amber-500/15 text-amber-500 border border-amber-500/30 shadow-xs">
+            <Droplets className="w-5 h-5 text-amber-500" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 font-display">
+                Synchronized Bleaching Log Product
+              </span>
+              <span className="px-2 py-0.5 rounded-full text-xs font-bold font-mono bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Live Sync Connected
+              </span>
+            </div>
+            <p className="text-sm font-bold text-zinc-900 dark:text-white mt-0.5">
+              Current Operating Oil:{" "}
+              <span className="text-amber-600 dark:text-amber-400 font-display font-black">
+                {activeProductName || newSample.product_name || "CHOCOHI 357A NPHO"}
+              </span>
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              if (activeProductName) {
+                setNewSample(prev => ({ ...prev, product_name: activeProductName }));
+              }
+              setIsNewSampleOpen(true);
+            }}
+            className="btn-premium-amber flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold shadow-sm cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Sample for Active Product</span>
+          </button>
+        </div>
+      </div>
+
       {/* 1. Header Metrics Banner with Glassmorphism & Specular Rims */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {/* Total Samples */}
@@ -848,7 +938,10 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                 <RadioSelect
                   value={newSample.product_name}
                   icon={<Droplets className="w-3.5 h-3.5 text-amber-500 shrink-0" />}
-                  onChange={(val) => setNewSample({ ...newSample, product_name: val })}
+                  onChange={(val) => {
+                    setNewSample({ ...newSample, product_name: val });
+                    if (onProductChange) onProductChange(val);
+                  }}
                   options={availableProducts.map((p) => ({
                     value: p.name,
                     label: p.name,
@@ -860,23 +953,79 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-zinc-700 dark:text-zinc-300 font-semibold mb-1">Feed Tank</label>
-                  <input
-                    type="text"
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-zinc-700 dark:text-zinc-300 font-semibold text-xs">
+                      Feed Tank ({feedTanks.length})
+                    </label>
+                    {onAddTank && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCustomTankKind('feed');
+                          setIsAddTankModalOpen(true);
+                        }}
+                        className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:text-amber-700 flex items-center gap-1 cursor-pointer transition-colors"
+                        title="Register a new feed tank"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Add Tank</span>
+                      </button>
+                    )}
+                  </div>
+                  <RadioSelect
                     value={newSample.feed_tank_code}
-                    onChange={(e) => setNewSample({ ...newSample, feed_tank_code: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-zinc-50 dark:bg-black/40 border border-zinc-300 dark:border-white/10 text-xs text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    icon={<Database className="w-3.5 h-3.5 text-amber-500 shrink-0" />}
+                    onChange={(val) => setNewSample({ ...newSample, feed_tank_code: val })}
+                    options={feedTanks.map((t) => ({
+                      value: t.name,
+                      label: t.name,
+                      icon: <Database className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                    }))}
+                    searchable={true}
+                    onAddCustom={onAddTank ? () => {
+                      setCustomTankKind('feed');
+                      setIsAddTankModalOpen(true);
+                    } : undefined}
+                    addCustomLabel="+ Register New Feed Tank..."
                   />
                 </div>
                 <div>
-                  <label className="block text-zinc-700 dark:text-zinc-300 font-semibold mb-1">Discharge Tank</label>
-                  <input
-                    type="text"
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-zinc-700 dark:text-zinc-300 font-semibold text-xs">
+                      Discharge Tank ({dischargeTanks.length})
+                    </label>
+                    {onAddTank && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCustomTankKind('discharge');
+                          setIsAddTankModalOpen(true);
+                        }}
+                        className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 flex items-center gap-1 cursor-pointer transition-colors"
+                        title="Register a new discharge tank"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Add Tank</span>
+                      </button>
+                    )}
+                  </div>
+                  <RadioSelect
                     value={newSample.discharge_tank_code}
-                    onChange={(e) => setNewSample({ ...newSample, discharge_tank_code: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-zinc-50 dark:bg-black/40 border border-zinc-300 dark:border-white/10 text-xs text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    icon={<Database className="w-3.5 h-3.5 text-emerald-500 shrink-0" />}
+                    onChange={(val) => setNewSample({ ...newSample, discharge_tank_code: val })}
+                    options={dischargeTanks.map((t) => ({
+                      value: t.name,
+                      label: t.name,
+                      icon: <Database className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                    }))}
+                    searchable={true}
+                    onAddCustom={onAddTank ? () => {
+                      setCustomTankKind('discharge');
+                      setIsAddTankModalOpen(true);
+                    } : undefined}
+                    addCustomLabel="+ Register New Discharge Tank..."
                   />
                 </div>
               </div>
@@ -1001,6 +1150,155 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Save &amp; Select</span>
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Modal: Add Custom Tank in QC Management (Portalled to document.body for full viewport coverage) */}
+      {isAddTankModalOpen && onAddTank && typeof document !== "undefined" && createPortal(
+        <div 
+          className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsAddTankModalOpen(false);
+          }}
+        >
+          <div className="w-full max-w-md bg-white dark:bg-[#0E1626] rounded-2xl shadow-2xl border border-zinc-200 dark:border-white/10 p-5 space-y-4 animate-scale-in">
+            <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/10 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                  <Database className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold font-display text-zinc-900 dark:text-white">
+                    Register New Storage / Transfer Tank
+                  </h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    Add new feed or discharge tank to refinery tank farm
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAddTankModalOpen(false)}
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+                  Tank Name / Identifier
+                </label>
+                <input
+                  type="text"
+                  value={customTankName}
+                  onChange={(e) => setCustomTankName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      if (customTankName.trim()) {
+                        const added = onAddTank(customTankName.trim(), customTankKind);
+                        if (added) {
+                          if (customTankKind === 'feed') {
+                            setNewSample(prev => ({ ...prev, feed_tank_code: added.name }));
+                          } else if (customTankKind === 'discharge') {
+                            setNewSample(prev => ({ ...prev, discharge_tank_code: added.name }));
+                          } else {
+                            setNewSample(prev => ({ ...prev, feed_tank_code: added.name }));
+                          }
+                        }
+                        setCustomTankName("");
+                        setIsAddTankModalOpen(false);
+                      }
+                    }
+                  }}
+                  placeholder="e.g. Feed Tank TK-104 (Crude Feed)"
+                  autoFocus
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-300 dark:border-white/15 bg-zinc-50 dark:bg-black/40 text-sm font-bold text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-500/40"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+                  Tank Functional Role
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setCustomTankKind('feed')}
+                    className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all ${
+                      customTankKind === 'feed'
+                        ? 'bg-amber-500/20 border-amber-500 text-amber-600 dark:text-amber-400'
+                        : 'border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-600 dark:text-zinc-400'
+                    }`}
+                  >
+                    Feed Tank
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCustomTankKind('discharge')}
+                    className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all ${
+                      customTankKind === 'discharge'
+                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-600 dark:text-emerald-400'
+                        : 'border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-600 dark:text-zinc-400'
+                    }`}
+                  >
+                    Discharge Tank
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCustomTankKind('both')}
+                    className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all ${
+                      customTankKind === 'both'
+                        ? 'bg-sky-500/20 border-sky-500 text-sky-600 dark:text-sky-400'
+                        : 'border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-600 dark:text-zinc-400'
+                    }`}
+                  >
+                    Dual Purpose
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-zinc-200 dark:border-white/10">
+              <button
+                type="button"
+                onClick={() => {
+                  setCustomTankName("");
+                  setIsAddTankModalOpen(false);
+                }}
+                className="btn-tactile px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={!customTankName.trim()}
+                onClick={() => {
+                  if (customTankName.trim()) {
+                    const added = onAddTank(customTankName.trim(), customTankKind);
+                    if (added) {
+                      if (customTankKind === 'feed') {
+                        setNewSample(prev => ({ ...prev, feed_tank_code: added.name }));
+                      } else if (customTankKind === 'discharge') {
+                        setNewSample(prev => ({ ...prev, discharge_tank_code: added.name }));
+                      } else {
+                        setNewSample(prev => ({ ...prev, feed_tank_code: added.name }));
+                      }
+                    }
+                    setCustomTankName("");
+                    setIsAddTankModalOpen(false);
+                  }
+                }}
+                className="btn-premium-amber px-5 py-2 rounded-xl text-xs font-bold shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Save Tank</span>
               </button>
             </div>
           </div>

@@ -30,6 +30,8 @@ interface SheetHeaderParametersProps {
   isLocked: boolean;
   onUpdateHeader: (updates: Partial<LogSheet>) => void;
   onAddProduct?: (productName: string) => Product | null;
+  onAddPlant?: (plantName: string) => Plant | null;
+  onAddTank?: (tankName: string, kind?: 'feed' | 'discharge' | 'both') => Tank | null;
 }
 
 export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
@@ -40,13 +42,20 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
   isLocked,
   onUpdateHeader,
   onAddProduct,
+  onAddPlant,
+  onAddTank,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
   const [customProductName, setCustomProductName] = useState("");
+  const [isAddPlantModalOpen, setIsAddPlantModalOpen] = useState(false);
+  const [customPlantName, setCustomPlantName] = useState("");
+  const [isAddTankModalOpen, setIsAddTankModalOpen] = useState(false);
+  const [customTankName, setCustomTankName] = useState("");
+  const [customTankKind, setCustomTankKind] = useState<'feed' | 'discharge' | 'both'>('feed');
 
-  const feedTanks = tanks.filter((t) => t.kind === "feed");
-  const dischargeTanks = tanks.filter((t) => t.kind === "discharge");
+  const feedTanks = tanks.filter((t) => t.kind === "feed" || t.kind === "both");
+  const dischargeTanks = tanks.filter((t) => t.kind === "discharge" || t.kind === "both");
 
   const currentPlant = plants.find((p) => p.id === sheet.plant_id)?.name || sheet.plant_name || "Refinery Line 1";
   const currentProduct = products.find((p) => p.id === sheet.product_id)?.name || sheet.product_name || "RBD Palm Oil";
@@ -133,14 +142,36 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <div>
-                <label className="block text-xs font-bold text-zinc-600 dark:text-zinc-400 mb-1">
-                  Plant / Production Line
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-bold text-zinc-600 dark:text-zinc-400">
+                    Plant / Production Line ({plants.length})
+                  </label>
+                  {onAddPlant && !isLocked && (
+                    <button
+                      type="button"
+                      onClick={() => setIsAddPlantModalOpen(true)}
+                      className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 flex items-center gap-1 cursor-pointer transition-colors"
+                      title="Register a new plant or production line"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Add Plant</span>
+                    </button>
+                  )}
+                </div>
                 <RadioSelect
                   disabled={isLocked}
                   value={sheet.plant_id}
-                  onChange={(val) => onUpdateHeader({ plant_id: val })}
+                  onChange={(val) => {
+                    const chosen = plants.find((p) => p.id === val);
+                    onUpdateHeader({ 
+                      plant_id: val,
+                      plant_name: chosen?.name || sheet.plant_name 
+                    });
+                  }}
                   options={plants.map((p) => ({ value: p.id, label: p.name }))}
+                  searchable={true}
+                  onAddCustom={onAddPlant && !isLocked ? () => setIsAddPlantModalOpen(true) : undefined}
+                  addCustomLabel="+ Register New Plant..."
                 />
               </div>
 
@@ -184,26 +215,82 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-zinc-600 dark:text-zinc-400 mb-1">
-                  Feed Tank
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-bold text-zinc-600 dark:text-zinc-400">
+                    Feed Tank ({feedTanks.length})
+                  </label>
+                  {onAddTank && !isLocked && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCustomTankKind('feed');
+                        setIsAddTankModalOpen(true);
+                      }}
+                      className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 flex items-center gap-1 cursor-pointer transition-colors"
+                      title="Register a new feed tank"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Add Tank</span>
+                    </button>
+                  )}
+                </div>
                 <RadioSelect
                   disabled={isLocked}
                   value={sheet.feed_tank_id}
-                  onChange={(val) => onUpdateHeader({ feed_tank_id: val })}
+                  onChange={(val) => {
+                    const chosen = feedTanks.find((t) => t.id === val);
+                    onUpdateHeader({ 
+                      feed_tank_id: val,
+                      feed_tank_name: chosen?.name || sheet.feed_tank_name
+                    });
+                  }}
                   options={feedTanks.map((t) => ({ value: t.id, label: t.name }))}
+                  searchable={true}
+                  onAddCustom={onAddTank && !isLocked ? () => {
+                    setCustomTankKind('feed');
+                    setIsAddTankModalOpen(true);
+                  } : undefined}
+                  addCustomLabel="+ Register New Feed Tank..."
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-zinc-600 dark:text-zinc-400 mb-1">
-                  Discharge Tank
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-bold text-zinc-600 dark:text-zinc-400">
+                    Discharge Tank ({dischargeTanks.length})
+                  </label>
+                  {onAddTank && !isLocked && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCustomTankKind('discharge');
+                        setIsAddTankModalOpen(true);
+                      }}
+                      className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 flex items-center gap-1 cursor-pointer transition-colors"
+                      title="Register a new discharge tank"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Add Tank</span>
+                    </button>
+                  )}
+                </div>
                 <RadioSelect
                   disabled={isLocked}
                   value={sheet.discharge_tank_id}
-                  onChange={(val) => onUpdateHeader({ discharge_tank_id: val })}
+                  onChange={(val) => {
+                    const chosen = dischargeTanks.find((t) => t.id === val);
+                    onUpdateHeader({ 
+                      discharge_tank_id: val,
+                      discharge_tank_name: chosen?.name || sheet.discharge_tank_name
+                    });
+                  }}
                   options={dischargeTanks.map((t) => ({ value: t.id, label: t.name }))}
+                  searchable={true}
+                  onAddCustom={onAddTank && !isLocked ? () => {
+                    setCustomTankKind('discharge');
+                    setIsAddTankModalOpen(true);
+                  } : undefined}
+                  addCustomLabel="+ Register New Discharge Tank..."
                 />
               </div>
             </div>
@@ -502,6 +589,228 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Save to Catalog &amp; Select</span>
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Modal: Add New Plant Line (Portalled to document.body for full viewport coverage) */}
+      {isAddPlantModalOpen && onAddPlant && typeof document !== "undefined" && createPortal(
+        <div 
+          className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsAddPlantModalOpen(false);
+          }}
+        >
+          <div className="w-full max-w-md bg-white dark:bg-[#0E1626] rounded-2xl shadow-2xl border border-zinc-200 dark:border-white/10 p-5 space-y-4 animate-scale-in">
+            <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/10 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                  <Plus className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold font-display text-zinc-900 dark:text-white">
+                    Register New Plant / Production Line
+                  </h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    Add new production line to plant configuration
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAddPlantModalOpen(false)}
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+                Plant / Line Name
+              </label>
+              <input
+                type="text"
+                value={customPlantName}
+                onChange={(e) => setCustomPlantName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    if (customPlantName.trim()) {
+                      onAddPlant(customPlantName.trim());
+                      setCustomPlantName("");
+                      setIsAddPlantModalOpen(false);
+                    }
+                  }
+                }}
+                placeholder="e.g. Refinery Plant 3 (Continuous Bleaching Line 3)"
+                autoFocus
+                className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-300 dark:border-white/15 bg-zinc-50 dark:bg-black/40 text-sm font-bold text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-500/40"
+              />
+              <p className="text-xs text-zinc-500 mt-1">
+                New plant lines are synchronized across operations and master data inventory.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-zinc-200 dark:border-white/10">
+              <button
+                type="button"
+                onClick={() => {
+                  setCustomPlantName("");
+                  setIsAddPlantModalOpen(false);
+                }}
+                className="btn-tactile px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={!customPlantName.trim()}
+                onClick={() => {
+                  if (customPlantName.trim()) {
+                    onAddPlant(customPlantName.trim());
+                    setCustomPlantName("");
+                    setIsAddPlantModalOpen(false);
+                  }
+                }}
+                className="btn-premium-amber px-5 py-2 rounded-xl text-xs font-bold shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Save Plant Line</span>
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Modal: Add New Tank (Portalled to document.body for full viewport coverage) */}
+      {isAddTankModalOpen && onAddTank && typeof document !== "undefined" && createPortal(
+        <div 
+          className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsAddTankModalOpen(false);
+          }}
+        >
+          <div className="w-full max-w-md bg-white dark:bg-[#0E1626] rounded-2xl shadow-2xl border border-zinc-200 dark:border-white/10 p-5 space-y-4 animate-scale-in">
+            <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/10 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                  <Plus className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold font-display text-zinc-900 dark:text-white">
+                    Register New Storage / Transfer Tank
+                  </h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    Add new feed or discharge tank to refinery tank farm
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAddTankModalOpen(false)}
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+                  Tank Name &amp; Code
+                </label>
+                <input
+                  type="text"
+                  value={customTankName}
+                  onChange={(e) => setCustomTankName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      if (customTankName.trim()) {
+                        onAddTank(customTankName.trim(), customTankKind);
+                        setCustomTankName("");
+                        setIsAddTankModalOpen(false);
+                      }
+                    }
+                  }}
+                  placeholder="e.g. Feed Tank TK-104 (Crude Feed)"
+                  autoFocus
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-300 dark:border-white/15 bg-zinc-50 dark:bg-black/40 text-sm font-bold text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-500/40"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+                  Tank Logistics Role
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setCustomTankKind('feed')}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold border cursor-pointer transition-all ${
+                      customTankKind === 'feed'
+                        ? 'bg-amber-500 text-white border-amber-600 shadow-sm'
+                        : 'bg-zinc-100 dark:bg-white/5 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-white/10'
+                    }`}
+                  >
+                    Feed Tank
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCustomTankKind('discharge')}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold border cursor-pointer transition-all ${
+                      customTankKind === 'discharge'
+                        ? 'bg-emerald-500 text-white border-emerald-600 shadow-sm'
+                        : 'bg-zinc-100 dark:bg-white/5 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-white/10'
+                    }`}
+                  >
+                    Discharge
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCustomTankKind('both')}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold border cursor-pointer transition-all ${
+                      customTankKind === 'both'
+                        ? 'bg-indigo-500 text-white border-indigo-600 shadow-sm'
+                        : 'bg-zinc-100 dark:bg-white/5 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-white/10'
+                    }`}
+                  >
+                    Dual Purpose
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-zinc-200 dark:border-white/10">
+              <button
+                type="button"
+                onClick={() => {
+                  setCustomTankName("");
+                  setIsAddTankModalOpen(false);
+                }}
+                className="btn-tactile px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={!customTankName.trim()}
+                onClick={() => {
+                  if (customTankName.trim()) {
+                    onAddTank(customTankName.trim(), customTankKind);
+                    setCustomTankName("");
+                    setIsAddTankModalOpen(false);
+                  }
+                }}
+                className="btn-premium-amber px-5 py-2 rounded-xl text-xs font-bold shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Save Tank &amp; Select</span>
               </button>
             </div>
           </div>

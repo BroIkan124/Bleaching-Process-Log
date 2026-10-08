@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { LogSheet, SupervisorUpdateEvent, UserProfile } from "@/types";
+import { LogSheet, SupervisorUpdateEvent, UserProfile, SampleReport } from "@/types";
 import { 
   ShieldCheck, 
   AlertTriangle, 
@@ -20,9 +20,16 @@ import {
   Eye,
   RefreshCw,
   Search,
-  MessageSquare
+  MessageSquare,
+  Lock,
+  Unlock,
+  Sparkles,
+  BarChart3,
+  Activity
 } from "lucide-react";
 import { RadioSelect } from "./RadioSelect";
+import { calculatePipelineMetrics } from "@/lib/workflowPipeline";
+import { evaluateSlotAccess, getSlotTimeLabel } from "@/lib/realtimeTimeline";
 
 interface SupervisorMonitoringViewProps {
   currentUser: UserProfile;
@@ -31,6 +38,10 @@ interface SupervisorMonitoringViewProps {
   onAcknowledgeEvent: (eventId: string, acknowledgedBy: string) => void;
   onOpenReviewModal: () => void;
   onOpenPdfModal: () => void;
+  qcReports?: SampleReport[];
+  onUnlockSlot?: (slotIndex: number) => void;
+  supervisorUnlockedSlots?: number[];
+  activeCurrentHourIndex?: number;
 }
 
 export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> = ({
@@ -40,10 +51,17 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
   onAcknowledgeEvent,
   onOpenReviewModal,
   onOpenPdfModal,
+  qcReports = [],
+  onUnlockSlot,
+  supervisorUnlockedSlots = [],
+  activeCurrentHourIndex = 1,
 }) => {
   const [filterSeverity, setFilterSeverity] = useState<string>("ALL");
   const [filterSource, setFilterSource] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [showUnlockPanel, setShowUnlockPanel] = useState<boolean>(false);
+
+  const pipelineMetrics = calculatePipelineMetrics(sheet, qcReports);
 
   // Shift metrics calculation
   const s1Slots = sheet.entries.slice(0, 8);
@@ -109,6 +127,8 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
         return <FlaskConical className="w-4 h-4 text-sky-500" />;
       case "Operating Parameters":
         return <Sliders className="w-4 h-4 text-purple-500" />;
+      case "Supervisor Monitoring":
+        return <ShieldCheck className="w-4 h-4 text-emerald-500" />;
       default:
         return <Clock className="w-4 h-4 text-zinc-400" />;
     }
@@ -149,6 +169,206 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
             <span>Preview PDF</span>
           </button>
         </div>
+      </div>
+
+      {/* 1.5 Pipeline Command Center (Bleaching Log -> QC Lab -> Reports -> Supervisor) */}
+      <div className="glass-panel p-5 rounded-2xl shadow-lg border border-amber-500/25 dark:border-amber-500/20 bg-gradient-to-br from-zinc-50 via-amber-500/[0.03] to-zinc-50 dark:from-[#0B101E] dark:via-[#11172A] dark:to-[#0B101E]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <div className="flex items-center gap-2.5">
+            <span className="p-2.5 rounded-xl bg-amber-500/15 text-amber-500 border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
+              <Activity className="w-5 h-5" />
+            </span>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm font-bold font-display text-zinc-900 dark:text-zinc-100">
+                  Pusat Kawalan Alur Kerja Kilang (Integrated Workflow Pipeline)
+                </h2>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                  {pipelineMetrics.completionRatePercent}% Disegerakkan
+                </span>
+              </div>
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium mt-0.5">
+                Bleaching Log &#10140; QC Lab &#10140; Reports &#10140; Supervisor Monitoring diselaraskan 100% masa nyata.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowUnlockPanel(!showUnlockPanel)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                showUnlockPanel 
+                  ? 'bg-amber-500 text-white shadow-md' 
+                  : 'bg-zinc-100 dark:bg-white/10 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-white/15'
+              }`}
+            >
+              {showUnlockPanel ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5 text-amber-500" />}
+              <span>{showUnlockPanel ? "Tutup Kawalan Kunci" : "Kawalan Kunci Slot Operator"}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* 4 Pipeline Stages */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {/* Stage 1 */}
+          <div className="p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/5 dark:bg-amber-500/10 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between text-xs font-bold text-amber-600 dark:text-amber-400 mb-1">
+                <span className="flex items-center gap-1.5">
+                  <Layers className="w-3.5 h-3.5" /> Stage 1: Bleaching Log
+                </span>
+                <span className="font-mono text-[10px]">ALUR 1</span>
+              </div>
+              <div className="text-base font-bold font-mono text-zinc-900 dark:text-zinc-100 mt-1">
+                {pipelineMetrics.savedSlotsCount} / 24 Slot
+              </div>
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1">
+                Rekod data telemetri proses oleh operator bertugas.
+              </p>
+            </div>
+            <div className="mt-2.5 pt-2 border-t border-amber-500/20 text-[10px] text-amber-600 dark:text-amber-400 font-semibold flex items-center justify-between">
+              <span>Slot Aktif: {getSlotTimeLabel(activeCurrentHourIndex)} Hrs</span>
+              <span>🔒 Kunci Masa Auto</span>
+            </div>
+          </div>
+
+          {/* Stage 2 */}
+          <div className="p-3.5 rounded-xl border border-sky-500/30 bg-sky-500/5 dark:bg-sky-500/10 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between text-xs font-bold text-sky-600 dark:text-sky-400 mb-1">
+                <span className="flex items-center gap-1.5">
+                  <FlaskConical className="w-3.5 h-3.5" /> Stage 2: QC Lab
+                </span>
+                <span className="font-mono text-[10px]">ALUR 2</span>
+              </div>
+              <div className="text-base font-bold font-mono text-zinc-900 dark:text-zinc-100 mt-1">
+                {pipelineMetrics.qcDecidedSamples} Disahkan
+              </div>
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1">
+                {pipelineMetrics.qcPendingSamples} sampel sedang dalam ujian makmal (RF-FR-001).
+              </p>
+            </div>
+            <div className="mt-2.5 pt-2 border-t border-sky-500/20 text-[10px] text-sky-600 dark:text-sky-400 font-semibold flex items-center justify-between">
+              <span>Hasil Analisis: Diselaraskan</span>
+              <span>Colour &amp; FFA</span>
+            </div>
+          </div>
+
+          {/* Stage 3 */}
+          <div className="p-3.5 rounded-xl border border-purple-500/30 bg-purple-500/5 dark:bg-purple-500/10 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between text-xs font-bold text-purple-600 dark:text-purple-400 mb-1">
+                <span className="flex items-center gap-1.5">
+                  <BarChart3 className="w-3.5 h-3.5" /> Stage 3: Reports
+                </span>
+                <span className="font-mono text-[10px]">ALUR 3</span>
+              </div>
+              <div className="text-base font-bold font-mono text-zinc-900 dark:text-zinc-100 mt-1">
+                {pipelineMetrics.reportsReadyCount} Data Matang
+              </div>
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1">
+                Kalkulasi hasil proses, analisis keabnormalan &amp; eksport audit.
+              </p>
+            </div>
+            <div className="mt-2.5 pt-2 border-t border-purple-500/20 text-[10px] text-purple-600 dark:text-purple-400 font-semibold flex items-center justify-between">
+              <span>Kepatuhan: In-Spec</span>
+              <span>RF-FR-003 Rev 03</span>
+            </div>
+          </div>
+
+          {/* Stage 4 */}
+          <div className="p-3.5 rounded-xl border border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-500/10 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between text-xs font-bold text-emerald-600 dark:text-emerald-400 mb-1">
+                <span className="flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5" /> Stage 4: Supervisor
+                </span>
+                <span className="font-mono text-[10px]">ALUR 4</span>
+              </div>
+              <div className="text-base font-bold font-mono text-zinc-900 dark:text-zinc-100 mt-1">
+                {sheet.status === 'Approved' ? 'Telah Diluluskan' : 'Pengawasan Aktif'}
+              </div>
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1">
+                Pengesahan integriti borang dan kawalan pelepasan kunci kecemasan.
+              </p>
+            </div>
+            <div className="mt-2.5 pt-2 border-t border-emerald-500/20 text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center justify-between">
+              <span>Status: {sheet.status}</span>
+              <span>100% Kuasa Penuh</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Emergency Slot Unlock Control Matrix */}
+        {showUnlockPanel && (
+          <div className="mt-4 pt-4 border-t border-zinc-200/80 dark:border-white/10 animate-in fade-in duration-200">
+            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 mb-3 flex items-start gap-2.5">
+              <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+              <div className="text-xs">
+                <strong className="text-zinc-900 dark:text-zinc-100 block">
+                  Peraturan Integriti Masa Nyata (Real-Time Slot Locking):
+                </strong>
+                <p className="text-zinc-600 dark:text-zinc-300 mt-0.5 text-[11px]">
+                  Operator hanya dibenarkan mengisi log pada slot masa aktif (cth: pukul 09:00 hanya slot 09:00).
+                  Slot masa lampau dikunci secara automatik untuk melindungi integriti audit. Sekiranya terdapat pembetulan log kecemasan,
+                  Supervisor boleh membuka kunci mana-mana slot di bawah ini.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
+              {sheet.entries.map((entry, idx) => {
+                const isCurrent = idx === activeCurrentHourIndex;
+                const isPast = idx < activeCurrentHourIndex;
+                const isFuture = idx > activeCurrentHourIndex;
+                const isOverride = supervisorUnlockedSlots.includes(idx);
+
+                return (
+                  <div
+                    key={entry.time_label}
+                    className={`p-2 rounded-xl border text-center transition-all ${
+                      isCurrent
+                        ? 'border-emerald-500 bg-emerald-500/10 shadow-[0_0_10px_rgba(16,185,129,0.2)]'
+                        : isOverride
+                          ? 'border-amber-500 bg-amber-500/10 shadow-[0_0_10px_rgba(245,158,11,0.2)]'
+                          : isPast
+                            ? 'border-zinc-300 dark:border-zinc-800 bg-zinc-100/50 dark:bg-zinc-900/50'
+                            : 'border-zinc-200 dark:border-zinc-800/50 opacity-60'
+                    }`}
+                  >
+                    <div className="text-xs font-mono font-bold text-zinc-900 dark:text-zinc-100">
+                      {entry.time_label} Hrs
+                    </div>
+                    <div className="text-[10px] text-zinc-500 mt-0.5 font-medium">
+                      {isCurrent ? (
+                        <span className="text-emerald-500 font-bold">AKTIF</span>
+                      ) : isOverride ? (
+                        <span className="text-amber-500 font-bold">DIBUKA</span>
+                      ) : isPast ? (
+                        <span>TERKUNCI</span>
+                      ) : (
+                        <span>AKAN DTG</span>
+                      )}
+                    </div>
+
+                    {isPast && onUnlockSlot && (
+                      <button
+                        onClick={() => onUnlockSlot(idx)}
+                        className={`mt-1.5 w-full py-1 px-1.5 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
+                          isOverride
+                            ? 'bg-rose-500/15 text-rose-500 border border-rose-500/30 hover:bg-rose-500/25'
+                            : 'bg-amber-500/15 text-amber-500 border border-amber-500/30 hover:bg-amber-500/25'
+                        }`}
+                      >
+                        {isOverride ? "Kunci Semula" : "Buka Kunci"}
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 2. Live Shift Health Progress Cards with 3D Depth */}

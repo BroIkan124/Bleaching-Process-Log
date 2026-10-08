@@ -17,8 +17,11 @@ import {
   Info,
   Layers,
   Thermometer,
-  Gauge
+  Gauge,
+  Lock,
+  Unlock
 } from "lucide-react";
+import { evaluateSlotAccess, getHourForSlotIndex } from "@/lib/realtimeTimeline";
 
 interface SlotEntryDrawerProps {
   entry: LogEntry;
@@ -29,6 +32,9 @@ interface SlotEntryDrawerProps {
   onNavigateSlot: (direction: -1 | 1) => void;
   isFirstSlot: boolean;
   isLastSlot: boolean;
+  activeCurrentHourIndex?: number;
+  isSupervisorOverride?: boolean;
+  onToggleSupervisorOverride?: (slotIndex: number) => void;
 }
 
 export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
@@ -40,6 +46,9 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
   onNavigateSlot,
   isFirstSlot,
   isLastSlot,
+  activeCurrentHourIndex = 0,
+  isSupervisorOverride = false,
+  onToggleSupervisorOverride,
 }) => {
   // Local form state
   const [formData, setFormData] = useState<LogEntry>({ ...entry });
@@ -133,6 +142,14 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
   const isHeTempOutOfSpec = outOfSpecFlags.some(f => f.field === 'he_temp_c');
   const isVacOutOfSpec = outOfSpecFlags.some(f => f.field === 'vacuum_mmhg');
 
+  const access = evaluateSlotAccess(
+    entry.slot_index,
+    activeCurrentHourIndex,
+    isSupervisorOverride,
+    currentUser.role
+  );
+  const isEditable = canEdit && access.isEditable;
+
   return (
     <div 
       className={`fixed inset-0 z-50 flex items-center justify-end bg-black/75 backdrop-blur-md transition-opacity duration-240 ${
@@ -201,6 +218,71 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
             </button>
           </div>
         </div>
+
+        {/* Realtime Access Rule Banner */}
+        {access.status === 'past_locked' && !isSupervisorOverride && (
+          <div className="px-6 py-3.5 bg-amber-500/10 border-b border-amber-500/25 flex items-start justify-between gap-3 text-xs backdrop-blur-sm">
+            <div className="flex items-start gap-2.5">
+              <div className="p-1.5 rounded-lg bg-amber-500/20 text-amber-500 shrink-0 mt-0.5 shadow-2xs">
+                <Lock className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="font-bold text-amber-900 dark:text-amber-200 font-display">
+                  Tetingkap Pengisian Telah Ditutup (Slot Dikunci):
+                </span>
+                <p className="text-zinc-600 dark:text-zinc-300 mt-0.5 leading-relaxed">
+                  {access.reasonMessage}
+                </p>
+              </div>
+            </div>
+            {(currentUser.role === 'supervisor' || currentUser.role === 'admin') && onToggleSupervisorOverride && (
+              <button
+                type="button"
+                onClick={() => onToggleSupervisorOverride(entry.slot_index)}
+                className="btn-tactile px-3 py-1.5 rounded-lg bg-amber-500 text-white font-bold text-xs shrink-0 flex items-center gap-1.5 shadow-sm hover:bg-amber-600 cursor-pointer"
+              >
+                <Unlock className="w-3.5 h-3.5" />
+                <span>Buka Kunci (Override)</span>
+              </button>
+            )}
+          </div>
+        )}
+
+        {access.status === 'future_locked' && !isSupervisorOverride && (
+          <div className="px-6 py-3.5 bg-zinc-500/10 border-b border-zinc-500/20 flex items-start gap-2.5 text-xs backdrop-blur-sm">
+            <div className="p-1.5 rounded-lg bg-zinc-500/20 text-zinc-400 shrink-0 mt-0.5">
+              <Clock className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="font-bold text-zinc-800 dark:text-zinc-200 font-display">
+                Slot Masa Akan Datang Belum Tiba:
+              </span>
+              <p className="text-zinc-600 dark:text-zinc-400 mt-0.5 leading-relaxed">
+                {access.reasonMessage}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {isSupervisorOverride && (
+          <div className="px-6 py-3 bg-emerald-500/10 border-b border-emerald-500/25 flex items-center justify-between gap-2.5 text-xs text-emerald-800 dark:text-emerald-200 backdrop-blur-sm">
+            <div className="flex items-center gap-2">
+              <Unlock className="w-4 h-4 text-emerald-500 shrink-0" />
+              <span className="font-bold font-display">
+                Kebenaran Khas Penyelia Aktif (Supervisor Override): Pindaan slot ini dibenarkan bagi operator dan direkodkan ke audit log.
+              </span>
+            </div>
+            {onToggleSupervisorOverride && (
+              <button
+                type="button"
+                onClick={() => onToggleSupervisorOverride(entry.slot_index)}
+                className="text-[11px] underline font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 cursor-pointer"
+              >
+                Kunci Semula
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Out of spec alert banner */}
         {hasOutOfSpec && (
@@ -610,15 +692,25 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
             >
               Cancel
             </button>
-            <button
-              type="button"
-              disabled={!canEdit}
-              onClick={handleSaveClick}
-              className="btn-premium-amber touch-target px-6 py-2.5 rounded-xl font-bold text-sm shadow-md flex items-center gap-2 disabled:opacity-50 cursor-pointer group"
-            >
-              <Save className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
-              <span>Save Slot ({formData.time_label} Hrs)</span>
-            </button>
+            {isEditable ? (
+              <button
+                type="button"
+                onClick={handleSaveClick}
+                className="btn-premium-amber touch-target px-6 py-2.5 rounded-xl font-bold text-sm shadow-md flex items-center gap-2 cursor-pointer group"
+              >
+                <Save className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
+                <span>Save Slot ({formData.time_label} Hrs)</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled
+                className="bg-zinc-200 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500 px-5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 cursor-not-allowed border border-zinc-300 dark:border-zinc-700/60 shadow-inner"
+              >
+                <Lock className="w-4 h-4 text-zinc-400" />
+                <span>Log Dikunci (Hanya Semakan)</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

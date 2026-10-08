@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { LogSheet, LogEntry, UserProfile, DashboardTab, SupervisorUpdateEvent } from "@/types";
+import { LogSheet, LogEntry, UserProfile, DashboardTab, SupervisorUpdateEvent, SampleReport } from "@/types";
 import { 
   MOCK_USERS, 
   MOCK_PLANTS, 
@@ -12,11 +12,22 @@ import {
 } from "@/lib/mockData";
 import { SHIFTS } from "@/lib/constants";
 import { getShiftForSlot } from "@/lib/utils";
+import { 
+  getRealtimeClockState, 
+  RealtimeClockState, 
+  evaluateSlotAccess 
+} from "@/lib/realtimeTimeline";
+import { 
+  createOrUpdateQcSampleFromLogEntry, 
+  syncQcResultToLogEntries 
+} from "@/lib/workflowPipeline";
+import { QC_SNAPSHOT_DATA } from "@/lib/qcSampleData";
 import { HeaderNav } from "@/components/HeaderNav";
 import { SheetHeaderParameters } from "@/components/SheetHeaderParameters";
 import { SlotRail } from "@/components/SlotRail";
 import { HourlyTableGrid } from "@/components/HourlyTableGrid";
 import { SlotEntryDrawer } from "@/components/SlotEntryDrawer";
+import { RealtimeTimelineBanner } from "@/components/RealtimeTimelineBanner";
 import { SupervisorReviewModal } from "@/components/SupervisorReviewModal";
 import { PdfExportModal } from "@/components/PdfExportModal";
 import { QCManagementView } from "@/components/QCManagementView";
@@ -99,9 +110,29 @@ export default function BleachingProcessLogApp() {
   const [isPdfOpen, setIsPdfOpen] = useState(false);
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
 
-  // Active current real hour slot (mocked as slot 4, ~1200 hrs)
-  const currentSlotIndex = 4;
-  const currentShift = getShiftForSlot(currentSlotIndex);
+  // 6. Realtime Clock, Slot Rule & Simulation State
+  const [simulatedHour, setSimulatedHour] = useState<number | null>(null);
+  const [clockState, setClockState] = useState<RealtimeClockState>(() => getRealtimeClockState(null));
+  const [supervisorUnlockedSlots, setSupervisorUnlockedSlots] = useState<number[]>([]);
+
+  // 7. Centralized QC Reports for Multi-Department Workflow Handover (Alur 1 -> Alur 4)
+  const [qcReports, setQcReports] = useState<SampleReport[]>(() => {
+    return (QC_SNAPSHOT_DATA.samples as any[]) || [];
+  });
+
+  // Real-time ticking 1-second clock
+  useEffect(() => {
+    const updateClock = () => {
+      setClockState(getRealtimeClockState(simulatedHour));
+    };
+    updateClock();
+    const interval = setInterval(updateClock, 1000);
+    return () => clearInterval(interval);
+  }, [simulatedHour]);
+
+  // Active current real hour slot & shift from synchronized clock state
+  const currentSlotIndex = clockState.slotIndex;
+  const currentShift = clockState.shiftNumber;
 
   // Toggle Dark Mode
   useEffect(() => {
@@ -139,22 +170,15 @@ export default function BleachingProcessLogApp() {
     }, 4500);
   };
 
-  // Determine if current user can edit the selected slot
+  // Determine if current user can edit the selected slot based on Realtime Slot Rule & Supervisor Override
   const isSheetLocked = sheet.status === 'Approved';
-  const slotShift = getShiftForSlot(selectedSlotIndex);
-
-  let canEditSlot = false;
-  if (!isSheetLocked && currentUser) {
-    if (currentUser.role === 'admin' || currentUser.role === 'supervisor') {
-      canEditSlot = true;
-    } else if (currentUser.role === 'technician') {
-      // Tech can edit slots of their assigned shift
-      if (currentUser.id === sheet.tech_s1 && slotShift === 1) canEditSlot = true;
-      else if (currentUser.id === sheet.tech_s2 && slotShift === 2) canEditSlot = true;
-      else if (currentUser.id === sheet.tech_s3 && slotShift === 3) canEditSlot = true;
-      else if (slotShift === currentShift) canEditSlot = true; // Fallback during testing
-    }
-  }
+  const selectedSlotAccess = evaluateSlotAccess(
+    selectedSlotIndex,
+    currentSlotIndex,
+    supervisorUnlockedSlots.includes(selectedSlotIndex),
+    currentUser?.role
+  );
+  const canEditSlot = !isSheetLocked && selectedSlotAccess.canEdit;
 
   // Handle Slot Select
   const handleSelectSlot = (slotIdx: number) => {
@@ -162,7 +186,7 @@ export default function BleachingProcessLogApp() {
     setIsDrawerOpen(true);
   };
 
-  // Handle Save Slot
+  // Handle Save Slot - Multi-Department Workflow Handover: Bleaching Log -> QC Lab -> Reports -> Supervisor (ALUR 1)
   const handleSaveSlot = (updatedEntry: LogEntry) => {
     if (!currentUser) return;
     const updatedEntries = sheet.entries.map((e, idx) => 
@@ -171,6 +195,15 @@ export default function BleachingProcessLogApp() {
 
     const hasSavedAny = updatedEntries.some(e => e.is_saved);
     const newStatus = sheet.status === 'Draft' && hasSavedAny ? 'InProgress' : sheet.status;
+
+    // 1. Bleaching Log -> QC Lab automatic handover (Alur 1)
+    const { updatedReports, newEvent: pipelineEvent } = createOrUpdateQcSampleFromLogEntry(
+      updatedEntry,
+      sheet,
+      currentUser,
+      qcReports
+    );
+    setQcReports(updatedReports);
 
     setSheet({
       ...sheet,
@@ -187,15 +220,15 @@ export default function BleachingProcessLogApp() {
     const isTempAlert = typeof updatedEntry.he_temp_c === 'number' && (updatedEntry.he_temp_c < 70 || updatedEntry.he_temp_c > 115);
     const hasAlert = isVacAlert || isTempAlert || (updatedEntry.out_of_spec && updatedEntry.out_of_spec.length > 0);
 
-    // Log event into supervisor monitoring feed
-    const newEvent: SupervisorUpdateEvent = {
-      id: `evt-${Date.now()}`,
+    // Event 1: Bleaching Log slot recording alert
+    const slotEvent: SupervisorUpdateEvent = {
+      id: `evt-save-${Date.now()}`,
       timestamp: new Date().toISOString(),
       source: 'Bleaching Log',
       title: hasAlert 
-        ? `ALERT: Out-of-Spec Parameter Logged (Slot ${updatedEntry.time_label} Hrs)`
-        : `Slot ${updatedEntry.time_label} Hrs Successfully Saved`,
-      description: `${currentUser.name} recorded Slot ${updatedEntry.time_label} (Flow ${updatedEntry.flowrate_set ?? '-'} MT/HR, Vac ${updatedEntry.vacuum_mmhg ?? '-'} mmHg, Temp ${updatedEntry.he_temp_c ?? '-'}°C). Remarks: ${updatedEntry.remarks || 'No special remarks.'}`,
+        ? `[ALUR 1] ALERT: Luar Spesifikasi Direkodkan (Slot ${updatedEntry.time_label} Hrs)`
+        : `[ALUR 1] Slot ${updatedEntry.time_label} Hrs Berjaya Disimpan & Diselaraskan`,
+      description: `${currentUser.name} merekodkan Slot ${updatedEntry.time_label} (Flow ${updatedEntry.flowrate_set ?? '-'} MT/HR, Vac ${updatedEntry.vacuum_mmhg ?? '-'} mmHg, Temp ${updatedEntry.he_temp_c ?? '-'}°C). Sampel makmal diselaraskan ke QC Lab.`,
       severity: hasAlert ? 'alert' : 'success',
       author_name: currentUser.name,
       author_role: currentUser.role,
@@ -205,10 +238,89 @@ export default function BleachingProcessLogApp() {
       acknowledged: false,
     };
 
-    setSupervisorEvents(prev => [newEvent, ...prev]);
+    setSupervisorEvents(prev => [slotEvent, pipelineEvent, ...prev]);
 
     setIsDrawerOpen(false);
-    showNotice(`Slot ${updatedEntry.time_label} Hrs successfully saved & synced to InsForge.`, 'success');
+    showNotice(`Slot ${updatedEntry.time_label} Hrs disimpan & diselaraskan ke QC Lab (SAR-2026-${updatedEntry.time_label}).`, 'success');
+  };
+
+  // QC Lab -> Bleaching Log & Reports Sync (ALUR 2)
+  const handleUpdateQcReport = (report: SampleReport) => {
+    setQcReports(prev => prev.map(r => r.id === report.id ? report : r));
+    
+    if (currentUser) {
+      const { updatedEntries, newEvent } = syncQcResultToLogEntries(
+        report,
+        sheet.entries,
+        currentUser
+      );
+      setSheet(prev => ({
+        ...prev,
+        entries: updatedEntries,
+        updated_at: new Date().toISOString(),
+      }));
+      if (newEvent) {
+        setSupervisorEvents(prev => [newEvent, ...prev]);
+      }
+      showNotice(`Keputusan analisis ${report.report_no} telah diselaraskan ke Bleaching Log & Reports.`, 'success');
+    }
+  };
+
+  const handleCreateQcReport = (newReport: SampleReport) => {
+    setQcReports(prev => [newReport, ...prev]);
+    const newEvent: SupervisorUpdateEvent = {
+      id: `evt-qc-create-${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      source: 'QC Lab',
+      title: `[ALUR 2] Pendaftaran Sampel Baharu: ${newReport.report_no}`,
+      description: `${currentUser?.name} mendaftarkan sampel makmal baharu (${newReport.lot_no}).`,
+      severity: 'info',
+      author_name: currentUser?.name || 'QC Staff',
+      author_role: currentUser?.role || 'technician',
+      lot_no: newReport.lot_no,
+      acknowledged: true,
+    };
+    setSupervisorEvents(prev => [newEvent, ...prev]);
+    showNotice(`Sampel makmal ${newReport.report_no} didaftarkan.`, 'info');
+  };
+
+  // Supervisor Emergency Slot Unlock (ALUR 4)
+  const handleToggleSupervisorOverride = (slotIndex: number) => {
+    const isCurrentlyUnlocked = supervisorUnlockedSlots.includes(slotIndex);
+    const updated = isCurrentlyUnlocked 
+      ? supervisorUnlockedSlots.filter(i => i !== slotIndex)
+      : [...supervisorUnlockedSlots, slotIndex];
+    setSupervisorUnlockedSlots(updated);
+
+    const slotLabel = sheet.entries[slotIndex]?.time_label || `${slotIndex}`;
+    const newEvent: SupervisorUpdateEvent = {
+      id: `evt-override-${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      source: 'Supervisor Monitoring',
+      title: isCurrentlyUnlocked 
+        ? `[ALUR 4] Kunci Masa Dipulihkan: Slot ${slotLabel} Hrs`
+        : `[ALUR 4] PELEPASAN KECEMASAN: Slot ${slotLabel} Hrs Dibuka oleh Supervisor`,
+      description: `Supervisor ${currentUser?.name} telah ${isCurrentlyUnlocked ? 'mengunci semula' : 'membuka kunci secara manual'} Slot ${slotLabel} Hrs bagi tujuan pembetulan audit log.`,
+      severity: isCurrentlyUnlocked ? 'info' : 'warning',
+      author_name: currentUser?.name || 'Supervisor',
+      author_role: currentUser?.role || 'supervisor',
+      slot_time: slotLabel,
+      acknowledged: true,
+    };
+    setSupervisorEvents(prev => [newEvent, ...prev]);
+    showNotice(
+      isCurrentlyUnlocked ? `Slot ${slotLabel} Hrs dikunci semula.` : `Pelepasan kecemasan: Slot ${slotLabel} Hrs dibuka untuk operator.`,
+      isCurrentlyUnlocked ? 'info' : 'info'
+    );
+  };
+
+  const handleSetSimulatedHour = (hour: number | null) => {
+    setSimulatedHour(hour);
+    if (hour !== null) {
+      showNotice(`Simulasi masa aktif ditetapkan ke jam ${hour.toString().padStart(2, '0')}:00 untuk menguji peraturan kunci slot.`, 'info');
+    } else {
+      showNotice("Masa kembali ke mod masa nyata (Live Clock).", 'success');
+    }
   };
 
   // Update Header Parameter
@@ -425,6 +537,7 @@ export default function BleachingProcessLogApp() {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         onLogout={handleLogout}
+        clockState={clockState}
       />
 
       {/* Notification Toast with 3D Depth */}
@@ -470,12 +583,22 @@ export default function BleachingProcessLogApp() {
                 onUpdateHeader={handleUpdateHeader}
               />
 
+              {/* Realtime Clock & Timeline Slot Locking Banner */}
+              <RealtimeTimelineBanner
+                clockState={clockState}
+                simulatedHour={simulatedHour}
+                onSetSimulatedHour={handleSetSimulatedHour}
+                isSupervisor={currentUser.role === 'supervisor' || currentUser.role === 'admin'}
+              />
+
               {/* 24-Hour Timeline Slot Rail */}
               <SlotRail
                 entries={sheet.entries}
                 selectedSlotIndex={selectedSlotIndex}
                 onSelectSlot={handleSelectSlot}
                 activeCurrentHourIndex={currentSlotIndex}
+                supervisorUnlockedSlots={supervisorUnlockedSlots}
+                userRole={currentUser?.role}
               />
 
               {/* Full 24-Slot Paper-Like Grid */}
@@ -486,27 +609,34 @@ export default function BleachingProcessLogApp() {
                 isLocked={isSheetLocked}
                 onSelectSlot={handleSelectSlot}
                 selectedSlotIndex={selectedSlotIndex}
+                activeCurrentHourIndex={currentSlotIndex}
+                supervisorUnlockedSlots={supervisorUnlockedSlots}
+                userRole={currentUser?.role}
               />
             </>
           )}
 
-          {/* Tab 2: QC Management Tab View */}
+          {/* Tab 2: QC Management Tab View (ALUR 2) */}
           {activeTab === 'qc' && (
             <QCManagementView
               currentUser={currentUser}
               isDark={isDark}
+              reports={qcReports}
+              onUpdateReport={handleUpdateQcReport}
+              onCreateReport={handleCreateQcReport}
             />
           )}
 
-          {/* Tab 3: Reports & Analytics Tab View */}
+          {/* Tab 3: Reports & Analytics Tab View (ALUR 3) */}
           {activeTab === 'reports' && (
             <ReportsView
               sheet={sheet}
               currentUser={currentUser}
+              qcReports={qcReports}
             />
           )}
 
-          {/* Tab 4: Supervisor Monitoring View */}
+          {/* Tab 4: Supervisor Monitoring View (ALUR 4) */}
           {activeTab === 'supervisor' && (
             <SupervisorMonitoringView
               currentUser={currentUser}
@@ -515,6 +645,10 @@ export default function BleachingProcessLogApp() {
               onAcknowledgeEvent={handleAcknowledgeEvent}
               onOpenReviewModal={() => setIsReviewOpen(true)}
               onOpenPdfModal={() => setIsPdfOpen(true)}
+              qcReports={qcReports}
+              onUnlockSlot={handleToggleSupervisorOverride}
+              supervisorUnlockedSlots={supervisorUnlockedSlots}
+              activeCurrentHourIndex={currentSlotIndex}
             />
           )}
 
@@ -546,6 +680,8 @@ export default function BleachingProcessLogApp() {
           }}
           isFirstSlot={selectedSlotIndex === 0}
           isLastSlot={selectedSlotIndex === 23}
+          activeCurrentHourIndex={currentSlotIndex}
+          isSupervisorOverride={supervisorUnlockedSlots.includes(selectedSlotIndex)}
         />
       )}
 
@@ -572,7 +708,7 @@ export default function BleachingProcessLogApp() {
         onTabChange={setActiveTab}
         onOpenPdf={() => setIsPdfOpen(true)}
         sheetStatus={sheet.status}
-        qcSampleCount={54}
+        qcSampleCount={qcReports.length}
         currentUser={currentUser}
         unacknowledgedAlertsCount={unacknowledgedAlertsCount}
       />

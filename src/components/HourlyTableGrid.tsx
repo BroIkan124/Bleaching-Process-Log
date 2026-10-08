@@ -8,8 +8,12 @@ import {
   Edit3, 
   Eye, 
   Clock, 
-  CheckCircle2
+  CheckCircle2,
+  Lock,
+  Unlock,
+  Sparkles
 } from "lucide-react";
+import { evaluateSlotAccess } from "@/lib/realtimeTimeline";
 
 interface HourlyTableGridProps {
   entries: LogEntry[];
@@ -18,6 +22,9 @@ interface HourlyTableGridProps {
   isLocked: boolean;
   onSelectSlot: (slotIndex: number) => void;
   selectedSlotIndex: number;
+  activeCurrentHourIndex: number;
+  supervisorUnlockedSlots?: number[];
+  userRole?: string;
 }
 
 export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
@@ -27,6 +34,9 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
   isLocked,
   onSelectSlot,
   selectedSlotIndex,
+  activeCurrentHourIndex,
+  supervisorUnlockedSlots = [],
+  userRole,
 }) => {
   return (
     <div className="glass-panel rounded-2xl overflow-hidden mb-8 shadow-[0_8px_32px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_48px_rgba(0,0,0,0.4)]">
@@ -41,17 +51,28 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
               Bleaching Process Log Sheet (RF-FR-003 Rev 03)
             </h2>
             <p className="text-[11px] text-zinc-500 font-medium">
-              Complete 24-Hour Continuous Telemetry · Click any row for fast slot entry &amp; parameter validation
+              Complete 24-Hour Continuous Telemetry · Akses Pengisian Berdasarkan Waktu Nyata Operasi
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 text-xs font-medium text-zinc-500">
+        <div className="flex items-center gap-3 text-xs font-medium text-zinc-500 flex-wrap">
+          <span className="flex items-center gap-1.5">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+            </span>
+            <span className="font-bold text-amber-600 dark:text-amber-400">Slot Semasa (Dibuka)</span>
+          </span>
+          <span className="flex items-center gap-1.5">
+            <Lock className="w-3 h-3 text-zinc-400" />
+            <span className="font-medium text-zinc-600 dark:text-zinc-400">Terkunci (Lepas / Akan Datang)</span>
+          </span>
           <span className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-xs" />
             <span className="font-medium text-zinc-700 dark:text-zinc-300">In-Spec</span>
           </span>
-          <span className="flex items-center gap-1.5 ml-1">
+          <span className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-rose-500 shadow-xs" />
             <span className="font-medium text-zinc-700 dark:text-zinc-300">Out of Spec</span>
           </span>
@@ -64,7 +85,7 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
           <thead>
             {/* Unified Sticky Glassmorphic Header */}
             <tr className="sticky top-0 z-20 backdrop-blur-xl bg-zinc-100/95 dark:bg-[#0E1626]/95 text-zinc-700 dark:text-zinc-300 font-bold border-b border-zinc-200 dark:border-zinc-800 text-[11px] uppercase tracking-wider select-none shadow-xs">
-              <th className="py-3 px-3 text-center border-r border-zinc-200 dark:border-zinc-800 w-20">Time (Hrs)</th>
+              <th className="py-3 px-3 text-center border-r border-zinc-200 dark:border-zinc-800 w-24">Time (Hrs)</th>
               <th className="py-3 px-3 text-right border-r border-zinc-200 dark:border-zinc-800">Flow (MT/HR)</th>
               <th className="py-3 px-2 text-center border-r border-zinc-200 dark:border-zinc-800">Acid Dose</th>
               <th className="py-3 px-3 text-right border-r border-zinc-200 dark:border-zinc-800 text-amber-600 dark:text-amber-400">
@@ -77,16 +98,20 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
               </th>
               <th className="py-3 px-2 text-center border-r border-zinc-200 dark:border-zinc-800">Niagara</th>
               <th className="py-3 px-2 text-center border-r border-zinc-200 dark:border-zinc-800">Filter Cut</th>
-              <th className="py-3 px-2 text-right border-r border-zinc-200 dark:border-zinc-800">FFA (%)</th>
-              <th className="py-3 px-2 text-right border-r border-zinc-200 dark:border-zinc-800">Red (R)</th>
+              <th className="py-3 px-2 text-right border-r border-zinc-200 dark:border-zinc-800 text-sky-600 dark:text-sky-400">FFA (%)</th>
+              <th className="py-3 px-2 text-right border-r border-zinc-200 dark:border-zinc-800 text-amber-600 dark:text-amber-400">Red (R)</th>
               <th className="py-3 px-2 text-right border-r border-zinc-200 dark:border-zinc-800">Yel (Y)</th>
               <th className="py-3 px-3 border-r border-zinc-200 dark:border-zinc-800 min-w-[200px]">Remarks</th>
-              <th className="py-3 px-2 text-center w-24">Action</th>
+              <th className="py-3 px-3 text-center w-32">Status / Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/80 font-sans">
             {entries.map((entry, idx) => {
               const isSelected = selectedSlotIndex === idx;
+              const isCurrent = activeCurrentHourIndex === idx;
+              const isSupervisorOverride = supervisorUnlockedSlots.includes(idx);
+              const access = evaluateSlotAccess(idx, activeCurrentHourIndex, isSupervisorOverride, currentUser.role);
+
               const hasOutOfSpec = entry.out_of_spec && entry.out_of_spec.length > 0;
               const isTempOutOfSpec = typeof entry.he_temp_c === 'number' && (entry.he_temp_c < 70 || entry.he_temp_c > 115);
               const isVacOutOfSpec = typeof entry.vacuum_mmhg === 'number' && entry.vacuum_mmhg < 600;
@@ -103,129 +128,109 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
                   {isShift1Start && (
                     <tr className="bg-amber-500/[0.06] dark:bg-amber-500/[0.08] text-zinc-800 dark:text-zinc-200 border-y border-amber-500/20 select-none shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
                       <td colSpan={14} className="py-2 px-4 font-bold text-[11px] tracking-wide">
-                        <span className="text-amber-600 dark:text-amber-400 font-mono font-bold">SHIFT 1 (0800 - 1500 HRS)</span> - On-Duty Technician: <strong className="text-zinc-900 dark:text-white">Ahmad Razif</strong>
+                        <span className="text-amber-600 dark:text-amber-400 font-mono font-bold">SHIFT 1 (0800 - 1500 HRS)</span> - On-Duty Operations
                       </td>
                     </tr>
                   )}
                   {isShift2Start && (
                     <tr className="bg-sky-500/[0.06] dark:bg-sky-500/[0.08] text-zinc-800 dark:text-zinc-200 border-y border-sky-500/20 select-none shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
                       <td colSpan={14} className="py-2 px-4 font-bold text-[11px] tracking-wide">
-                        <span className="text-sky-600 dark:text-sky-400 font-mono font-bold">SHIFT 2 (1600 - 2300 HRS)</span> - On-Duty Technician: <strong className="text-zinc-900 dark:text-white">Mohd Danial</strong>
+                        <span className="text-sky-600 dark:text-sky-400 font-mono font-bold">SHIFT 2 (1600 - 2300 HRS)</span> - On-Duty Operations
                       </td>
                     </tr>
                   )}
                   {isShift3Start && (
                     <tr className="bg-purple-500/[0.06] dark:bg-purple-500/[0.08] text-zinc-800 dark:text-zinc-200 border-y border-purple-500/20 select-none shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
                       <td colSpan={14} className="py-2 px-4 font-bold text-[11px] tracking-wide">
-                        <span className="text-purple-600 dark:text-purple-400 font-mono font-bold">SHIFT 3 (2400 - 0700 HRS)</span> - On-Duty Technician: <strong className="text-zinc-900 dark:text-white">K. Subramaniam</strong>
+                        <span className="text-purple-600 dark:text-purple-400 font-mono font-bold">SHIFT 3 (2400 - 0700 HRS)</span> - On-Duty Operations
                       </td>
                     </tr>
                   )}
 
-                  {/* Main Hourly Slot Row */}
                   <tr
                     onClick={() => onSelectSlot(idx)}
-                    className={`cursor-pointer transition-colors select-none ${
-                      isSelected
-                        ? "bg-amber-500/15 dark:bg-amber-500/20 border-l-4 border-l-amber-500 font-semibold shadow-[inset_4px_0_0_rgba(245,158,11,1),0_2px_12px_rgba(245,158,11,0.1)]"
-                        : hasOutOfSpec
-                        ? "bg-rose-50/70 dark:bg-rose-950/30 hover:bg-rose-100/70 dark:hover:bg-rose-950/50 border-l-4 border-l-transparent shadow-[inset_4px_0_0_rgba(239,68,68,1),0_0_12px_rgba(239,68,68,0.2)]"
-                        : isSaved
-                        ? "bg-white/80 dark:bg-[#0D1424]/80 hover:bg-zinc-50 dark:hover:bg-white/[0.03] border-l-4 border-l-transparent"
-                        : "bg-zinc-50/50 dark:bg-zinc-900/30 hover:bg-zinc-100/70 dark:hover:bg-white/[0.02] border-l-4 border-l-transparent"
+                    className={`transition-colors duration-150 cursor-pointer select-none ${
+                      isCurrent
+                        ? "bg-amber-500/[0.08] dark:bg-amber-500/[0.12] font-semibold"
+                        : isSelected
+                          ? "bg-blue-50/80 dark:bg-blue-950/20"
+                          : access.status === 'future_locked'
+                            ? "opacity-60 bg-zinc-50/40 dark:bg-zinc-900/20 hover:opacity-100"
+                            : "hover:bg-zinc-50/80 dark:hover:bg-white/[0.03]"
                     }`}
                   >
-                    {/* Time */}
-                    <td className="py-2.5 px-3 text-center border-r border-zinc-200/70 dark:border-zinc-800/70 font-mono font-bold text-zinc-900 dark:text-zinc-100">
+                    {/* Time Label */}
+                    <td className="py-2.5 px-3 text-center border-r border-zinc-200/70 dark:border-zinc-800/70 font-mono font-extrabold text-xs">
                       <div className="flex items-center justify-center gap-1.5">
+                        {isCurrent && (
+                          <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                          </span>
+                        )}
                         <span>{entry.time_label}</span>
-                        {hasOutOfSpec && <AlertTriangle className="w-3.5 h-3.5 text-rose-500 shrink-0 animate-pulse" />}
                       </div>
                     </td>
 
-                    {/* Flowrate */}
-                    <td className="py-2.5 px-3 text-right border-r border-zinc-200/70 dark:border-zinc-800/70 font-mono tabular-nums text-zinc-800 dark:text-zinc-200 font-semibold">
+                    {/* Flow */}
+                    <td className="py-2.5 px-3 text-right border-r border-zinc-200/70 dark:border-zinc-800/70 font-mono tabular-nums font-semibold">
                       {typeof entry.flowrate_set === 'number' ? entry.flowrate_set.toFixed(1) : "-"}
                     </td>
 
-                    {/* Acid */}
+                    {/* Acid Dose */}
                     <td className="py-2.5 px-2 text-center border-r border-zinc-200/70 dark:border-zinc-800/70">
                       {entry.acid_dosage_ok ? (
-                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-md bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 font-bold text-xs shadow-2xs">
-                          √
-                        </span>
+                        <Check className="w-3.5 h-3.5 text-emerald-500 mx-auto stroke-[2.5]" />
                       ) : (
-                        <span className="text-zinc-300 dark:text-zinc-700">-</span>
+                        <span className="text-zinc-400 dark:text-zinc-600">-</span>
                       )}
                     </td>
 
                     {/* HE Temp */}
                     <td className={`py-2.5 px-3 text-right border-r border-zinc-200/70 dark:border-zinc-800/70 font-mono tabular-nums font-bold ${
-                      isTempOutOfSpec
-                        ? "bg-rose-500/20 text-rose-700 dark:text-rose-300 ring-1 ring-inset ring-rose-500/40"
-                        : "text-zinc-900 dark:text-zinc-100"
+                      isTempOutOfSpec ? "text-rose-600 dark:text-rose-400 bg-rose-500/10" : "text-zinc-900 dark:text-zinc-100"
                     }`}>
-                      <div className="flex items-center justify-end gap-1">
-                        {isTempOutOfSpec && <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping inline-block" />}
-                        <span>{typeof entry.he_temp_c === 'number' ? `${entry.he_temp_c.toFixed(1)}°` : "-"}</span>
-                      </div>
+                      {typeof entry.he_temp_c === 'number' ? entry.he_temp_c.toFixed(1) : "-"}
                     </td>
 
-                    {/* Earth */}
+                    {/* BE Dose */}
                     <td className="py-2.5 px-2 text-center border-r border-zinc-200/70 dark:border-zinc-800/70">
                       {entry.earth_dosage_ok ? (
-                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-md bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 font-bold text-xs shadow-2xs">
-                          √
-                        </span>
+                        <Check className="w-3.5 h-3.5 text-emerald-500 mx-auto stroke-[2.5]" />
                       ) : (
-                        <span className="text-zinc-300 dark:text-zinc-700">-</span>
+                        <span className="text-zinc-400 dark:text-zinc-600">-</span>
                       )}
                     </td>
 
                     {/* Level */}
-                    <td className="py-2.5 px-2 text-center border-r border-zinc-200/70 dark:border-zinc-800/70 font-bold">
-                      {entry.bleacher_level ? (
-                        <span className={`px-2 py-0.5 rounded text-[11px] shadow-2xs font-mono font-bold ${
-                          entry.bleacher_level === 'H'
-                            ? "bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800"
-                            : "bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-700"
-                        }`}>
-                          {entry.bleacher_level}
-                        </span>
-                      ) : (
-                        <span className="text-zinc-300 dark:text-zinc-700">-</span>
-                      )}
+                    <td className="py-2.5 px-2 text-center border-r border-zinc-200/70 dark:border-zinc-800/70 font-mono font-semibold">
+                      {entry.bleacher_level || "-"}
                     </td>
 
                     {/* Vacuum */}
                     <td className={`py-2.5 px-3 text-right border-r border-zinc-200/70 dark:border-zinc-800/70 font-mono tabular-nums font-bold ${
-                      isVacOutOfSpec
-                        ? "bg-rose-500/20 text-rose-700 dark:text-rose-300 ring-1 ring-inset ring-rose-500/40"
-                        : "text-zinc-900 dark:text-zinc-100"
+                      isVacOutOfSpec ? "text-rose-600 dark:text-rose-400 bg-rose-500/10" : "text-zinc-900 dark:text-zinc-100"
                     }`}>
-                      <div className="flex items-center justify-end gap-1">
-                        {isVacOutOfSpec && <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping inline-block" />}
-                        <span>{typeof entry.vacuum_mmhg === 'number' ? entry.vacuum_mmhg.toFixed(1) : "-"}</span>
-                      </div>
+                      {typeof entry.vacuum_mmhg === 'number' ? entry.vacuum_mmhg : "-"}
                     </td>
 
-                    {/* Filter */}
-                    <td className="py-2.5 px-2 text-center border-r border-zinc-200/70 dark:border-zinc-800/70 text-zinc-700 dark:text-zinc-300 font-medium font-mono text-[11px]">
+                    {/* Niagara */}
+                    <td className="py-2.5 px-2 text-center border-r border-zinc-200/70 dark:border-zinc-800/70 font-mono font-medium">
                       {entry.niagara_filter || "-"}
                     </td>
 
-                    {/* Change Time */}
-                    <td className="py-2.5 px-2 text-center border-r border-zinc-200/70 dark:border-zinc-800/70 font-mono text-zinc-500 text-[11px]">
+                    {/* Filter Cut */}
+                    <td className="py-2.5 px-2 text-center border-r border-zinc-200/70 dark:border-zinc-800/70 font-mono text-[11px]">
                       {entry.filter_change_time || "-"}
                     </td>
 
                     {/* FFA */}
-                    <td className="py-2.5 px-2 text-right border-r border-zinc-200/70 dark:border-zinc-800/70 font-mono tabular-nums font-semibold">
+                    <td className="py-2.5 px-2 text-right border-r border-zinc-200/70 dark:border-zinc-800/70 font-mono tabular-nums font-semibold text-sky-600 dark:text-sky-400">
                       {typeof entry.ffa_pct === 'number' ? entry.ffa_pct.toFixed(3) : "-"}
                     </td>
 
                     {/* Red */}
-                    <td className="py-2.5 px-2 text-right border-r border-zinc-200/70 dark:border-zinc-800/70 font-mono tabular-nums font-semibold">
+                    <td className="py-2.5 px-2 text-right border-r border-zinc-200/70 dark:border-zinc-800/70 font-mono tabular-nums font-bold text-amber-600 dark:text-amber-400">
                       {typeof entry.colour_r === 'number' ? entry.colour_r.toFixed(1) : "-"}
                     </td>
 
@@ -236,25 +241,55 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
 
                     {/* Remarks */}
                     <td className="py-2.5 px-3 border-r border-zinc-200/70 dark:border-zinc-800/70 text-zinc-600 dark:text-zinc-300 truncate max-w-[220px]">
-                      {entry.remarks || <span className="text-zinc-400 dark:text-zinc-600 italic">No remarks</span>}
+                      {entry.remarks || <span className="text-zinc-400 dark:text-zinc-600 italic">Tiada catatan</span>}
                     </td>
 
-                    {/* Actions */}
-                    <td className="py-2.5 px-2 text-center">
+                    {/* Actions / Real-time Status */}
+                    <td className="py-2.5 px-3 text-center">
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           onSelectSlot(idx);
                         }}
-                        className="btn-tactile table-action-btn px-3 py-1 rounded-lg text-xs font-bold border border-zinc-200/90 dark:border-white/10 bg-white/90 dark:bg-white/[0.06] hover:bg-amber-500 hover:text-white hover:border-amber-500 dark:hover:bg-amber-500 dark:hover:border-amber-500 dark:hover:text-white shadow-2xs cursor-pointer inline-flex items-center gap-1.5 group"
+                        className={`btn-tactile table-action-btn px-2.5 py-1 rounded-lg text-xs font-bold border transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-2xs ${
+                          isCurrent
+                            ? "bg-amber-500 text-white border-amber-500 shadow-[0_2px_12px_rgba(245,158,11,0.4)] hover:bg-amber-600"
+                            : isSupervisorOverride
+                              ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500 hover:text-white"
+                              : isSaved
+                                ? "bg-white/90 dark:bg-white/[0.06] text-zinc-700 dark:text-zinc-300 border-zinc-200/90 dark:border-white/10 hover:border-zinc-400"
+                                : access.status === 'past_locked'
+                                  ? "bg-zinc-100 dark:bg-zinc-900 text-zinc-500 border-zinc-300 dark:border-zinc-800"
+                                  : "bg-zinc-50 dark:bg-zinc-900 text-zinc-400 border-dashed border-zinc-300 dark:border-zinc-800"
+                        }`}
                       >
-                        {isSaved ? (
-                          <Eye className="w-3.5 h-3.5 text-zinc-400 group-hover:text-white transition-colors" />
+                        {isCurrent ? (
+                          <>
+                            <Edit3 className="w-3 h-3 text-white" />
+                            <span>Log (Buka)</span>
+                          </>
+                        ) : isSupervisorOverride ? (
+                          <>
+                            <Unlock className="w-3 h-3 text-emerald-500" />
+                            <span>Override</span>
+                          </>
+                        ) : isSaved ? (
+                          <>
+                            <Eye className="w-3 h-3 text-zinc-400" />
+                            <span>Semak</span>
+                          </>
+                        ) : access.status === 'past_locked' ? (
+                          <>
+                            <Lock className="w-3 h-3 text-zinc-400" />
+                            <span>Terkunci</span>
+                          </>
                         ) : (
-                          <Edit3 className="w-3.5 h-3.5 text-amber-500 group-hover:text-white transition-colors" />
+                          <>
+                            <Clock className="w-3 h-3 text-zinc-400" />
+                            <span>Terkunci</span>
+                          </>
                         )}
-                        <span>{isSaved ? "Review" : "Log"}</span>
                       </button>
                     </td>
                   </tr>

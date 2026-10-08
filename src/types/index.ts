@@ -19,7 +19,7 @@ export interface UserProfile {
 export interface SupervisorUpdateEvent {
   id: string;
   timestamp: string;
-  source: 'Bleaching Log' | 'QC Lab' | 'Operating Parameters' | 'System';
+  source: 'Bleaching Log' | 'QC Lab' | 'Operating Parameters' | 'Supervisor Monitoring' | 'System';
   title: string;
   description: string;
   severity: 'info' | 'warning' | 'alert' | 'success';

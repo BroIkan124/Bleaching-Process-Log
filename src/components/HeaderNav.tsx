@@ -2,6 +2,7 @@
 
 import React from "react";
 import { UserProfile, SheetStatus, DashboardTab } from "@/types";
+import { RealtimeClockState } from "@/lib/realtimeTimeline";
 import { 
   Building2, 
   Clock, 
@@ -31,6 +32,7 @@ interface HeaderNavProps {
   onTabChange?: (tab: DashboardTab) => void;
   qcSampleCount?: number;
   onLogout: () => void;
+  clockState?: RealtimeClockState;
 }
 
 export const HeaderNav: React.FC<HeaderNavProps> = ({
@@ -45,6 +47,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   currentShift,
   activeTab,
   onLogout,
+  clockState,
 }) => {
   const getStatusBadge = () => {
     switch (sheetStatus) {
@@ -131,15 +134,43 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
           </div>
         </div>
 
-        {/* Center: Shift & Telemetry Badge */}
+        {/* Center: Shift, Realtime Clock & Active Slot Telemetry Badge */}
         <div className="hidden md:flex items-center gap-3 bg-zinc-100/95 dark:bg-zinc-900/90 shadow-inner px-3.5 py-1.5 rounded-xl border border-zinc-200/80 dark:border-zinc-700/60 text-xs">
-          <div className="flex items-center gap-2 font-medium">
-            <Clock className="w-3.5 h-3.5 text-amber-500" />
-            <span className="text-zinc-500 dark:text-zinc-400">Shift:</span>
-            <span className="font-bold text-zinc-900 dark:text-zinc-100 font-mono tracking-tight">
-              Shift {currentShift} {currentShift === 1 ? '(0800-1500)' : currentShift === 2 ? '(1600-2300)' : '(2400-0700)'}
-            </span>
-          </div>
+          {clockState ? (
+            <>
+              {/* Live Real-time Clock */}
+              <div className="flex items-center gap-2 font-medium">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                </span>
+                <span className="text-zinc-500 dark:text-zinc-400">Masa:</span>
+                <span className="font-bold text-zinc-900 dark:text-zinc-100 font-mono tracking-tight tabular-nums">
+                  {clockState.formattedTime}
+                </span>
+              </div>
+
+              <div className="h-3.5 w-[1px] bg-zinc-300 dark:bg-zinc-700" />
+
+              {/* Active Slot Badge */}
+              <div className="flex items-center gap-1.5">
+                <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold font-mono bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                  Slot {clockState.slotTimeLabel} Aktif
+                </span>
+                <span className="text-[11px] text-zinc-500 font-mono hidden lg:inline">
+                  ({clockState.shiftLabel})
+                </span>
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center gap-2 font-medium">
+              <Clock className="w-3.5 h-3.5 text-amber-500" />
+              <span className="text-zinc-500 dark:text-zinc-400">Shift:</span>
+              <span className="font-bold text-zinc-900 dark:text-zinc-100 font-mono tracking-tight">
+                Shift {currentShift} {currentShift === 1 ? '(0800-1500)' : currentShift === 2 ? '(1600-2300)' : '(2400-0700)'}
+              </span>
+            </div>
+          )}
 
           <div className="h-3.5 w-[1px] bg-zinc-300 dark:bg-zinc-700" />
 

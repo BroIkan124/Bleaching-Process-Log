@@ -31,21 +31,29 @@ import { RadioSelect } from "./RadioSelect";
 interface QCManagementViewProps {
   currentUser: UserProfile;
   isDark: boolean;
+  reports?: SampleReport[];
+  onUpdateReport?: (report: SampleReport) => void;
+  onCreateReport?: (report: SampleReport) => void;
 }
 
 export const QCManagementView: React.FC<QCManagementViewProps> = ({
   currentUser,
   isDark,
+  reports: externalReports,
+  onUpdateReport,
+  onCreateReport,
 }) => {
   const [isClient, setIsClient] = useState(false);
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  // Load sample reports from the real snapshot data
-  const [reports, setReports] = useState<SampleReport[]>(() => {
+  // Load sample reports from external props or fallback snapshot
+  const [internalReports, setInternalReports] = useState<SampleReport[]>(() => {
     return (QC_SNAPSHOT_DATA.samples as any[]) || [];
   });
+
+  const reports = externalReports || internalReports;
 
   // Search & Filter state
   const [searchQuery, setSearchQuery] = useState("");
@@ -124,7 +132,10 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
 
   // Handle Save Edited Test Results
   const handleSaveResults = (updatedReport: SampleReport) => {
-    setReports(prev => prev.map(r => r.id === updatedReport.id ? updatedReport : r));
+    if (onUpdateReport) {
+      onUpdateReport(updatedReport);
+    }
+    setInternalReports(prev => prev.map(r => r.id === updatedReport.id ? updatedReport : r));
     setSelectedReport(updatedReport);
     handleCloseEditor();
     syncQcSampleToInsForge(updatedReport, currentUser);
@@ -172,7 +183,10 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
       },
     };
 
-    setReports([created, ...reports]);
+    if (onCreateReport) {
+      onCreateReport(created);
+    }
+    setInternalReports([created, ...reports]);
     handleCloseNewSample();
     syncQcSampleToInsForge(created, currentUser);
     logActivityToInsForge(currentUser, "REGISTER_NEW_SAMPLE", "SAMPLE_REPORT", created.id, {

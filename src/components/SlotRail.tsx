@@ -3,13 +3,16 @@
 import React from "react";
 import { LogEntry } from "@/types";
 import { SHIFTS } from "@/lib/constants";
-import { AlertTriangle, Clock } from "lucide-react";
+import { AlertTriangle, Clock, Lock, Unlock, Check, Sparkles } from "lucide-react";
+import { evaluateSlotAccess } from "@/lib/realtimeTimeline";
 
 interface SlotRailProps {
   entries: LogEntry[];
   selectedSlotIndex: number;
   onSelectSlot: (index: number) => void;
   activeCurrentHourIndex: number;
+  supervisorUnlockedSlots?: number[];
+  userRole?: string;
 }
 
 export const SlotRail: React.FC<SlotRailProps> = ({
@@ -17,6 +20,8 @@ export const SlotRail: React.FC<SlotRailProps> = ({
   selectedSlotIndex,
   onSelectSlot,
   activeCurrentHourIndex,
+  supervisorUnlockedSlots = [],
+  userRole,
 }) => {
   return (
     <div className="glass-panel p-4 sm:p-5 rounded-2xl mb-5 shadow-[0_8px_32px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_48px_rgba(0,0,0,0.4)]">
@@ -31,7 +36,7 @@ export const SlotRail: React.FC<SlotRailProps> = ({
               24-Hour Continuous Plant Timeline Rail
             </span>
             <span className="text-[11px] text-zinc-500 font-mono hidden md:inline mt-0.5 block leading-none">
-              Form RF-FR-003 · Click any hourly slot to log or review parameters
+              Form RF-FR-003 · Pengisian Terkunci Automatik Mengikut Waktu Nyata Operasi
             </span>
           </div>
         </div>
@@ -39,23 +44,23 @@ export const SlotRail: React.FC<SlotRailProps> = ({
         {/* Legend */}
         <div className="flex items-center gap-3 text-[11px] font-medium text-zinc-500 flex-wrap">
           <div className="flex items-center gap-1.5">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
+            </span>
+            <span className="text-amber-600 dark:text-amber-400 font-bold">Slot Semasa (Dibuka)</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Lock className="w-3 h-3 text-zinc-400" />
+            <span>Terkunci (Lepas / Akan Datang)</span>
+          </div>
+          <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-xs" />
             <span>In-Spec</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-rose-500 shadow-xs" />
             <span>Out of Spec</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-zinc-300 dark:bg-zinc-700" />
-            <span>Empty</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
-            </span>
-            <span className="text-amber-600 dark:text-amber-400 font-bold">Current Hour</span>
           </div>
         </div>
       </div>
@@ -86,6 +91,9 @@ export const SlotRail: React.FC<SlotRailProps> = ({
 
                   const isSelected = selectedSlotIndex === slotIdx;
                   const isCurrent = activeCurrentHourIndex === slotIdx;
+                  const isSupervisorOverride = supervisorUnlockedSlots.includes(slotIdx);
+                  const access = evaluateSlotAccess(slotIdx, activeCurrentHourIndex, isSupervisorOverride, userRole);
+
                   const hasOutOfSpec = entry.out_of_spec && entry.out_of_spec.length > 0;
                   const isDone = entry.is_saved;
 
@@ -95,10 +103,18 @@ export const SlotRail: React.FC<SlotRailProps> = ({
                     stateClass = "bg-rose-50/90 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 font-bold shadow-[0_0_16px_rgba(239,68,68,0.25)]";
                   } else if (isDone) {
                     stateClass = "bg-emerald-50/90 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 font-bold shadow-[0_0_14px_rgba(16,185,129,0.2)]";
+                  } else if (access.status === 'future_locked') {
+                    stateClass = "bg-zinc-100/60 dark:bg-zinc-900/40 border-dashed border-zinc-300/80 dark:border-zinc-800 text-zinc-400 dark:text-zinc-500 opacity-60";
+                  } else if (access.status === 'past_locked' && !isDone) {
+                    stateClass = "bg-zinc-100/90 dark:bg-zinc-900/80 border-zinc-300 dark:border-zinc-800 text-zinc-500 opacity-70";
                   }
 
-                  if (isSelected) {
-                    stateClass = "ring-2 ring-amber-500 shadow-[0_4px_24px_rgba(245,158,11,0.4),0_0_12px_rgba(245,158,11,0.2)] z-10 font-extrabold bg-amber-500/15 dark:bg-amber-500/25 border-amber-500 text-zinc-900 dark:text-amber-300";
+                  if (isCurrent) {
+                    stateClass = "ring-2 ring-amber-500 shadow-[0_4px_24px_rgba(245,158,11,0.5),0_0_12px_rgba(245,158,11,0.3)] z-10 font-extrabold bg-amber-500/15 dark:bg-amber-500/25 border-amber-500 text-zinc-900 dark:text-amber-300";
+                  }
+
+                  if (isSelected && !isCurrent) {
+                    stateClass += " ring-2 ring-[#2F81F7] border-[#2F81F7] z-10";
                   }
 
                   return (
@@ -106,23 +122,38 @@ export const SlotRail: React.FC<SlotRailProps> = ({
                       key={slotIdx}
                       type="button"
                       onClick={() => onSelectSlot(slotIdx)}
-                      className={`slot-tile-btn h-11 rounded-lg flex flex-col items-center justify-center p-0.5 border text-center select-none relative cursor-pointer ${stateClass}`}
-                      title={`Slot ${entry.time_label} (${shift.name}) - ${hasOutOfSpec ? 'Out of Spec Alert' : isDone ? 'Saved' : 'Not Logged'}`}
+                      className={`slot-tile-btn h-12 rounded-lg flex flex-col items-center justify-center p-0.5 border text-center select-none relative cursor-pointer transition-all ${stateClass}`}
+                      title={`Slot ${entry.time_label} - ${access.badgeText} - ${access.reasonMessage}`}
                     >
                       <span className="font-mono text-xs leading-tight font-extrabold">
                         {entry.time_label}
                       </span>
 
-                      <div className="mt-0.5 h-3 flex items-center justify-center">
+                      <div className="mt-0.5 h-3 flex items-center justify-center gap-0.5">
                         {hasOutOfSpec ? (
                           <AlertTriangle className="w-2.5 h-2.5 text-rose-500" />
                         ) : isDone ? (
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-xs" />
+                          <Check className="w-2.5 h-2.5 text-emerald-500 stroke-[3]" />
+                        ) : access.status === 'past_locked' ? (
+                          <Lock className="w-2.5 h-2.5 text-zinc-400" />
+                        ) : access.status === 'future_locked' ? (
+                          <Clock className="w-2.5 h-2.5 text-zinc-400" />
                         ) : null}
                       </div>
 
+                      {/* Current Live Beacon */}
                       {isCurrent && (
-                        <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-amber-500 ring-2 ring-white dark:ring-zinc-900 animate-pulse shadow-xs" />
+                        <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500 shadow-xs"></span>
+                        </span>
+                      )}
+
+                      {/* Supervisor Override Tag */}
+                      {isSupervisorOverride && (
+                        <span className="absolute -bottom-1 -left-1 p-0.5 rounded-full bg-emerald-500 text-white shadow-2xs">
+                          <Unlock className="w-2 h-2" />
+                        </span>
                       )}
                     </button>
                   );

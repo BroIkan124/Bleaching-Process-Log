@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { LogSheet, UserProfile } from "@/types";
+import { LogSheet, UserProfile, SampleReport } from "@/types";
 import { 
   BarChart3, 
   Download, 
@@ -16,22 +16,30 @@ import {
   Clock,
   Sparkles,
   FlaskConical,
-  Filter
+  Filter,
+  Layers,
+  ArrowRight,
+  ShieldCheck
 } from "lucide-react";
 import { recordReportExport } from "@/lib/dbService";
 import { RadioSelect } from "./RadioSelect";
+import { calculatePipelineMetrics } from "@/lib/workflowPipeline";
 
 interface ReportsViewProps {
   sheet: LogSheet;
   currentUser: UserProfile;
+  qcReports?: SampleReport[];
 }
 
 export const ReportsView: React.FC<ReportsViewProps> = ({
   sheet,
   currentUser,
+  qcReports = [],
 }) => {
   const [timeRange, setTimeRange] = useState<string>("today");
   const [selectedShift, setSelectedShift] = useState<string>("ALL");
+
+  const pipelineMetrics = calculatePipelineMetrics(sheet, qcReports);
 
   // Safe entries access
   const entries = sheet?.entries || [];
@@ -225,6 +233,136 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
             <Printer className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
             <span>Print Report</span>
           </button>
+        </div>
+      </div>
+      
+      {/* 1.5 Integrated 4-Stage Workflow Pipeline Matrix */}
+      <div className="glass-panel p-5 rounded-2xl shadow-lg border border-amber-500/20 dark:border-amber-500/20 bg-gradient-to-br from-zinc-50 via-amber-500/[0.02] to-zinc-50 dark:from-[#0B101E] dark:via-[#11172A] dark:to-[#0B101E] relative overflow-hidden">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <div className="flex items-center gap-2.5">
+            <span className="p-2 rounded-xl bg-amber-500/15 text-amber-500 border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
+              <Sparkles className="w-4 h-4" />
+            </span>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm font-bold font-display text-zinc-900 dark:text-zinc-100">
+                  Alur Kerja Menyeluruh Kilang (End-to-End Pipeline)
+                </h2>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                  {pipelineMetrics.completionRatePercent}% Disegerakkan
+                </span>
+              </div>
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium mt-0.5">
+                Segerak berterusan: Bleaching Log &#10140; QC Lab &#10140; Reports &#10140; Supervisor Monitoring
+              </p>
+            </div>
+          </div>
+          
+          <div className="w-full sm:w-48 bg-zinc-200/80 dark:bg-zinc-800/80 h-2 rounded-full overflow-hidden p-0.5 shadow-inner">
+            <div 
+              className="h-full bg-gradient-to-r from-amber-500 via-sky-500 to-emerald-500 rounded-full transition-all duration-700 shadow-[0_0_10px_rgba(245,158,11,0.5)]"
+              style={{ width: `${pipelineMetrics.completionRatePercent}%` }}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {/* Stage 1 */}
+          <div className="p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/5 dark:bg-amber-500/10 transition-all hover:scale-[1.01]">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-amber-500/20 text-amber-500">
+                  <Layers className="w-4 h-4" />
+                </div>
+                <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 font-display">
+                  1. Bleaching Log
+                </span>
+              </div>
+              <span className="text-[10px] font-mono font-bold text-amber-600 dark:text-amber-400">
+                Peringkat 1
+              </span>
+            </div>
+            <div className="text-lg font-bold font-mono text-zinc-900 dark:text-zinc-100">
+              {pipelineMetrics.savedSlotsCount} / 24 <span className="text-xs font-normal text-zinc-500">Slot</span>
+            </div>
+            <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-1">
+              Data telemetri proses harian direkodkan operator.
+            </p>
+          </div>
+
+          {/* Stage 2 */}
+          <div className="p-3.5 rounded-xl border border-sky-500/30 bg-sky-500/5 dark:bg-sky-500/10 transition-all hover:scale-[1.01]">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-sky-500/20 text-sky-500">
+                  <FlaskConical className="w-4 h-4" />
+                </div>
+                <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 font-display">
+                  2. QC Lab (RF-FR-001)
+                </span>
+              </div>
+              <span className="text-[10px] font-mono font-bold text-sky-600 dark:text-sky-400">
+                Peringkat 2
+              </span>
+            </div>
+            <div className="text-lg font-bold font-mono text-zinc-900 dark:text-zinc-100">
+              {pipelineMetrics.qcDecidedSamples} <span className="text-xs font-normal text-zinc-500">Disahkan</span>
+              <span className="text-xs text-amber-500 ml-1.5">({pipelineMetrics.qcPendingSamples} Menunggu)</span>
+            </div>
+            <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-1">
+              Ujian makmal (Colour Red &amp; FFA %) disahkan ahli kimia.
+            </p>
+          </div>
+
+          {/* Stage 3 */}
+          <div className="p-3.5 rounded-xl border border-purple-500/30 bg-purple-500/5 dark:bg-purple-500/10 transition-all hover:scale-[1.01]">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-purple-500/20 text-purple-500">
+                  <BarChart3 className="w-4 h-4" />
+                </div>
+                <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 font-display">
+                  3. Reports &amp; Yield
+                </span>
+              </div>
+              <span className="text-[10px] font-mono font-bold text-purple-600 dark:text-purple-400">
+                Peringkat 3
+              </span>
+            </div>
+            <div className="text-lg font-bold font-mono text-zinc-900 dark:text-zinc-100">
+              {inSpecPercentage}% <span className="text-xs font-normal text-zinc-500">Kepatuhan</span>
+            </div>
+            <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-1">
+              Analisis tren kualiti, had spesifikasi &amp; eksport data.
+            </p>
+          </div>
+
+          {/* Stage 4 */}
+          <div className="p-3.5 rounded-xl border border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-500/10 transition-all hover:scale-[1.01]">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-500">
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
+                <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 font-display">
+                  4. Supervisor
+                </span>
+              </div>
+              <span className="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                Peringkat 4
+              </span>
+            </div>
+            <div className="text-lg font-bold font-mono text-zinc-900 dark:text-zinc-100">
+              {pipelineMetrics.supervisorSigned ? (
+                <span className="text-emerald-500">Diluluskan</span>
+              ) : (
+                <span className="text-amber-500">Audit Aktif</span>
+              )}
+            </div>
+            <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-1">
+              Kawalan kunci slot, semakan insiden &amp; tandatangan borang.
+            </p>
+          </div>
         </div>
       </div>
 

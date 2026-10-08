@@ -8,7 +8,8 @@ import {
   Printer, 
   BarChart3, 
   ShieldCheck, 
-  Users
+  Users,
+  Database
 } from "lucide-react";
 
 interface FloatingBottomDockProps {
@@ -113,7 +114,24 @@ export const FloatingBottomDock: React.FC<FloatingBottomDockProps> = ({
           <span className="whitespace-nowrap font-display">Reports</span>
         </button>
 
-        {/* Tab 4: Supervisor Hub */}
+        {/* Tab 4: Master Data */}
+        <button
+          type="button"
+          role="tab"
+          id="tab-masterdata"
+          aria-selected={activeTab === 'masterdata'}
+          onClick={() => onTabChange('masterdata')}
+          className={`dock-pill-btn group relative flex items-center gap-2 px-3 sm:px-3.5 py-2 rounded-xl text-xs font-bold select-none shrink-0 cursor-pointer ${
+            activeTab === 'masterdata'
+              ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-[0_4px_16px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.25)]'
+              : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100/80 dark:hover:bg-white/5'
+          }`}
+        >
+          <Database className="w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-110" />
+          <span className="whitespace-nowrap font-display">Master Data</span>
+        </button>
+
+        {/* Tab 5: Supervisor Hub */}
         {isSupervisorOrAdmin && (
           <button
             type="button"

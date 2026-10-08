@@ -90,81 +90,11 @@ export const MOCK_USERS: UserProfile[] = [
 
 export const INITIAL_SUPERVISOR_EVENTS: SupervisorUpdateEvent[] = [
   {
-    id: 'evt-01',
-    timestamp: '2026-10-01T12:05:00+08:00',
-    source: 'Bleaching Log',
-    title: 'Slot 1200 Hrs Successfully Saved',
-    description: 'Ahmad Razif recorded operational parameters for Slot 1200 (Flow 45.5 MT/HR, Vac 642 mmHg, HE Temp 106.0°C).',
-    severity: 'success',
-    author_name: 'Ahmad Razif',
-    author_role: 'technician',
-    shift: 1,
-    slot_time: '1200',
-    requires_acknowledgment: false,
-    acknowledged: true,
-  },
-  {
-    id: 'evt-02',
-    timestamp: '2026-10-01T11:12:00+08:00',
-    source: 'Bleaching Log',
-    title: 'ALERT: Vacuum Below 600 mmHg Threshold',
-    description: 'Slot 1100 Hrs recorded Vacuum at 585.0 mmHg (Minimum required: 600.0 mmHg). Note: Vacuum dropped momentarily during filter switch.',
-    severity: 'alert',
-    author_name: 'Ahmad Razif',
-    author_role: 'technician',
-    shift: 1,
-    slot_time: '1100',
-    requires_acknowledgment: true,
-    acknowledged: false,
-  },
-  {
-    id: 'evt-03',
-    timestamp: '2026-10-01T10:45:00+08:00',
-    source: 'QC Lab',
-    title: 'Lab Test Report Released (SAR-2026-000045)',
-    description: 'Ammar Wafiy approved sample Lot No LOT-202609-045 (RBD Palm Oil). Results: FFA 0.043%, Moisture 0.02%, In-Spec APPROVED.',
-    severity: 'success',
-    author_name: 'Ammar Wafiy',
-    author_role: 'chemist',
-    lot_no: 'LOT-202609-045',
-    requires_acknowledgment: false,
-    acknowledged: true,
-  },
-  {
-    id: 'evt-04',
-    timestamp: '2026-10-01T10:08:00+08:00',
-    source: 'Bleaching Log',
-    title: 'WARNING: HE Temp Exceeded Limit (116.5 °C)',
-    description: 'Slot 1000 Hrs recorded HE Temp at 116.5°C (Target limit: 70.0 - 115.0°C). Note: Steam valve adjusted due to high temp.',
-    severity: 'warning',
-    author_name: 'Ahmad Razif',
-    author_role: 'technician',
-    shift: 1,
-    slot_time: '1000',
-    requires_acknowledgment: true,
-    acknowledged: true,
-    acknowledged_by: 'Ir. Roslan Zakaria',
-    acknowledged_at: '2026-10-01T10:20:00+08:00',
-  },
-  {
-    id: 'evt-05',
-    timestamp: '2026-10-01T08:30:00+08:00',
-    source: 'Operating Parameters',
-    title: 'Plant Operating Parameters Configured',
-    description: 'Ir. Roslan Zakaria verified Citric Acid dosage (12.5 Mm / 0.06%) and Taiko Earth 1.25 setting (9,180 Kgs/Day).',
-    severity: 'info',
-    author_name: 'Ir. Roslan Zakaria',
-    author_role: 'supervisor',
-    shift: 1,
-    requires_acknowledgment: false,
-    acknowledged: true,
-  },
-  {
-    id: 'evt-06',
-    timestamp: '2026-10-01T08:00:00+08:00',
+    id: 'evt-init',
+    timestamp: new Date().toISOString(),
     source: 'System',
-    title: 'Shift 1 Commenced (0800 - 1500 Hrs)',
-    description: 'Bleaching Process Log Sheet RF-FR-003 Rev 03 opened for Line 1 by Ahmad Razif.',
+    title: 'Plant Process Logging System Online',
+    description: 'Bleaching Process Log RF-FR-003 initialized for real-time live production recording.',
     severity: 'info',
     author_name: 'Plant System',
     author_role: 'admin',
@@ -172,6 +102,132 @@ export const INITIAL_SUPERVISOR_EVENTS: SupervisorUpdateEvent[] = [
     requires_acknowledgment: false,
     acknowledged: true,
   }
+];
+
+export const DEFAULT_PRODUCT_SPECS = [
+  {
+    id: 'spec-prd-1',
+    productId: 'prd-1',
+    productName: 'RBD Palm Oil (Refined, Bleached & Deodorized)',
+    ffaMax: 0.05,
+    colourRedMax: 2.5,
+    colourYellowMax: 25.0,
+    moistureMax: 0.05,
+    peroxideMax: 1.0,
+    dobiMin: 2.8,
+    standardReference: 'PORAM / MS 814:2018',
+  },
+  {
+    id: 'spec-prd-2',
+    productId: 'prd-2',
+    productName: 'Bleached Palm Oil (BPO Feedstock)',
+    ffaMax: 0.10,
+    colourRedMax: 3.0,
+    colourYellowMax: 30.0,
+    moistureMax: 0.10,
+    peroxideMax: 2.0,
+    dobiMin: 2.5,
+    standardReference: 'Internal Refinery Standard RS-BPO-01',
+  },
+  {
+    id: 'spec-prd-3',
+    productId: 'prd-3',
+    productName: 'Refined Bleached Palm Olein (RBPO)',
+    ffaMax: 0.05,
+    colourRedMax: 2.5,
+    colourYellowMax: 25.0,
+    moistureMax: 0.05,
+    peroxideMax: 1.0,
+    dobiMin: 2.8,
+    standardReference: 'PORAM Edible Grade',
+  },
+  {
+    id: 'spec-prd-4',
+    productId: 'prd-4',
+    productName: 'Refined Bleached Palm Stearin (RBPS)',
+    ffaMax: 0.15,
+    colourRedMax: 3.5,
+    colourYellowMax: 35.0,
+    moistureMax: 0.15,
+    peroxideMax: 2.0,
+    dobiMin: 2.2,
+    standardReference: 'PORAM Industrial Grade',
+  },
+];
+
+export const DEFAULT_REJECTION_REASONS = [
+  {
+    id: 'QC-REAS-01',
+    code: 'FFA_EXCEED',
+    label: 'Free Fatty Acid (FFA) Exceeds Max Limit',
+    category: 'Quality' as const,
+    severity: 'Critical' as const,
+    defaultDisposition: 'rework' as const,
+    correctiveAction: 'Increase degumming acid dosage and bleacher vacuum dwell time',
+  },
+  {
+    id: 'QC-REAS-02',
+    code: 'COLOUR_RED_HIGH',
+    label: 'Lovibond Colour Red Exceeds Specification',
+    category: 'Quality' as const,
+    severity: 'Major' as const,
+    defaultDisposition: 'rework' as const,
+    correctiveAction: 'Increase bleaching earth ratio to minimum 1.25% and verify contact temperature',
+  },
+  {
+    id: 'QC-REAS-03',
+    code: 'MOISTURE_EXCEED',
+    label: 'Moisture & Volatile Impurities > 0.05%',
+    category: 'Physical' as const,
+    severity: 'Major' as const,
+    defaultDisposition: 'reprocess' as const,
+    correctiveAction: 'Inspect bleacher vacuum seal integrity and steam condensate drain line',
+  },
+  {
+    id: 'QC-REAS-04',
+    code: 'PEROXIDE_HIGH',
+    label: 'Peroxide Value (PV) Exceeds Threshold',
+    category: 'Quality' as const,
+    severity: 'Critical' as const,
+    defaultDisposition: 'hold' as const,
+    correctiveAction: 'Verify crude oil incoming feed oxidation and nitrogen blanketing system',
+  },
+  {
+    id: 'QC-REAS-05',
+    code: 'DOBI_LOW',
+    label: 'Low DOBI Bleachability Index (< 2.5)',
+    category: 'Process' as const,
+    severity: 'Minor' as const,
+    defaultDisposition: 'downgrade' as const,
+    correctiveAction: 'Segregate batch feed and blend with high-grade CPO feedstock',
+  },
+  {
+    id: 'QC-REAS-06',
+    code: 'BLEACHING_EARTH_ODOR',
+    label: 'Suspended Bleaching Earth / Filter Bleed',
+    category: 'Physical' as const,
+    severity: 'Critical' as const,
+    defaultDisposition: 'rework' as const,
+    correctiveAction: 'Immediately switch and inspect Niagara leaf filter cloths for punctures',
+  },
+  {
+    id: 'QC-REAS-07',
+    code: 'CROSS_CONTAMINATION',
+    label: 'Tank / Header Cross-Contamination',
+    category: 'Contamination' as const,
+    severity: 'Critical' as const,
+    defaultDisposition: 'scrap' as const,
+    correctiveAction: 'Flush transfer headers and lock discharge manifold valves',
+  },
+  {
+    id: 'QC-REAS-08',
+    code: 'TURBIDITY_HAZE',
+    label: 'Turbidity & Particulate Haze Detected',
+    category: 'Physical' as const,
+    severity: 'Major' as const,
+    defaultDisposition: 'rework' as const,
+    correctiveAction: 'Inspect polishing filter cartridge bags and replace element',
+  },
 ];
 
 export const MOCK_PLANTS: Plant[] = [
@@ -196,39 +252,10 @@ export const MOCK_TANKS: Tank[] = [
   { id: 'tnk-d3', name: 'Discharge Tank TK-203 (Bleached Oil)', kind: 'discharge' },
 ];
 
-// Helper to construct sample sheet
-export function createMockSheet(): LogSheet {
+// Helper to construct clean live sheet with zero dummy entries
+export function createCleanSheet(): LogSheet {
   const sheetDate = new Date().toISOString().split('T')[0];
   const entries = generateInitialEntries('sheet-live-01', sheetDate);
-
-  // Fill in some realistic entries for Shift 1 (slots 0 to 4)
-  const sampleData = [
-    { flow: 45.5, acid: true, temp: 104.2, earth: true, level: 'H' as const, vac: 645, filter: 'N60-1' as const, ffa: 0.045, cr: 2.1, cy: 18.0, rem: 'Normal startup operation' },
-    { flow: 46.0, acid: true, temp: 105.0, earth: true, level: 'H' as const, vac: 640, filter: 'N60-1' as const, ffa: 0.043, cr: 2.0, cy: 17.5, rem: '' },
-    { flow: 46.2, acid: true, temp: 116.5, earth: true, level: 'H' as const, vac: 635, filter: 'N60-1' as const, ffa: 0.048, cr: 2.3, cy: 19.0, rem: 'Steam valve adjusted due to high temp' }, // Out of spec temp
-    { flow: 45.8, acid: true, temp: 108.2, earth: true, level: 'H' as const, vac: 585, filter: 'N60-2' as const, ffa: 0.046, cr: 2.2, cy: 18.5, rem: 'Vacuum dropped momentarily during filter switch' }, // Out of spec vac
-    { flow: 45.5, acid: true, temp: 106.0, earth: true, level: 'H' as const, vac: 642, filter: 'N60-2' as const, ffa: 0.044, cr: 2.1, cy: 18.0, rem: '' },
-  ];
-
-  sampleData.forEach((d, idx) => {
-    const entry = entries[idx];
-    entry.flowrate_set = d.flow;
-    entry.acid_dosage_ok = d.acid;
-    entry.he_temp_c = d.temp;
-    entry.earth_dosage_ok = d.earth;
-    entry.bleacher_level = d.level;
-    entry.vacuum_mmhg = d.vac;
-    entry.niagara_filter = d.filter;
-    entry.ffa_pct = d.ffa;
-    entry.colour_r = d.cr;
-    entry.colour_y = d.cy;
-    entry.remarks = d.rem;
-    entry.entered_by = 'usr-1';
-    entry.entered_by_name = 'Ahmad Razif';
-    entry.entered_at = new Date(Date.now() - (5 - idx) * 3600000).toISOString();
-    entry.is_saved = true;
-    entry.out_of_spec = validateReadingSpecs(entry);
-  });
 
   return {
     id: 'sheet-live-01',
@@ -250,21 +277,21 @@ export function createMockSheet(): LogSheet {
     tech_s3: 'usr-3',
     tech_s3_name: 'K. Subramaniam',
     
-    // Parameters
-    input_mt_hr: 45.0,
-    input_mt_day: 1080.0,
+    // Clean initial parameters (ready for operator input)
+    input_mt_hr: null,
+    input_mt_day: null,
     acid_type: 'Phosphoric Acid',
-    acid_mm: 12.5,
-    acid_cm_hr: 24.0,
-    acid_pct: 0.06,
+    acid_mm: null,
+    acid_cm_hr: null,
+    acid_pct: null,
     earth_type: 'Taiko Classic Bleaching Earth',
-    earth_setting: 1.25,
-    earth_min_pct: 0.85,
-    earth_kgs_day: 9180.0,
+    earth_setting: null,
+    earth_min_pct: null,
+    earth_kgs_day: null,
     aid1_type: 'Celite 545',
-    aid1_qty: 25.0,
+    aid1_qty: null,
     aid2_type: 'Hyflo Super-Cel',
-    aid2_qty: 15.0,
+    aid2_qty: null,
 
     status: 'InProgress',
     submitted_at: null,
@@ -273,7 +300,11 @@ export function createMockSheet(): LogSheet {
     review_note: null,
 
     entries,
-    created_at: new Date(Date.now() - 20000000).toISOString(),
+    created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
 }
+
+// Backward-compatibility alias
+export const createMockSheet = createCleanSheet;
+

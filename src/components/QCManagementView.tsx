@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { syncQcSampleToInsForge, logActivityToInsForge } from "@/lib/dbService";
 import { RadioSelect } from "./RadioSelect";
+import { DEFAULT_REJECTION_REASONS } from "@/lib/mockData";
 
 interface QCManagementViewProps {
   currentUser: UserProfile;
@@ -48,9 +49,9 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
     setIsClient(true);
   }, []);
 
-  // Load sample reports from external props or fallback snapshot
+  // Load sample reports from external props or fallback empty array
   const [internalReports, setInternalReports] = useState<SampleReport[]>(() => {
-    return (QC_SNAPSHOT_DATA.samples as any[]) || [];
+    return [];
   });
 
   const reports = externalReports || internalReports;
@@ -600,8 +601,9 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                           id: `dec-${Date.now()}`,
                           report_id: selectedReport.id,
                           decision: "reject",
-                          reason_label: "Out of specification parameter",
-                          disposition: "rework",
+                          reason_id: DEFAULT_REJECTION_REASONS[0].id,
+                          reason_label: DEFAULT_REJECTION_REASONS[0].label,
+                          disposition: DEFAULT_REJECTION_REASONS[0].defaultDisposition,
                           decided_by_name: currentUser.name,
                           decided_at: new Date().toISOString(),
                         }
@@ -642,6 +644,92 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                     <span>Concession</span>
                   </button>
                 </div>
+
+                {/* Sub-form: Reject Reason Code & Disposition Specification */}
+                {selectedReport.decision?.decision === "reject" && (
+                  <div className="mt-3 p-3.5 rounded-xl border border-rose-500/30 bg-rose-500/5 dark:bg-rose-950/20 space-y-3 animate-in fade-in duration-200">
+                    <div className="flex items-center gap-2 text-rose-700 dark:text-rose-300 text-xs font-bold font-display">
+                      <AlertTriangle className="w-4 h-4 shrink-0" />
+                      <span>Specify Rejection Reason Code (Syncs with Master Data Pareto Analysis)</span>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                        Reason Code / Defect Root Cause:
+                      </label>
+                      <select
+                        value={selectedReport.decision?.reason_id || DEFAULT_REJECTION_REASONS[0].id}
+                        onChange={(e) => {
+                          const chosen = DEFAULT_REJECTION_REASONS.find(r => r.id === e.target.value) || DEFAULT_REJECTION_REASONS[0];
+                          setSelectedReport({
+                            ...selectedReport,
+                            decision: {
+                              ...selectedReport.decision!,
+                              reason_id: chosen.id,
+                              reason_label: chosen.label,
+                              disposition: chosen.defaultDisposition,
+                            }
+                          });
+                        }}
+                        className="w-full p-2.5 rounded-xl border border-rose-300 dark:border-rose-900/60 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white text-xs font-medium focus:ring-2 focus:ring-rose-500/30 focus:outline-none"
+                      >
+                        {DEFAULT_REJECTION_REASONS.map((reason) => (
+                          <option key={reason.id} value={reason.id}>
+                            [{reason.code}] {reason.label} ({reason.category} · {reason.severity})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                          Product Disposition:
+                        </label>
+                        <select
+                          value={selectedReport.decision?.disposition || "rework"}
+                          onChange={(e) => {
+                            setSelectedReport({
+                              ...selectedReport,
+                              decision: {
+                                ...selectedReport.decision!,
+                                disposition: e.target.value as Disposition,
+                              }
+                            });
+                          }}
+                          className="w-full p-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white text-xs font-medium focus:outline-none"
+                        >
+                          <option value="rework">Rework (Re-bleach in loop)</option>
+                          <option value="reprocess">Reprocess (Full refining recycle)</option>
+                          <option value="downgrade">Downgrade (Industrial grade transfer)</option>
+                          <option value="hold">Hold (Quarantine pending retest)</option>
+                          <option value="scrap">Scrap (Reject to acid oil recovery)</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                          Corrective Action Note:
+                        </label>
+                        <input
+                          type="text"
+                          value={selectedReport.decision?.reason_detail || ""}
+                          placeholder="e.g., Increase Taiko Earth to 1.35%"
+                          onChange={(e) => {
+                            setSelectedReport({
+                              ...selectedReport,
+                              decision: {
+                                ...selectedReport.decision!,
+                                reason_detail: e.target.value,
+                              }
+                            });
+                          }}
+                          className="w-full p-2 rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white text-xs focus:outline-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

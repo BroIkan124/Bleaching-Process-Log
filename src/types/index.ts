@@ -1,7 +1,30 @@
 // Domain Models & Types for Digital Bleaching Process Log (RF-FR-003, Rev 03)
 
 export type UserRole = 'technician' | 'supervisor' | 'manager_qa' | 'admin' | 'chemist';
-export type DashboardTab = 'bleaching' | 'qc' | 'reports' | 'supervisor' | 'users';
+export type DashboardTab = 'bleaching' | 'qc' | 'reports' | 'supervisor' | 'users' | 'masterdata';
+
+export interface ProductSpec {
+  id: string;
+  productId: string;
+  productName: string;
+  ffaMax: number;
+  colourRedMax: number;
+  colourYellowMax: number;
+  moistureMax: number;
+  peroxideMax: number;
+  dobiMin: number;
+  standardReference: string;
+}
+
+export interface RejectionReasonCode {
+  id: string;
+  code: string;
+  label: string;
+  category: 'Quality' | 'Physical' | 'Process' | 'Contamination';
+  severity: 'Critical' | 'Major' | 'Minor';
+  defaultDisposition: 'rework' | 'reprocess' | 'downgrade' | 'hold' | 'scrap';
+  correctiveAction: string;
+}
 
 export interface UserProfile {
   id: string;

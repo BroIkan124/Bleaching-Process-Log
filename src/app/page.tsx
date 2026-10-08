@@ -7,7 +7,7 @@ import {
   MOCK_PLANTS, 
   MOCK_PRODUCTS, 
   MOCK_TANKS, 
-  createMockSheet,
+  createCleanSheet,
   INITIAL_SUPERVISOR_EVENTS
 } from "@/lib/mockData";
 import { SHIFTS } from "@/lib/constants";
@@ -21,7 +21,6 @@ import {
   createOrUpdateQcSampleFromLogEntry, 
   syncQcResultToLogEntries 
 } from "@/lib/workflowPipeline";
-import { QC_SNAPSHOT_DATA } from "@/lib/qcSampleData";
 import { HeaderNav } from "@/components/HeaderNav";
 import { SheetHeaderParameters } from "@/components/SheetHeaderParameters";
 import { SlotRail } from "@/components/SlotRail";
@@ -35,6 +34,7 @@ import { FloatingBottomDock } from "@/components/FloatingBottomDock";
 import { UserManagementView } from "@/components/UserManagementView";
 import { SupervisorMonitoringView } from "@/components/SupervisorMonitoringView";
 import { ReportsView } from "@/components/ReportsView";
+import { MasterDataView } from "@/components/MasterDataView";
 import LoginView from "@/components/LoginView";
 import { AlertCircle, CheckCircle, Info } from "lucide-react";
 import {
@@ -81,11 +81,40 @@ export default function BleachingProcessLogApp() {
     loadInsForgeUsers();
   }, []);
 
-  // 3. Supervisor Audit & Events State
-  const [supervisorEvents, setSupervisorEvents] = useState<SupervisorUpdateEvent[]>(INITIAL_SUPERVISOR_EVENTS);
+  // 3. Supervisor Audit & Events State (Persisted)
+  const [supervisorEvents, setSupervisorEvents] = useState<SupervisorUpdateEvent[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("nisshin_supervisor_events");
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return INITIAL_SUPERVISOR_EVENTS;
+  });
 
-  // 4. Core Bleaching Log State
-  const [sheet, setSheet] = useState<LogSheet>(() => createMockSheet());
+  useEffect(() => {
+    try {
+      localStorage.setItem("nisshin_supervisor_events", JSON.stringify(supervisorEvents));
+    } catch {}
+  }, [supervisorEvents]);
+
+  // 4. Core Bleaching Log State (Persisted - Zero Dummy Data, Ready for Real Operator Entry)
+  const [sheet, setSheet] = useState<LogSheet>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("nisshin_process_sheet");
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return createCleanSheet();
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("nisshin_process_sheet", JSON.stringify(sheet));
+    } catch {}
+  }, [sheet]);
+
   const [isDark, setIsDark] = useState(true);
   const [isOffline, setIsOffline] = useState(false);
 
@@ -115,10 +144,22 @@ export default function BleachingProcessLogApp() {
   const [clockState, setClockState] = useState<RealtimeClockState>(() => getRealtimeClockState(null));
   const [supervisorUnlockedSlots, setSupervisorUnlockedSlots] = useState<number[]>([]);
 
-  // 7. Centralized QC Reports for Multi-Department Workflow Handover (Stage 1 -> Stage 4)
+  // 7. Centralized QC Reports for Multi-Department Workflow Handover (Stage 1 -> Stage 4, Persisted, Starts with Real Empty Set)
   const [qcReports, setQcReports] = useState<SampleReport[]>(() => {
-    return (QC_SNAPSHOT_DATA.samples as any[]) || [];
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("nisshin_qc_reports");
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return [];
   });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("nisshin_qc_reports", JSON.stringify(qcReports));
+    } catch {}
+  }, [qcReports]);
 
   // Real-time ticking 1-second clock
   useEffect(() => {
@@ -282,6 +323,20 @@ export default function BleachingProcessLogApp() {
     };
     setSupervisorEvents(prev => [newEvent, ...prev]);
     showNotice(`Laboratory sample ${newReport.report_no} registered.`, 'info');
+  };
+
+  // Reset shift to clean real data state
+  const handleResetCleanShift = () => {
+    const clean = createCleanSheet();
+    setSheet(clean);
+    setQcReports([]);
+    setSupervisorEvents(INITIAL_SUPERVISOR_EVENTS);
+    try {
+      localStorage.removeItem("nisshin_process_sheet");
+      localStorage.removeItem("nisshin_qc_reports");
+      localStorage.removeItem("nisshin_supervisor_events");
+    } catch {}
+    showNotice("Refinery logs & QC records reset to clean live recording state.", "success");
   };
 
   // Supervisor Emergency Slot Unlock (STAGE 4)
@@ -636,7 +691,19 @@ export default function BleachingProcessLogApp() {
             />
           )}
 
-          {/* Tab 4: Supervisor Monitoring View (STAGE 4) */}
+          {/* Tab 4: Master Data & Quality Analytics View */}
+          {activeTab === 'masterdata' && (
+            <MasterDataView
+              currentUser={currentUser}
+              isDark={isDark}
+              reports={qcReports}
+              onNavigateTab={setActiveTab}
+              onUpdateReport={handleUpdateQcReport}
+              onResetCleanData={handleResetCleanShift}
+            />
+          )}
+
+          {/* Tab 5: Supervisor Monitoring View (STAGE 4) */}
           {activeTab === 'supervisor' && (
             <SupervisorMonitoringView
               currentUser={currentUser}

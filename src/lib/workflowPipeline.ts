@@ -31,7 +31,7 @@ export function createOrUpdateQcSampleFromLogEntry(
       product_name: sheet.product_name || existing.product_name || "RBD Palm Oil",
       feed_tank_code: sheet.feed_tank_name || existing.feed_tank_code || "TK-101",
       discharge_tank_code: sheet.discharge_tank_name || existing.discharge_tank_code || "TK-201",
-      remarks: `Diselaraskan daripada Bleaching Log Slot ${entry.time_label} Hrs (Flow: ${entry.flowrate_set ?? '-'} MT/HR, Vac: ${entry.vacuum_mmhg ?? '-'} mmHg, Temp: ${entry.he_temp_c ?? '-'}°C)`,
+      remarks: `Synchronized from Bleaching Log Slot ${entry.time_label} Hrs (Flow: ${entry.flowrate_set ?? '-'} MT/HR, Vac: ${entry.vacuum_mmhg ?? '-'} mmHg, Temp: ${entry.he_temp_c ?? '-'}°C)`,
     };
   } else {
     // Generate new QC sample record
@@ -47,7 +47,7 @@ export function createOrUpdateQcSampleFromLogEntry(
       discharge_tank_code: sheet.discharge_tank_name || "TK-201",
       sampling_point_name: "Deodorizer / Bleacher Outlet (SP-01)",
       submitted_by_name: currentUser.name,
-      remarks: `Sampel automatik daripada Bleaching Log Slot ${entry.time_label} Hrs (Operator: ${currentUser.name})`,
+      remarks: `Auto-generated sample from Bleaching Log Slot ${entry.time_label} Hrs (Operator: ${currentUser.name})`,
       status: 'awaiting_results',
       created_at: new Date().toISOString(),
       results: [
@@ -111,9 +111,9 @@ export function createOrUpdateQcSampleFromLogEntry(
     timestamp: new Date().toISOString(),
     source: 'Bleaching Log',
     title: hasAlert
-      ? `[ALUR 1] ALERT: Slot ${entry.time_label} Hrs Disimpan (Perlu Perhatian QC)`
-      : `[ALUR 1] Bleaching Log Slot ${entry.time_label} Hrs Disimpan -> Dihantar ke QC Lab`,
-    description: `${currentUser.name} telah menyimpan parameter operasi jam ${entry.time_label}. Sampel ${reportNo} dijana secara automatik dan diarahkan ke makmal QC Lab untuk pengesahan kualiti.`,
+      ? `[PIPELINE STAGE 1] ALERT: Slot ${entry.time_label} Hrs Logged (QC Attention Required)`
+      : `[PIPELINE STAGE 1] Bleaching Log Slot ${entry.time_label} Hrs Logged -> Dispatched to QC Lab`,
+    description: `${currentUser.name} recorded operating parameters for ${entry.time_label} Hrs. Sample ${reportNo} was automatically created and dispatched to QC Lab for chemical analysis.`,
     severity: hasAlert ? 'alert' : 'info',
     author_name: currentUser.name,
     author_role: currentUser.role,
@@ -180,9 +180,9 @@ export function syncQcResultToLogEntries(
     timestamp: new Date().toISOString(),
     source: 'QC Lab',
     title: isReject
-      ? `[ALUR 2] CRITICAL: Sampel QC Slot ${timeLabel} Hrs DITOLAK (Reject/Hold)`
-      : `[ALUR 2] QC Lab Mengesahkan Sampel Slot ${timeLabel} Hrs (In-Spec)`,
-    description: `Ahli Kimia ${currentUser.name} telah mengesahkan analisis makmal bagi ${qcReport.report_no}: Warna ${colorVal ?? '-'}R, FFA ${ffaVal ?? '-'}%. Keputusan: ${qcReport.decision?.decision.toUpperCase() || 'ANALYZED'}. Data telah diselaraskan ke Bleaching Log & Reports.`,
+      ? `[PIPELINE STAGE 2] CRITICAL: QC Sample Slot ${timeLabel} Hrs REJECTED (Hold/Disposition)`
+      : `[PIPELINE STAGE 2] QC Lab Approved Sample Slot ${timeLabel} Hrs (In-Spec)`,
+    description: `Chemist ${currentUser.name} verified laboratory analysis for ${qcReport.report_no}: Lovibond Colour ${colorVal ?? '-'}R, FFA ${ffaVal ?? '-'}%. Decision: ${qcReport.decision?.decision.toUpperCase() || 'ANALYZED'}. Telemetry synchronized to Bleaching Log & Reports.`,
     severity: isReject ? 'alert' : 'success',
     author_name: currentUser.name,
     author_role: currentUser.role,

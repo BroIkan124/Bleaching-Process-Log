@@ -135,3 +135,32 @@ Payments currently has TypeScript SDK docs only. Use the Payments API reference 
 - Storage: Upload files to buckets, store URLs in database
 - AI integrations should call OpenRouter directly with `baseURL: "https://openrouter.ai/api/v1"` and a server-side `OPENROUTER_API_KEY`
 - **EXTRA IMPORTANT**: Use Tailwind CSS 3.4 (do not upgrade to v4). Lock these dependencies in `package.json`
+
+---
+
+# Mandatory Project Standards & Rules (Strict Enforcement)
+
+## 1. 100% Fully English UI, Code, and Messages
+- All UI labels, headers, descriptions, badges, tooltips, buttons, modal copy, toasts, error messages, and audit logs MUST be in **100% English**.
+- No Malay text permitted in any component, template, helper, or user-facing view.
+- All code comments, variable names, documentation, and type definitions must be in clean professional English.
+
+## 2. Standard Legible Typography Standard (No Skinny / Tiny Fonts)
+- **STRICTLY BAN** skinny, microscopic, or unreadable fonts:
+  - Do NOT use `text-[9px]`, `text-[10px]`, or `text-[11px]`.
+  - Do NOT use ultra-light font weights: eliminate `font-thin`, `font-extralight`, `font-light`.
+- **Use standard, comfortable, legible font sizes**:
+  - Compact badges / chips: minimum `text-xs` (12px) with `font-semibold` or `font-bold`.
+  - Body copy, table data cells, subtitles: `text-sm` (14px) or `text-xs` (12px) with `font-normal`, `font-medium`, or `font-semibold`.
+  - Headings, metrics, action buttons: `text-base` (16px), `text-lg` (18px), `text-xl` (20px)+.
+  - Maintain robust, crisp industrial contrast and readability at all times.
+
+## 3. Strict Pre-Completion Verification & Premium Layout Polish
+- **NEVER declare a task completed prematurely**.
+- Before declaring completion, you MUST:
+  1. Thoroughly review and audit every view and component across the website.
+  2. Double-check layout balance, spacing rhythm, clean alignment, and premium 3D industrial aesthetics.
+  3. Verify that all features, interactive states, drawers, and modal workflows operate smoothly without glitches.
+  4. Run `npm run build` to confirm 100% build success with ZERO errors.
+  5. Commit and push to git so live deployments stay up to date.
+  6. Only declare completion after rigorous double-checking.

@@ -58,7 +58,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
               <span className="text-xs font-bold font-display uppercase tracking-wider text-zinc-900 dark:text-zinc-100 block leading-tight">
                 {currentPlant}
               </span>
-              <span className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium block leading-none mt-1">
+              <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium block leading-none mt-1">
                 {currentProduct} · Date: <span className="font-mono text-zinc-800 dark:text-zinc-200 font-bold">{sheet.sheet_date}</span>
               </span>
             </div>
@@ -122,7 +122,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <div>
-                <label className="block text-[11px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">
+                <label className="block text-xs font-bold text-zinc-600 dark:text-zinc-400 mb-1">
                   Plant / Production Line
                 </label>
                 <RadioSelect
@@ -134,7 +134,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">
+                <label className="block text-xs font-bold text-zinc-600 dark:text-zinc-400 mb-1">
                   Oil Product Type
                 </label>
                 <RadioSelect
@@ -146,7 +146,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">
+                <label className="block text-xs font-bold text-zinc-600 dark:text-zinc-400 mb-1">
                   Feed Tank
                 </label>
                 <RadioSelect
@@ -158,7 +158,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">
+                <label className="block text-xs font-bold text-zinc-600 dark:text-zinc-400 mb-1">
                   Discharge Tank
                 </label>
                 <RadioSelect
@@ -189,7 +189,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <span className="text-[10px] font-bold uppercase text-zinc-500 dark:text-zinc-400 block mb-1">MT / Hour</span>
+                    <span className="text-xs font-bold uppercase text-zinc-500 dark:text-zinc-400 block mb-1">MT / Hour</span>
                     <input
                       type="number"
                       step="0.1"
@@ -201,7 +201,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                     />
                   </div>
                   <div>
-                    <span className="text-[10px] font-bold uppercase text-zinc-500 dark:text-zinc-400 block mb-1">MT / Day</span>
+                    <span className="text-xs font-bold uppercase text-zinc-500 dark:text-zinc-400 block mb-1">MT / Day</span>
                     <input
                       type="number"
                       step="1"
@@ -232,13 +232,13 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                         { value: "Phosphoric Acid", label: "Phosphoric" },
                         { value: "Citric Acid", label: "Citric" }
                       ]}
-                      className="py-1 px-2.5 text-[11px] font-bold"
+                      className="py-1 px-2.5 text-xs font-bold"
                     />
                   </div>
                 </div>
                 <div className="grid grid-cols-3 gap-1.5">
                   <div>
-                    <span className="text-[10px] font-bold uppercase text-zinc-500 dark:text-zinc-400 block mb-1">Mm</span>
+                    <span className="text-xs font-bold uppercase text-zinc-500 dark:text-zinc-400 block mb-1">Mm</span>
                     <input
                       type="number"
                       disabled={isLocked}
@@ -249,7 +249,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                     />
                   </div>
                   <div>
-                    <span className="text-[10px] font-bold uppercase text-zinc-500 dark:text-zinc-400 block mb-1">Cm/Hr</span>
+                    <span className="text-xs font-bold uppercase text-zinc-500 dark:text-zinc-400 block mb-1">Cm/Hr</span>
                     <input
                       type="number"
                       disabled={isLocked}
@@ -260,7 +260,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                     />
                   </div>
                   <div>
-                    <span className="text-[10px] font-bold uppercase text-zinc-500 dark:text-zinc-400 block mb-1">%</span>
+                    <span className="text-xs font-bold uppercase text-zinc-500 dark:text-zinc-400 block mb-1">%</span>
                     <input
                       type="number"
                       step="0.01"
@@ -284,7 +284,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                 </div>
                 <div className="grid grid-cols-3 gap-1.5">
                   <div>
-                    <span className="text-[10px] font-bold uppercase text-zinc-500 dark:text-zinc-400 block mb-1">Setting</span>
+                    <span className="text-xs font-bold uppercase text-zinc-500 dark:text-zinc-400 block mb-1">Setting</span>
                     <input
                       type="number"
                       step="0.05"
@@ -296,7 +296,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                     />
                   </div>
                   <div>
-                    <span className="text-[10px] font-bold uppercase text-zinc-500 dark:text-zinc-400 block mb-1">Min %</span>
+                    <span className="text-xs font-bold uppercase text-zinc-500 dark:text-zinc-400 block mb-1">Min %</span>
                     <input
                       type="number"
                       step="0.01"
@@ -308,7 +308,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                     />
                   </div>
                   <div>
-                    <span className="text-[10px] font-bold uppercase text-zinc-500 dark:text-zinc-400 block mb-1">Kgs/Day</span>
+                    <span className="text-xs font-bold uppercase text-zinc-500 dark:text-zinc-400 block mb-1">Kgs/Day</span>
                     <input
                       type="number"
                       disabled={isLocked}
@@ -331,7 +331,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <span className="text-[10px] font-bold uppercase text-zinc-500 dark:text-zinc-400 block mb-1">Aid 1 (Type / Qty)</span>
+                    <span className="text-xs font-bold uppercase text-zinc-500 dark:text-zinc-400 block mb-1">Aid 1 (Type / Qty)</span>
                     <div className="flex gap-1">
                       <input
                         type="text"
@@ -352,7 +352,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                     </div>
                   </div>
                   <div>
-                    <span className="text-[10px] font-bold uppercase text-zinc-500 dark:text-zinc-400 block mb-1">Aid 2 (Type / Qty)</span>
+                    <span className="text-xs font-bold uppercase text-zinc-500 dark:text-zinc-400 block mb-1">Aid 2 (Type / Qty)</span>
                     <div className="flex gap-1">
                       <input
                         type="text"

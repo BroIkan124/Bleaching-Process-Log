@@ -246,14 +246,14 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-sm font-bold font-display text-zinc-900 dark:text-zinc-100">
-                  Alur Kerja Menyeluruh Kilang (End-to-End Pipeline)
+                  End-to-End Plant Workflow Pipeline
                 </h2>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
-                  {pipelineMetrics.completionRatePercent}% Disegerakkan
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold font-mono bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                  {pipelineMetrics.completionRatePercent}% Synchronized
                 </span>
               </div>
-              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium mt-0.5">
-                Segerak berterusan: Bleaching Log &#10140; QC Lab &#10140; Reports &#10140; Supervisor Monitoring
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium mt-0.5">
+                Continuous Sync: Bleaching Log &#10140; QC Lab &#10140; Reports &#10140; Supervisor Monitoring
               </p>
             </div>
           </div>
@@ -278,15 +278,15 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
                   1. Bleaching Log
                 </span>
               </div>
-              <span className="text-[10px] font-mono font-bold text-amber-600 dark:text-amber-400">
-                Peringkat 1
+              <span className="text-xs font-mono font-bold text-amber-600 dark:text-amber-400">
+                Stage 1
               </span>
             </div>
             <div className="text-lg font-bold font-mono text-zinc-900 dark:text-zinc-100">
-              {pipelineMetrics.savedSlotsCount} / 24 <span className="text-xs font-normal text-zinc-500">Slot</span>
+              {pipelineMetrics.savedSlotsCount} / 24 <span className="text-xs font-normal text-zinc-500">Slots</span>
             </div>
-            <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-1">
-              Data telemetri proses harian direkodkan operator.
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-1">
+              Daily process telemetry data recorded by operators.
             </p>
           </div>
 
@@ -301,16 +301,16 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
                   2. QC Lab (RF-FR-001)
                 </span>
               </div>
-              <span className="text-[10px] font-mono font-bold text-sky-600 dark:text-sky-400">
-                Peringkat 2
+              <span className="text-xs font-mono font-bold text-sky-600 dark:text-sky-400">
+                Stage 2
               </span>
             </div>
             <div className="text-lg font-bold font-mono text-zinc-900 dark:text-zinc-100">
-              {pipelineMetrics.qcDecidedSamples} <span className="text-xs font-normal text-zinc-500">Disahkan</span>
-              <span className="text-xs text-amber-500 ml-1.5">({pipelineMetrics.qcPendingSamples} Menunggu)</span>
+              {pipelineMetrics.qcDecidedSamples} <span className="text-xs font-normal text-zinc-500">Verified</span>
+              <span className="text-xs text-amber-500 ml-1.5">({pipelineMetrics.qcPendingSamples} Pending)</span>
             </div>
-            <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-1">
-              Ujian makmal (Colour Red &amp; FFA %) disahkan ahli kimia.
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-1">
+              Laboratory tests (Colour Red &amp; FFA %) verified by chemists.
             </p>
           </div>
 
@@ -325,15 +325,15 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
                   3. Reports &amp; Yield
                 </span>
               </div>
-              <span className="text-[10px] font-mono font-bold text-purple-600 dark:text-purple-400">
-                Peringkat 3
+              <span className="text-xs font-mono font-bold text-purple-600 dark:text-purple-400">
+                Stage 3
               </span>
             </div>
             <div className="text-lg font-bold font-mono text-zinc-900 dark:text-zinc-100">
-              {inSpecPercentage}% <span className="text-xs font-normal text-zinc-500">Kepatuhan</span>
+              {inSpecPercentage}% <span className="text-xs font-normal text-zinc-500">Compliance</span>
             </div>
-            <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-1">
-              Analisis tren kualiti, had spesifikasi &amp; eksport data.
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-1">
+              Quality trend analysis, specification limits &amp; data export.
             </p>
           </div>
 
@@ -348,19 +348,19 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
                   4. Supervisor
                 </span>
               </div>
-              <span className="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                Peringkat 4
+              <span className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                Stage 4
               </span>
             </div>
             <div className="text-lg font-bold font-mono text-zinc-900 dark:text-zinc-100">
               {pipelineMetrics.supervisorSigned ? (
-                <span className="text-emerald-500">Diluluskan</span>
+                <span className="text-emerald-500">Approved</span>
               ) : (
-                <span className="text-amber-500">Audit Aktif</span>
+                <span className="text-amber-500">Active Audit</span>
               )}
             </div>
-            <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-1">
-              Kawalan kunci slot, semakan insiden &amp; tandatangan borang.
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-1">
+              Slot locking controls, incident review &amp; sign-off.
             </p>
           </div>
         </div>
@@ -370,7 +370,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="telemetry-card p-4 rounded-2xl">
           <div className="flex items-center justify-between text-zinc-500 mb-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider font-display">Total Oil Processed</span>
+            <span className="text-xs font-bold uppercase tracking-wider font-display">Total Oil Processed</span>
             <div className="p-2 rounded-lg bg-amber-500/10 text-amber-500">
               <Droplet className="w-4 h-4" />
             </div>
@@ -381,14 +381,14 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
             </span>
             <span className="text-xs text-zinc-500 font-bold font-mono">MT</span>
           </div>
-          <span className="text-[11px] text-zinc-400 font-medium block mt-1 font-mono">
+          <span className="text-xs text-zinc-400 font-medium block mt-1 font-mono">
             Avg Flow: {avgFlowrate} MT/HR
           </span>
         </div>
 
         <div className="telemetry-card p-4 rounded-2xl">
           <div className="flex items-center justify-between text-zinc-500 mb-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider font-display">Spec Compliance</span>
+            <span className="text-xs font-bold uppercase tracking-wider font-display">Spec Compliance</span>
             <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500">
               <Gauge className="w-4 h-4" />
             </div>
@@ -399,14 +399,14 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
             </span>
             <span className="text-xs text-zinc-500 font-bold">In-Spec</span>
           </div>
-          <span className="text-[11px] text-zinc-400 font-medium block mt-1 font-mono">
+          <span className="text-xs text-zinc-400 font-medium block mt-1 font-mono">
             {totalIncidents === 0 ? "100% Normal Parameters" : `${totalIncidents} deviations logged`}
           </span>
         </div>
 
         <div className="telemetry-card p-4 rounded-2xl">
           <div className="flex items-center justify-between text-zinc-500 mb-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider font-display">Average Plant Vacuum</span>
+            <span className="text-xs font-bold uppercase tracking-wider font-display">Average Plant Vacuum</span>
             <div className="p-2 rounded-lg bg-sky-500/10 text-sky-500">
               <TrendingUp className="w-4 h-4" />
             </div>
@@ -417,14 +417,14 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
             </span>
             <span className="text-xs text-zinc-500 font-bold font-mono">mmHg</span>
           </div>
-          <span className="text-[11px] text-emerald-500 font-semibold block mt-1 font-mono">
+          <span className="text-xs text-emerald-500 font-semibold block mt-1 font-mono">
             Min Spec: ≥ 600.0 mmHg
           </span>
         </div>
 
         <div className="telemetry-card p-4 rounded-2xl">
           <div className="flex items-center justify-between text-zinc-500 mb-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider font-display">Average HE Temp</span>
+            <span className="text-xs font-bold uppercase tracking-wider font-display">Average HE Temp</span>
             <div className="p-2 rounded-lg bg-purple-500/10 text-purple-500">
               <Sparkles className="w-4 h-4" />
             </div>
@@ -435,7 +435,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
             </span>
             <span className="text-xs text-zinc-500 font-bold font-mono">°C</span>
           </div>
-          <span className="text-[11px] text-zinc-400 font-medium block mt-1 font-mono">
+          <span className="text-xs text-zinc-400 font-medium block mt-1 font-mono">
             Operating: 70.0°C - 115.0°C
           </span>
         </div>
@@ -512,7 +512,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
               <span className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wide font-display">
                 Shift 1 (0800-1500)
               </span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-mono">
+              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-mono">
                 Active ({s1Saved.length}/8 Hrs)
               </span>
             </div>
@@ -537,7 +537,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
               <span className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wide font-display">
                 Shift 2 (1600-2300)
               </span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-zinc-200/80 dark:bg-white/10 text-zinc-500 font-mono">
+              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-zinc-200/80 dark:bg-white/10 text-zinc-500 font-mono">
                 Pending Handover
               </span>
             </div>
@@ -562,7 +562,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
               <span className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wide font-display">
                 Shift 3 (2400-0700)
               </span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-zinc-200/80 dark:bg-white/10 text-zinc-500 font-mono">
+              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-zinc-200/80 dark:bg-white/10 text-zinc-500 font-mono">
                 Pending Handover
               </span>
             </div>
@@ -612,7 +612,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="sticky top-0 z-10 backdrop-blur-xl bg-zinc-100/95 dark:bg-[#0E1626]/95 border-b border-zinc-200/90 dark:border-white/10 text-[11px] font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
+              <tr className="sticky top-0 z-10 backdrop-blur-xl bg-zinc-100/95 dark:bg-[#0E1626]/95 border-b border-zinc-200/90 dark:border-white/10 text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
                 <th className="py-3 px-3">Time (Hrs)</th>
                 <th className="py-3 px-3">Shift</th>
                 <th className="py-3 px-3 text-right">Flow (MT/HR)</th>
@@ -649,7 +649,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
                     </td>
                     <td className="py-2.5 px-3 text-center font-sans">
                       {e.acid_dosage_ok ? (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                        <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
                           OK
                         </span>
                       ) : "-"}
@@ -659,7 +659,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
                     </td>
                     <td className="py-2.5 px-3 text-center font-sans">
                       {e.earth_dosage_ok ? (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                        <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
                           OK
                         </span>
                       ) : "-"}
@@ -686,11 +686,11 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
                     </td>
                     <td className="py-2.5 px-3 text-center font-sans">
                       {e.is_saved ? (
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/30">
+                        <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/30">
                           Saved
                         </span>
                       ) : (
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-zinc-100 dark:bg-white/10 text-zinc-400">
+                        <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-zinc-100 dark:bg-white/10 text-zinc-400">
                           Empty
                         </span>
                       )}

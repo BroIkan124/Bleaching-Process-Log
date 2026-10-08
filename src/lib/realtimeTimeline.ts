@@ -69,7 +69,7 @@ export function evaluateSlotAccess(
       canEdit: true,
       badgeText: 'SUPERVISOR OVERRIDE',
       badgeColor: 'emerald',
-      reasonMessage: 'Akses dibuka kunci secara khas oleh kebenaran Penyelia (Supervisor Override).',
+      reasonMessage: 'Special access granted by authorized Supervisor Override.',
       isCurrent: slotIndex === activeCurrentSlotIndex,
       isPast: slotIndex < activeCurrentSlotIndex,
       isFuture: slotIndex > activeCurrentSlotIndex,
@@ -89,7 +89,7 @@ export function evaluateSlotAccess(
       canEdit: isSuperUser,
       badgeText: 'LOCKED (EXPIRED)',
       badgeColor: 'zinc',
-      reasonMessage: `Tetingkap masa pengisian untuk slot ${formattedSlot} telah ditutup pada jam ${formattedActive}. Log ini kini dikunci bagi operator dan hanya boleh disemak (Read-Only).`,
+      reasonMessage: `The entry window for slot ${formattedSlot} closed at ${formattedActive}. This log is locked for operators and available in Read-Only review mode.`,
       isCurrent: false,
       isPast: true,
       isFuture: false,
@@ -107,7 +107,7 @@ export function evaluateSlotAccess(
       canEdit: true,
       badgeText: 'ACTIVE (OPEN)',
       badgeColor: 'amber',
-      reasonMessage: `Slot jam ${formattedSlot} sedang aktif dalam tetingkap masa nyata. Operator dibenarkan untuk mengisi parameter proses sekarang.`,
+      reasonMessage: `Hour slot ${formattedSlot} is currently active in the real-time window. Operators are authorized to record process telemetry now.`,
       isCurrent: true,
       isPast: false,
       isFuture: false,
@@ -124,7 +124,7 @@ export function evaluateSlotAccess(
     canEdit: false,
     badgeText: 'LOCKED (UPCOMING)',
     badgeColor: 'zinc',
-    reasonMessage: `Slot jam ${formattedSlot} belum dibuka. Mengikut SOP kilang, parameter operasi masa hadapan tidak boleh dimasukkan sebelum waktu operasi tiba.`,
+    reasonMessage: `Hour slot ${formattedSlot} is not yet open. In accordance with plant SOP, future operating parameters cannot be recorded before scheduled operating hours.`,
     isCurrent: false,
     isPast: false,
     isFuture: true,
@@ -166,7 +166,7 @@ export function getRealtimeClockState(simulatedHour: number | null = null): Real
   const ampm = effectiveHour >= 12 ? 'PM' : 'AM';
   const pad = (n: number) => String(n).padStart(2, '0');
   const formattedTime = `${pad(displayHours)}:${pad(effectiveMinute)}:${pad(effectiveSecond)} ${ampm}`;
-  const formattedDate = now.toLocaleDateString('ms-MY', {
+  const formattedDate = now.toLocaleDateString('en-US', {
     weekday: 'short',
     year: 'numeric',
     month: 'short',

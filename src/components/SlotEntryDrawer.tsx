@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { LogEntry, UserProfile, OutOfSpecFlag } from "@/types";
-import { PROCESS_SPECS, NIAGARA_FILTERS, BLEACHER_LEVELS } from "@/lib/constants";
+import { NIAGARA_FILTERS, BLEACHER_LEVELS } from "@/lib/constants";
 import { validateReadingSpecs } from "@/lib/utils";
 import { 
   X, 
@@ -13,15 +13,12 @@ import {
   ChevronLeft, 
   ChevronRight, 
   Delete,
-  Sparkles,
-  Info,
-  Layers,
   Thermometer,
   Gauge,
   Lock,
   Unlock
 } from "lucide-react";
-import { evaluateSlotAccess, getHourForSlotIndex } from "@/lib/realtimeTimeline";
+import { evaluateSlotAccess } from "@/lib/realtimeTimeline";
 
 interface SlotEntryDrawerProps {
   entry: LogEntry;
@@ -185,8 +182,8 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                   Shift {formData.shift}
                 </span>
               </div>
-              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono mt-0.5">
-                Timestamp: {new Date(formData.actual_timestamp).toLocaleString('en-MY', { timeZone: 'Asia/Kuala_Lumpur' })}
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 font-mono mt-0.5">
+                Timestamp: {new Date(formData.actual_timestamp).toLocaleString('en-US', { timeZone: 'Asia/Kuala_Lumpur' })}
               </p>
             </div>
           </div>
@@ -227,10 +224,10 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                 <Lock className="w-4 h-4" />
               </div>
               <div>
-                <span className="font-bold text-amber-900 dark:text-amber-200 font-display">
-                  Tetingkap Pengisian Telah Ditutup (Slot Dikunci):
+                <span className="font-bold text-amber-900 dark:text-amber-200 font-display text-xs">
+                  Entry Window Closed (Slot Locked):
                 </span>
-                <p className="text-zinc-600 dark:text-zinc-300 mt-0.5 leading-relaxed">
+                <p className="text-zinc-600 dark:text-zinc-300 mt-0.5 leading-relaxed text-xs">
                   {access.reasonMessage}
                 </p>
               </div>
@@ -242,7 +239,7 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                 className="btn-tactile px-3 py-1.5 rounded-lg bg-amber-500 text-white font-bold text-xs shrink-0 flex items-center gap-1.5 shadow-sm hover:bg-amber-600 cursor-pointer"
               >
                 <Unlock className="w-3.5 h-3.5" />
-                <span>Buka Kunci (Override)</span>
+                <span>Unlock (Override)</span>
               </button>
             )}
           </div>
@@ -254,10 +251,10 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
               <Clock className="w-4 h-4" />
             </div>
             <div>
-              <span className="font-bold text-zinc-800 dark:text-zinc-200 font-display">
-                Slot Masa Akan Datang Belum Tiba:
+              <span className="font-bold text-zinc-800 dark:text-zinc-200 font-display text-xs">
+                Future Slot Not Yet Reached:
               </span>
-              <p className="text-zinc-600 dark:text-zinc-400 mt-0.5 leading-relaxed">
+              <p className="text-zinc-600 dark:text-zinc-400 mt-0.5 leading-relaxed text-xs">
                 {access.reasonMessage}
               </p>
             </div>
@@ -268,17 +265,17 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
           <div className="px-6 py-3 bg-emerald-500/10 border-b border-emerald-500/25 flex items-center justify-between gap-2.5 text-xs text-emerald-800 dark:text-emerald-200 backdrop-blur-sm">
             <div className="flex items-center gap-2">
               <Unlock className="w-4 h-4 text-emerald-500 shrink-0" />
-              <span className="font-bold font-display">
-                Kebenaran Khas Penyelia Aktif (Supervisor Override): Pindaan slot ini dibenarkan bagi operator dan direkodkan ke audit log.
+              <span className="font-bold font-display text-xs">
+                Supervisor Override Active: Slot entry is unlocked for on-duty operators and recorded in the audit trail.
               </span>
             </div>
             {onToggleSupervisorOverride && (
               <button
                 type="button"
                 onClick={() => onToggleSupervisorOverride(entry.slot_index)}
-                className="text-[11px] underline font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 cursor-pointer"
+                className="text-xs underline font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 cursor-pointer"
               >
-                Kunci Semula
+                Re-Lock Slot
               </button>
             )}
           </div>
@@ -292,10 +289,10 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
               <AlertTriangle className="relative inline-flex w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
             </div>
             <div>
-              <span className="font-bold font-display">Process Out-of-Spec Alert:</span>
+              <span className="font-bold font-display text-xs">Process Out-of-Spec Alert:</span>
               <ul className="list-disc pl-4 mt-0.5 space-y-0.5">
                 {outOfSpecFlags.map((flag, idx) => (
-                  <li key={idx} className="font-medium">{flag.message}</li>
+                  <li key={idx} className="font-medium text-xs">{flag.message}</li>
                 ))}
               </ul>
             </div>
@@ -391,7 +388,7 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                   <span>HE Temp (°C)</span>
                   {isHeTempOutOfSpec && <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />}
                 </label>
-                <span className="text-[11px] font-mono font-medium text-zinc-500">
+                <span className="text-xs font-mono font-medium text-zinc-500">
                   Spec: 70-115 °C
                 </span>
               </div>
@@ -417,7 +414,7 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                 <span className="font-mono text-sm font-semibold text-zinc-400">°C</span>
               </div>
               {isHeTempOutOfSpec && (
-                <p className="text-[11px] text-rose-600 dark:text-rose-400 font-semibold mt-1">
+                <p className="text-xs text-rose-600 dark:text-rose-400 font-semibold mt-1">
                   Out of range! Must be between 70.0 and 115.0 °C.
                 </p>
               )}
@@ -431,7 +428,7 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                   <span>Bleacher Vacuum (mmHg)</span>
                   {isVacOutOfSpec && <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />}
                 </label>
-                <span className="text-[11px] font-mono font-medium text-zinc-500">
+                <span className="text-xs font-mono font-medium text-zinc-500">
                   Spec: Min. 600 mmHg
                 </span>
               </div>
@@ -457,7 +454,7 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                 <span className="font-mono text-sm font-semibold text-zinc-400">mmHg</span>
               </div>
               {isVacOutOfSpec && (
-                <p className="text-[11px] text-rose-600 dark:text-rose-400 font-semibold mt-1">
+                <p className="text-xs text-rose-600 dark:text-rose-400 font-semibold mt-1">
                   Vacuum too low! Minimum required is 600.0 mmHg.
                 </p>
               )}
@@ -619,7 +616,7 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                 <span>Operator Remarks</span>
                 {hasOutOfSpec && <span className="text-rose-600 dark:text-rose-400 font-bold">* (Mandatory due to out-of-spec)</span>}
               </label>
-              <span className="text-[11px] text-zinc-500">
+              <span className="text-xs text-zinc-500">
                 Action taken / plant changes notes
               </span>
             </div>
@@ -708,7 +705,7 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                 className="bg-zinc-200 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500 px-5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 cursor-not-allowed border border-zinc-300 dark:border-zinc-700/60 shadow-inner"
               >
                 <Lock className="w-4 h-4 text-zinc-400" />
-                <span>Log Dikunci (Hanya Semakan)</span>
+                <span>Log Locked (Review Only)</span>
               </button>
             )}
           </div>

@@ -288,7 +288,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
       {/* 2. Top Statistic KPI Cards with 3D Telemetry */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         <div className="telemetry-card p-4 rounded-xl">
-          <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider block font-display">Total Staff</span>
+          <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider block font-display">Total Staff</span>
           <div className="flex items-baseline gap-2 mt-1">
             <span className="text-2xl font-bold font-display text-zinc-900 dark:text-zinc-100 font-mono tabular-nums">{totalCount}</span>
             <span className="text-xs text-emerald-500 font-bold">{activeCount} Active</span>
@@ -296,7 +296,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
         </div>
 
         <div className="telemetry-card p-4 rounded-xl">
-          <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider block font-display">Operations Technicians</span>
+          <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider block font-display">Operations Technicians</span>
           <div className="flex items-baseline gap-2 mt-1">
             <span className="text-2xl font-bold font-display text-amber-500 font-mono tabular-nums">{techCount}</span>
             <span className="text-xs text-zinc-500 font-mono">Shift 1-3</span>
@@ -304,7 +304,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
         </div>
 
         <div className="telemetry-card p-4 rounded-xl">
-          <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider block font-display">QC Lab &amp; QA</span>
+          <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider block font-display">QC Lab &amp; QA</span>
           <div className="flex items-baseline gap-2 mt-1">
             <span className="text-2xl font-bold font-display text-sky-500 font-mono tabular-nums">{qcCount}</span>
             <span className="text-xs text-zinc-500 font-mono">RF-FR-001</span>
@@ -312,7 +312,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
         </div>
 
         <div className="telemetry-card p-4 rounded-xl">
-          <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider block font-display">Supervisors &amp; Admin</span>
+          <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider block font-display">Supervisors &amp; Admin</span>
           <div className="flex items-baseline gap-2 mt-1">
             <span className="text-2xl font-bold font-display text-purple-500 font-mono tabular-nums">{supCount}</span>
             <span className="text-xs text-zinc-500 font-mono">Control</span>
@@ -320,7 +320,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
         </div>
 
         <div className="telemetry-card p-4 rounded-xl col-span-2 sm:col-span-1">
-          <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider block font-display">Authentication Status</span>
+          <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider block font-display">Authentication Status</span>
           <div className="flex items-center gap-1.5 mt-2 text-xs font-bold text-emerald-500">
             <CheckCircle2 className="w-4 h-4" />
             <span>2FA &amp; Audit Active</span>
@@ -380,7 +380,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-[#131416] text-[11px] font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
+              <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-[#131416] text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
                 <th className="py-3 px-4">Staff Name &amp; Contact</th>
                 <th className="py-3 px-4">Role (RBAC)</th>
                 <th className="py-3 px-4">Department</th>
@@ -413,12 +413,12 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
                           <div className="font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
                             <span>{user.name}</span>
                             {user.id === currentUser.id && (
-                              <span className="text-[10px] font-mono px-1.5 py-0.2 bg-amber-500 text-white rounded font-bold">
+                              <span className="text-xs font-mono px-1.5 py-0.2 bg-amber-500 text-white rounded font-bold">
                                 YOU
                               </span>
                             )}
                           </div>
-                          <div className="text-[11px] text-zinc-500 flex items-center gap-2 mt-0.5">
+                          <div className="text-xs text-zinc-500 flex items-center gap-2 mt-0.5">
                             <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> {user.email}</span>
                             {user.phone && (
                               <span className="flex items-center gap-1 font-mono"><Phone className="w-3 h-3" /> {user.phone}</span>
@@ -441,18 +441,18 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
                     {/* Shift */}
                     <td className="py-3 px-4 whitespace-nowrap">
                       {user.shift === "ALL" ? (
-                        <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
+                        <span className="px-2 py-0.5 rounded text-xs font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
                           All Shifts
                         </span>
                       ) : (
-                        <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 font-mono">
+                        <span className="px-2 py-0.5 rounded text-xs font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 font-mono">
                           Shift {user.shift}
                         </span>
                       )}
                     </td>
 
                     {/* Last Login */}
-                    <td className="py-3 px-4 text-zinc-500 font-mono text-[11px] whitespace-nowrap">
+                    <td className="py-3 px-4 text-zinc-500 font-mono text-xs whitespace-nowrap">
                       {user.last_login || "No login"}
                     </td>
 

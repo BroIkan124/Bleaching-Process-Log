@@ -3,7 +3,7 @@
 import React from "react";
 import { LogEntry } from "@/types";
 import { SHIFTS } from "@/lib/constants";
-import { AlertTriangle, Clock, Lock, Unlock, Check, Sparkles } from "lucide-react";
+import { AlertTriangle, Clock, Lock, Unlock, Check } from "lucide-react";
 import { evaluateSlotAccess } from "@/lib/realtimeTimeline";
 
 interface SlotRailProps {
@@ -35,31 +35,31 @@ export const SlotRail: React.FC<SlotRailProps> = ({
             <span className="text-xs font-bold font-display uppercase tracking-wider text-zinc-900 dark:text-zinc-100 block leading-tight">
               24-Hour Continuous Plant Timeline Rail
             </span>
-            <span className="text-[11px] text-zinc-500 font-mono hidden md:inline mt-0.5 block leading-none">
-              Form RF-FR-003 · Pengisian Terkunci Automatik Mengikut Waktu Nyata Operasi
+            <span className="text-xs text-zinc-500 font-mono hidden md:inline mt-0.5 block leading-none font-medium">
+              Form RF-FR-003 · Automatic Time-Locking Synchronized with Real-Time Plant Clock
             </span>
           </div>
         </div>
 
         {/* Legend */}
-        <div className="flex items-center gap-3 text-[11px] font-medium text-zinc-500 flex-wrap">
+        <div className="flex items-center gap-3 text-xs font-semibold text-zinc-500 flex-wrap">
           <div className="flex items-center gap-1.5">
             <span className="relative flex h-2.5 w-2.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
             </span>
-            <span className="text-amber-600 dark:text-amber-400 font-bold">Slot Semasa (Dibuka)</span>
+            <span className="text-amber-600 dark:text-amber-400 font-bold">Current Active Slot (Open)</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <Lock className="w-3 h-3 text-zinc-400" />
-            <span>Terkunci (Lepas / Akan Datang)</span>
+            <Lock className="w-3.5 h-3.5 text-zinc-400" />
+            <span>Locked (Past / Upcoming)</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-xs" />
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-xs" />
             <span>In-Spec</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-rose-500 shadow-xs" />
+            <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-xs" />
             <span>Out of Spec</span>
           </div>
         </div>
@@ -81,7 +81,7 @@ export const SlotRail: React.FC<SlotRailProps> = ({
             >
               <div className="flex items-center justify-between text-xs font-extrabold text-zinc-800 dark:text-zinc-200 mb-2.5 px-1">
                 <span className="tracking-tight">{shift.name}</span>
-                <span className="font-mono text-zinc-600 dark:text-zinc-300 text-xs bg-white/80 dark:bg-zinc-800/80 px-2 py-0.5 rounded border border-zinc-200 dark:border-zinc-700 font-bold">{shift.hours}</span>
+                <span className="font-mono text-zinc-600 dark:text-zinc-300 text-xs bg-white/80 dark:bg-zinc-800/80 px-2.5 py-0.5 rounded border border-zinc-200 dark:border-zinc-700 font-bold">{shift.hours}</span>
               </div>
 
               <div className="grid grid-cols-8 gap-1.5">
@@ -152,7 +152,7 @@ export const SlotRail: React.FC<SlotRailProps> = ({
                       {/* Supervisor Override Tag */}
                       {isSupervisorOverride && (
                         <span className="absolute -bottom-1 -left-1 p-0.5 rounded-full bg-emerald-500 text-white shadow-2xs">
-                          <Unlock className="w-2 h-2" />
+                          <Unlock className="w-2.5 h-2.5" />
                         </span>
                       )}
                     </button>

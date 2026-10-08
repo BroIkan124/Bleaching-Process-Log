@@ -53,13 +53,13 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
     switch (sheetStatus) {
       case "Draft":
         return (
-          <span className="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
+          <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
             Draft
           </span>
         );
       case "InProgress":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30 shadow-xs">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-bold rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30 shadow-xs">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
@@ -69,14 +69,14 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
         );
       case "Submitted":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/30">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-bold rounded-full bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/30">
             <span className="w-1.5 h-1.5 rounded-full bg-sky-500" />
             <span>Submitted</span>
           </span>
         );
       case "Returned":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-500/30">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-bold rounded-full bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-500/30">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
@@ -86,7 +86,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
         );
       case "Approved":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 shadow-xs">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-bold rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 shadow-xs">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             <span>Approved &amp; Locked</span>
           </span>
@@ -122,13 +122,13 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
               <span className="font-display font-bold text-sm tracking-tight text-zinc-900 dark:text-white">
                 Lam Soon Edible Oils
               </span>
-              <span className="text-[10px] text-zinc-300 dark:text-zinc-700 hidden sm:inline">|</span>
+              <span className="text-xs text-zinc-300 dark:text-zinc-700 hidden sm:inline">|</span>
               <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-300 hidden md:inline">
                 {getSectionTitle()}
               </span>
               {activeTab === "bleaching" && getStatusBadge()}
             </div>
-            <p className="text-[11px] text-zinc-500 font-medium hidden lg:block">
+            <p className="text-xs text-zinc-500 font-medium hidden lg:block">
               Nisshin Process Management System - Refinery Plant Control Line 1
             </p>
           </div>
@@ -144,7 +144,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
                 </span>
-                <span className="text-zinc-500 dark:text-zinc-400">Masa:</span>
+                <span className="text-zinc-500 dark:text-zinc-400">Time:</span>
                 <span className="font-bold text-zinc-900 dark:text-zinc-100 font-mono tracking-tight tabular-nums">
                   {clockState.formattedTime}
                 </span>
@@ -154,10 +154,10 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
 
               {/* Active Slot Badge */}
               <div className="flex items-center gap-1.5">
-                <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold font-mono bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
-                  Slot {clockState.slotTimeLabel} Aktif
+                <span className="px-2 py-0.5 rounded-lg text-xs font-bold font-mono bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                  Slot {clockState.slotTimeLabel} Active
                 </span>
-                <span className="text-[11px] text-zinc-500 font-mono hidden lg:inline">
+                <span className="text-xs text-zinc-500 font-mono hidden lg:inline">
                   ({clockState.shiftLabel})
                 </span>
               </div>
@@ -176,11 +176,11 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
 
           <div className="flex items-center gap-1.5">
             {isOffline ? (
-              <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-semibold font-mono text-[11px]">
+              <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-semibold font-mono text-xs">
                 <WifiOff className="w-3.5 h-3.5" /> Offline
               </span>
             ) : (
-              <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold font-mono text-[11px]">
+              <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold font-mono text-xs">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
@@ -235,14 +235,14 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
             className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-800/90 pl-1.5 pr-2.5 py-1 rounded-xl border border-zinc-200 dark:border-zinc-700/80 text-left select-none transition-all hover:border-amber-500/50 hover:shadow-[0_0_12px_rgba(245,158,11,0.25)] dark:hover:border-amber-500/50 dark:hover:shadow-[0_0_12px_rgba(245,158,11,0.2)]"
             title={`Active User: ${currentRole.name} (${currentRole.role})`}
           >
-            <div className="h-6 w-6 rounded-lg bg-amber-600 text-white flex items-center justify-center font-bold text-[10px] uppercase shrink-0 shadow-2xs">
+            <div className="h-6 w-6 rounded-lg bg-amber-600 text-white flex items-center justify-center font-bold text-xs uppercase shrink-0 shadow-2xs">
               {currentRole.name.slice(0, 2)}
             </div>
             <div className="hidden sm:block leading-tight">
               <span className="block text-xs font-bold text-zinc-900 dark:text-zinc-100 max-w-[120px] truncate">
                 {currentRole.name}
               </span>
-              <span className="block text-[10px] font-mono text-zinc-500 capitalize leading-none mt-0.5">
+              <span className="block text-xs font-mono text-zinc-500 capitalize leading-none mt-0.5">
                 {currentRole.role.replace("_", " ")}
               </span>
             </div>

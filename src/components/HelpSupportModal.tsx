@@ -158,16 +158,16 @@ export default function HelpSupportModal({ isOpen, onClose, currentUser }: HelpS
                 {/* Module 1 */}
                 <div className="bg-[#0B1320] border border-[#1F2E43] hover:border-amber-500/50 rounded-xl p-4 transition-all">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-mono font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/20">
+                    <span className="text-xs font-mono font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/20">
                       OPERATIONS TECHNICIAN
                     </span>
-                    <span className="text-[10px] font-mono text-slate-400">FORM: RF-FR-003</span>
+                    <span className="text-xs font-mono text-slate-400">FORM: RF-FR-003</span>
                   </div>
                   <h4 className="text-sm font-bold text-white mb-1">1. Hourly Readings Entry &amp; Validation</h4>
                   <p className="text-xs text-slate-400 leading-relaxed mb-3">
                     Record hourly flowrate, bleacher vacuum (&ge; 600 mmHg), HE bleaching temp (100&ndash;115&deg;C), dosing (acid &amp; bleaching earth), and leaf filter cuts. Any out-of-spec value triggers an immediate alert and requires mandatory corrective remarks.
                   </p>
-                  <div className="text-[11px] text-slate-300 bg-[#070C16] p-2.5 rounded-lg border border-[#172437] font-mono">
+                  <div className="text-xs text-slate-300 bg-[#070C16] p-2.5 rounded-lg border border-[#172437] font-mono">
                     💡 Tip: Entries take under 45 seconds per hour with automatic data validation and tablet-friendly keyboards.
                   </div>
                 </div>
@@ -175,16 +175,16 @@ export default function HelpSupportModal({ isOpen, onClose, currentUser }: HelpS
                 {/* Module 2 */}
                 <div className="bg-[#0B1320] border border-[#1F2E43] hover:border-amber-500/50 rounded-xl p-4 transition-all">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded border border-emerald-400/20">
+                    <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded border border-emerald-400/20">
                       QC LABORATORY CHEMIST
                     </span>
-                    <span className="text-[10px] font-mono text-slate-400">STANDARD: PORAM</span>
+                    <span className="text-xs font-mono text-slate-400">STANDARD: PORAM</span>
                   </div>
                   <h4 className="text-sm font-bold text-white mb-1">2. QC Verification &amp; Lovibond Color</h4>
                   <p className="text-xs text-slate-400 leading-relaxed mb-3">
                     Chemist conducts bench testing on FFA% and Lovibond Color (5¼&quot; Cell Red/Yellow). Color readings matching or exceeding threshold (3.0 Red / 30 Yellow max) are flagged for bleaching earth dosage correction.
                   </p>
-                  <div className="text-[11px] text-slate-300 bg-[#070C16] p-2.5 rounded-lg border border-[#172437] font-mono">
+                  <div className="text-xs text-slate-300 bg-[#070C16] p-2.5 rounded-lg border border-[#172437] font-mono">
                     💡 Tip: QC samples synchronize across all shifts and link directly to daily production batches.
                   </div>
                 </div>
@@ -192,16 +192,16 @@ export default function HelpSupportModal({ isOpen, onClose, currentUser }: HelpS
                 {/* Module 3 */}
                 <div className="bg-[#0B1320] border border-[#1F2E43] hover:border-amber-500/50 rounded-xl p-4 transition-all">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-mono font-bold text-purple-400 bg-purple-400/10 px-2 py-0.5 rounded border border-purple-400/20">
+                    <span className="text-xs font-mono font-bold text-purple-400 bg-purple-400/10 px-2 py-0.5 rounded border border-purple-400/20">
                       SHIFT SUPERVISOR
                     </span>
-                    <span className="text-[10px] font-mono text-slate-400">ACTION: APPROVAL</span>
+                    <span className="text-xs font-mono text-slate-400">ACTION: APPROVAL</span>
                   </div>
                   <h4 className="text-sm font-bold text-white mb-1">3. Supervisor Monitoring &amp; Final Sign-Off</h4>
                   <p className="text-xs text-slate-400 leading-relaxed mb-3">
                     Live stream monitors real-time parameter logs, out-of-spec incidents, and technician acknowledgments. Once slot 0700 completes 24 hours, supervisor reviews and locks the sheet permanently.
                   </p>
-                  <div className="text-[11px] text-slate-300 bg-[#070C16] p-2.5 rounded-lg border border-[#172437] font-mono">
+                  <div className="text-xs text-slate-300 bg-[#070C16] p-2.5 rounded-lg border border-[#172437] font-mono">
                     💡 Tip: Supervisor approvals seal the document and unlock official A4 landscape PDF export for audits.
                   </div>
                 </div>
@@ -209,16 +209,16 @@ export default function HelpSupportModal({ isOpen, onClose, currentUser }: HelpS
                 {/* Module 4 */}
                 <div className="bg-[#0B1320] border border-[#1F2E43] hover:border-amber-500/50 rounded-xl p-4 transition-all">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-mono font-bold text-sky-400 bg-sky-400/10 px-2 py-0.5 rounded border border-sky-400/20">
+                    <span className="text-xs font-mono font-bold text-sky-400 bg-sky-400/10 px-2 py-0.5 rounded border border-sky-400/20">
                       SYSTEM ADMINISTRATOR
                     </span>
-                    <span className="text-[10px] font-mono text-slate-400">ISO 9001 / HALAL</span>
+                    <span className="text-xs font-mono text-slate-400">ISO 9001 / HALAL</span>
                   </div>
                   <h4 className="text-sm font-bold text-white mb-1">4. User Management &amp; Immutable Audit Trail</h4>
                   <p className="text-xs text-slate-400 leading-relaxed mb-3">
                     Admins manage plant staff accounts, roles (Technician, Supervisor, QC Chemist, QA Manager, Admin), shift assignments, and monitor historical performance reports.
                   </p>
-                  <div className="text-[11px] text-slate-300 bg-[#070C16] p-2.5 rounded-lg border border-[#172437] font-mono">
+                  <div className="text-xs text-slate-300 bg-[#070C16] p-2.5 rounded-lg border border-[#172437] font-mono">
                     💡 Tip: Export daily reports to CSV or print the official A4 sheet with 100% fidelity to the physical form.
                   </div>
                 </div>
@@ -236,7 +236,7 @@ export default function HelpSupportModal({ isOpen, onClose, currentUser }: HelpS
                 </h3>
                 <div className="overflow-x-auto rounded-lg border border-[#1F2E43]">
                   <table className="w-full text-xs text-left">
-                    <thead className="bg-[#080D18] text-slate-400 uppercase text-[10px] font-mono border-b border-[#1F2E43]">
+                    <thead className="bg-[#080D18] text-slate-400 uppercase text-xs font-mono border-b border-[#1F2E43]">
                       <tr>
                         <th className="py-2.5 px-3">Parameter</th>
                         <th className="py-2.5 px-3">Standard Operating Range</th>
@@ -369,17 +369,17 @@ export default function HelpSupportModal({ isOpen, onClose, currentUser }: HelpS
                   <div className="p-3 rounded-lg bg-[#0E1726] border border-[#1F2E43]">
                     <div className="text-amber-400 font-bold">SHIFT 1 (Morning)</div>
                     <div className="text-slate-200 text-sm mt-0.5">08:00 &ndash; 15:00 MYT</div>
-                    <div className="text-[10px] text-slate-400 mt-1">Slots: 0800 &ndash; 1500 (Idx 0&ndash;7)</div>
+                    <div className="text-xs text-slate-400 mt-1">Slots: 0800 &ndash; 1500 (Idx 0&ndash;7)</div>
                   </div>
                   <div className="p-3 rounded-lg bg-[#0E1726] border border-[#1F2E43]">
                     <div className="text-sky-400 font-bold">SHIFT 2 (Afternoon)</div>
                     <div className="text-slate-200 text-sm mt-0.5">16:00 &ndash; 23:00 MYT</div>
-                    <div className="text-[10px] text-slate-400 mt-1">Slots: 1600 &ndash; 2300 (Idx 8&ndash;15)</div>
+                    <div className="text-xs text-slate-400 mt-1">Slots: 1600 &ndash; 2300 (Idx 8&ndash;15)</div>
                   </div>
                   <div className="p-3 rounded-lg bg-[#0E1726] border border-[#1F2E43]">
                     <div className="text-purple-400 font-bold">SHIFT 3 (Night)</div>
                     <div className="text-slate-200 text-sm mt-0.5">24:00 &ndash; 07:00 MYT</div>
-                    <div className="text-[10px] text-slate-400 mt-1">Slots: 2400 &ndash; 0700 (Idx 16&ndash;23)</div>
+                    <div className="text-xs text-slate-400 mt-1">Slots: 2400 &ndash; 0700 (Idx 16&ndash;23)</div>
                   </div>
                 </div>
               </div>
@@ -391,30 +391,30 @@ export default function HelpSupportModal({ isOpen, onClose, currentUser }: HelpS
             <div className="space-y-6 animate-in fade-in duration-150">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
                 <div className="bg-[#0E1726] p-3.5 rounded-xl border border-[#1F2E43]">
-                  <div className="text-slate-400 text-[10px] uppercase">Database Engine</div>
+                  <div className="text-slate-400 text-xs uppercase font-bold">Database Engine</div>
                   <div className="text-emerald-400 font-bold text-sm mt-1 flex items-center gap-1.5">
                     <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
                     <span>ONLINE</span>
                   </div>
-                  <div className="text-[10px] text-slate-400 mt-1">InsForge Postgres (ap-southeast)</div>
+                  <div className="text-xs text-slate-400 mt-1">InsForge Postgres (ap-southeast)</div>
                 </div>
 
                 <div className="bg-[#0E1726] p-3.5 rounded-xl border border-[#1F2E43]">
-                  <div className="text-slate-400 text-[10px] uppercase">Plant Timezone</div>
+                  <div className="text-slate-400 text-xs uppercase font-bold">Plant Timezone</div>
                   <div className="text-amber-400 font-bold text-sm mt-1">Asia/Kuala_Lumpur</div>
-                  <div className="text-[10px] text-slate-400 mt-1">MYT (UTC +08:00)</div>
+                  <div className="text-xs text-slate-400 mt-1">MYT (UTC +08:00)</div>
                 </div>
 
                 <div className="bg-[#0E1726] p-3.5 rounded-xl border border-[#1F2E43]">
-                  <div className="text-slate-400 text-[10px] uppercase">Compliance Level</div>
+                  <div className="text-slate-400 text-xs uppercase font-bold">Compliance Level</div>
                   <div className="text-purple-400 font-bold text-sm mt-1">ISO 9001:2015</div>
-                  <div className="text-[10px] text-slate-400 mt-1">Halal Audit Trail Verified</div>
+                  <div className="text-xs text-slate-400 mt-1">Halal Audit Trail Verified</div>
                 </div>
 
                 <div className="bg-[#0E1726] p-3.5 rounded-xl border border-[#1F2E43]">
-                  <div className="text-slate-400 text-[10px] uppercase">Application Build</div>
+                  <div className="text-slate-400 text-xs uppercase font-bold">Application Build</div>
                   <div className="text-white font-bold text-sm mt-1">v2.1 Production</div>
-                  <div className="text-[10px] text-slate-400 mt-1">Next.js 15 + React 19</div>
+                  <div className="text-xs text-slate-400 mt-1">Next.js 15 + React 19</div>
                 </div>
               </div>
 
@@ -433,7 +433,7 @@ export default function HelpSupportModal({ isOpen, onClose, currentUser }: HelpS
 
         {/* Modal Footer */}
         <div className="flex items-center justify-between px-6 py-3.5 border-t border-[#1F2E43] bg-[#0E1726]/80 text-xs">
-          <div className="flex items-center gap-2 text-slate-400 font-mono text-[11px]">
+          <div className="flex items-center gap-2 text-slate-400 font-mono text-xs">
             <Info className="h-3.5 w-3.5 text-amber-500" />
             <span>Refinery Process Management System · Form RF-FR-003 Rev 03</span>
           </div>

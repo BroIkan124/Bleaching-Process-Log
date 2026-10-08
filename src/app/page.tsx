@@ -115,7 +115,7 @@ export default function BleachingProcessLogApp() {
   const [clockState, setClockState] = useState<RealtimeClockState>(() => getRealtimeClockState(null));
   const [supervisorUnlockedSlots, setSupervisorUnlockedSlots] = useState<number[]>([]);
 
-  // 7. Centralized QC Reports for Multi-Department Workflow Handover (Alur 1 -> Alur 4)
+  // 7. Centralized QC Reports for Multi-Department Workflow Handover (Stage 1 -> Stage 4)
   const [qcReports, setQcReports] = useState<SampleReport[]>(() => {
     return (QC_SNAPSHOT_DATA.samples as any[]) || [];
   });
@@ -186,7 +186,7 @@ export default function BleachingProcessLogApp() {
     setIsDrawerOpen(true);
   };
 
-  // Handle Save Slot - Multi-Department Workflow Handover: Bleaching Log -> QC Lab -> Reports -> Supervisor (ALUR 1)
+  // Handle Save Slot - Multi-Department Workflow Handover: Bleaching Log -> QC Lab -> Reports -> Supervisor (STAGE 1)
   const handleSaveSlot = (updatedEntry: LogEntry) => {
     if (!currentUser) return;
     const updatedEntries = sheet.entries.map((e, idx) => 
@@ -196,7 +196,7 @@ export default function BleachingProcessLogApp() {
     const hasSavedAny = updatedEntries.some(e => e.is_saved);
     const newStatus = sheet.status === 'Draft' && hasSavedAny ? 'InProgress' : sheet.status;
 
-    // 1. Bleaching Log -> QC Lab automatic handover (Alur 1)
+    // 1. Bleaching Log -> QC Lab automatic handover (Stage 1)
     const { updatedReports, newEvent: pipelineEvent } = createOrUpdateQcSampleFromLogEntry(
       updatedEntry,
       sheet,
@@ -226,9 +226,9 @@ export default function BleachingProcessLogApp() {
       timestamp: new Date().toISOString(),
       source: 'Bleaching Log',
       title: hasAlert 
-        ? `[ALUR 1] ALERT: Luar Spesifikasi Direkodkan (Slot ${updatedEntry.time_label} Hrs)`
-        : `[ALUR 1] Slot ${updatedEntry.time_label} Hrs Berjaya Disimpan & Diselaraskan`,
-      description: `${currentUser.name} merekodkan Slot ${updatedEntry.time_label} (Flow ${updatedEntry.flowrate_set ?? '-'} MT/HR, Vac ${updatedEntry.vacuum_mmhg ?? '-'} mmHg, Temp ${updatedEntry.he_temp_c ?? '-'}°C). Sampel makmal diselaraskan ke QC Lab.`,
+        ? `[STAGE 1] ALERT: Out of Spec Recorded (Slot ${updatedEntry.time_label} Hrs)`
+        : `[STAGE 1] Slot ${updatedEntry.time_label} Hrs Successfully Saved & Synchronized`,
+      description: `${currentUser.name} recorded Slot ${updatedEntry.time_label} (Flow ${updatedEntry.flowrate_set ?? '-'} MT/HR, Vac ${updatedEntry.vacuum_mmhg ?? '-'} mmHg, Temp ${updatedEntry.he_temp_c ?? '-'}°C). Lab sample synchronized to QC Lab.`,
       severity: hasAlert ? 'alert' : 'success',
       author_name: currentUser.name,
       author_role: currentUser.role,
@@ -241,10 +241,10 @@ export default function BleachingProcessLogApp() {
     setSupervisorEvents(prev => [slotEvent, pipelineEvent, ...prev]);
 
     setIsDrawerOpen(false);
-    showNotice(`Slot ${updatedEntry.time_label} Hrs disimpan & diselaraskan ke QC Lab (SAR-2026-${updatedEntry.time_label}).`, 'success');
+    showNotice(`Slot ${updatedEntry.time_label} Hrs saved & synchronized to QC Lab (SAR-2026-${updatedEntry.time_label}).`, 'success');
   };
 
-  // QC Lab -> Bleaching Log & Reports Sync (ALUR 2)
+  // QC Lab -> Bleaching Log & Reports Sync (STAGE 2)
   const handleUpdateQcReport = (report: SampleReport) => {
     setQcReports(prev => prev.map(r => r.id === report.id ? report : r));
     
@@ -262,7 +262,7 @@ export default function BleachingProcessLogApp() {
       if (newEvent) {
         setSupervisorEvents(prev => [newEvent, ...prev]);
       }
-      showNotice(`Keputusan analisis ${report.report_no} telah diselaraskan ke Bleaching Log & Reports.`, 'success');
+      showNotice(`Analysis results for ${report.report_no} synchronized to Bleaching Log & Reports.`, 'success');
     }
   };
 
@@ -272,8 +272,8 @@ export default function BleachingProcessLogApp() {
       id: `evt-qc-create-${Date.now()}`,
       timestamp: new Date().toISOString(),
       source: 'QC Lab',
-      title: `[ALUR 2] Pendaftaran Sampel Baharu: ${newReport.report_no}`,
-      description: `${currentUser?.name} mendaftarkan sampel makmal baharu (${newReport.lot_no}).`,
+      title: `[STAGE 2] New Sample Registered: ${newReport.report_no}`,
+      description: `${currentUser?.name} registered new laboratory sample (${newReport.lot_no}).`,
       severity: 'info',
       author_name: currentUser?.name || 'QC Staff',
       author_role: currentUser?.role || 'technician',
@@ -281,10 +281,10 @@ export default function BleachingProcessLogApp() {
       acknowledged: true,
     };
     setSupervisorEvents(prev => [newEvent, ...prev]);
-    showNotice(`Sampel makmal ${newReport.report_no} didaftarkan.`, 'info');
+    showNotice(`Laboratory sample ${newReport.report_no} registered.`, 'info');
   };
 
-  // Supervisor Emergency Slot Unlock (ALUR 4)
+  // Supervisor Emergency Slot Unlock (STAGE 4)
   const handleToggleSupervisorOverride = (slotIndex: number) => {
     const isCurrentlyUnlocked = supervisorUnlockedSlots.includes(slotIndex);
     const updated = isCurrentlyUnlocked 
@@ -298,9 +298,9 @@ export default function BleachingProcessLogApp() {
       timestamp: new Date().toISOString(),
       source: 'Supervisor Monitoring',
       title: isCurrentlyUnlocked 
-        ? `[ALUR 4] Kunci Masa Dipulihkan: Slot ${slotLabel} Hrs`
-        : `[ALUR 4] PELEPASAN KECEMASAN: Slot ${slotLabel} Hrs Dibuka oleh Supervisor`,
-      description: `Supervisor ${currentUser?.name} telah ${isCurrentlyUnlocked ? 'mengunci semula' : 'membuka kunci secara manual'} Slot ${slotLabel} Hrs bagi tujuan pembetulan audit log.`,
+        ? `[STAGE 4] Time Lock Restored: Slot ${slotLabel} Hrs`
+        : `[STAGE 4] EMERGENCY OVERRIDE: Slot ${slotLabel} Hrs Unlocked by Supervisor`,
+      description: `Supervisor ${currentUser?.name} ${isCurrentlyUnlocked ? 're-locked' : 'manually unlocked'} Slot ${slotLabel} Hrs for audit log corrections.`,
       severity: isCurrentlyUnlocked ? 'info' : 'warning',
       author_name: currentUser?.name || 'Supervisor',
       author_role: currentUser?.role || 'supervisor',
@@ -309,17 +309,17 @@ export default function BleachingProcessLogApp() {
     };
     setSupervisorEvents(prev => [newEvent, ...prev]);
     showNotice(
-      isCurrentlyUnlocked ? `Slot ${slotLabel} Hrs dikunci semula.` : `Pelepasan kecemasan: Slot ${slotLabel} Hrs dibuka untuk operator.`,
-      isCurrentlyUnlocked ? 'info' : 'info'
+      isCurrentlyUnlocked ? `Slot ${slotLabel} Hrs re-locked.` : `Emergency override: Slot ${slotLabel} Hrs unlocked for operator.`,
+      'info'
     );
   };
 
   const handleSetSimulatedHour = (hour: number | null) => {
     setSimulatedHour(hour);
     if (hour !== null) {
-      showNotice(`Simulasi masa aktif ditetapkan ke jam ${hour.toString().padStart(2, '0')}:00 untuk menguji peraturan kunci slot.`, 'info');
+      showNotice(`Active time simulation set to ${hour.toString().padStart(2, '0')}:00 to test slot locking rules.`, 'info');
     } else {
-      showNotice("Masa kembali ke mod masa nyata (Live Clock).", 'success');
+      showNotice("Clock returned to live real-time mode.", 'success');
     }
   };
 
@@ -616,7 +616,7 @@ export default function BleachingProcessLogApp() {
             </>
           )}
 
-          {/* Tab 2: QC Management Tab View (ALUR 2) */}
+          {/* Tab 2: QC Management Tab View (STAGE 2) */}
           {activeTab === 'qc' && (
             <QCManagementView
               currentUser={currentUser}
@@ -627,7 +627,7 @@ export default function BleachingProcessLogApp() {
             />
           )}
 
-          {/* Tab 3: Reports & Analytics Tab View (ALUR 3) */}
+          {/* Tab 3: Reports & Analytics Tab View (STAGE 3) */}
           {activeTab === 'reports' && (
             <ReportsView
               sheet={sheet}
@@ -636,7 +636,7 @@ export default function BleachingProcessLogApp() {
             />
           )}
 
-          {/* Tab 4: Supervisor Monitoring View (ALUR 4) */}
+          {/* Tab 4: Supervisor Monitoring View (STAGE 4) */}
           {activeTab === 'supervisor' && (
             <SupervisorMonitoringView
               currentUser={currentUser}

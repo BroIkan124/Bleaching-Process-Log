@@ -8,10 +8,8 @@ import {
   Edit3, 
   Eye, 
   Clock, 
-  CheckCircle2,
-  Lock,
-  Unlock,
-  Sparkles
+  Lock, 
+  Unlock 
 } from "lucide-react";
 import { evaluateSlotAccess } from "@/lib/realtimeTimeline";
 
@@ -29,9 +27,7 @@ interface HourlyTableGridProps {
 
 export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
   entries,
-  currentShift,
   currentUser,
-  isLocked,
   onSelectSlot,
   selectedSlotIndex,
   activeCurrentHourIndex,
@@ -50,30 +46,30 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
             <h2 className="font-display font-bold text-sm text-zinc-900 dark:text-zinc-100 uppercase tracking-wider">
               Bleaching Process Log Sheet (RF-FR-003 Rev 03)
             </h2>
-            <p className="text-[11px] text-zinc-500 font-medium">
-              Complete 24-Hour Continuous Telemetry · Akses Pengisian Berdasarkan Waktu Nyata Operasi
+            <p className="text-xs text-zinc-500 font-medium">
+              Complete 24-Hour Continuous Telemetry · Real-Time Access Window Verification
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 text-xs font-medium text-zinc-500 flex-wrap">
+        <div className="flex items-center gap-3 text-xs font-semibold text-zinc-500 flex-wrap">
           <span className="flex items-center gap-1.5">
-            <span className="relative flex h-2 w-2">
+            <span className="relative flex h-2.5 w-2.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
             </span>
-            <span className="font-bold text-amber-600 dark:text-amber-400">Slot Semasa (Dibuka)</span>
+            <span className="font-bold text-amber-600 dark:text-amber-400">Active Slot (Open)</span>
           </span>
           <span className="flex items-center gap-1.5">
-            <Lock className="w-3 h-3 text-zinc-400" />
-            <span className="font-medium text-zinc-600 dark:text-zinc-400">Terkunci (Lepas / Akan Datang)</span>
+            <Lock className="w-3.5 h-3.5 text-zinc-400" />
+            <span className="font-medium text-zinc-600 dark:text-zinc-400">Locked (Past / Upcoming)</span>
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-xs" />
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-xs" />
             <span className="font-medium text-zinc-700 dark:text-zinc-300">In-Spec</span>
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-rose-500 shadow-xs" />
+            <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-xs" />
             <span className="font-medium text-zinc-700 dark:text-zinc-300">Out of Spec</span>
           </span>
         </div>
@@ -83,8 +79,8 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-left text-xs">
           <thead>
-            {/* Unified Sticky Glassmorphic Header */}
-            <tr className="sticky top-0 z-20 backdrop-blur-xl bg-zinc-100/95 dark:bg-[#0E1626]/95 text-zinc-700 dark:text-zinc-300 font-bold border-b border-zinc-200 dark:border-zinc-800 text-[11px] uppercase tracking-wider select-none shadow-xs">
+            {/* Unified Sticky Header */}
+            <tr className="sticky top-0 z-20 backdrop-blur-xl bg-zinc-100/95 dark:bg-[#0E1626]/95 text-zinc-700 dark:text-zinc-300 font-bold border-b border-zinc-200 dark:border-zinc-800 text-xs uppercase tracking-wider select-none shadow-xs">
               <th className="py-3 px-3 text-center border-r border-zinc-200 dark:border-zinc-800 w-24">Time (Hrs)</th>
               <th className="py-3 px-3 text-right border-r border-zinc-200 dark:border-zinc-800">Flow (MT/HR)</th>
               <th className="py-3 px-2 text-center border-r border-zinc-200 dark:border-zinc-800">Acid Dose</th>
@@ -112,7 +108,6 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
               const isSupervisorOverride = supervisorUnlockedSlots.includes(idx);
               const access = evaluateSlotAccess(idx, activeCurrentHourIndex, isSupervisorOverride, currentUser.role);
 
-              const hasOutOfSpec = entry.out_of_spec && entry.out_of_spec.length > 0;
               const isTempOutOfSpec = typeof entry.he_temp_c === 'number' && (entry.he_temp_c < 70 || entry.he_temp_c > 115);
               const isVacOutOfSpec = typeof entry.vacuum_mmhg === 'number' && entry.vacuum_mmhg < 600;
               const isSaved = entry.is_saved;
@@ -127,21 +122,21 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
                   {/* Shift Divider Banners */}
                   {isShift1Start && (
                     <tr className="bg-amber-500/[0.06] dark:bg-amber-500/[0.08] text-zinc-800 dark:text-zinc-200 border-y border-amber-500/20 select-none shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-                      <td colSpan={14} className="py-2 px-4 font-bold text-[11px] tracking-wide">
+                      <td colSpan={14} className="py-2.5 px-4 font-bold text-xs tracking-wide">
                         <span className="text-amber-600 dark:text-amber-400 font-mono font-bold">SHIFT 1 (0800 - 1500 HRS)</span> - On-Duty Operations
                       </td>
                     </tr>
                   )}
                   {isShift2Start && (
                     <tr className="bg-sky-500/[0.06] dark:bg-sky-500/[0.08] text-zinc-800 dark:text-zinc-200 border-y border-sky-500/20 select-none shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-                      <td colSpan={14} className="py-2 px-4 font-bold text-[11px] tracking-wide">
+                      <td colSpan={14} className="py-2.5 px-4 font-bold text-xs tracking-wide">
                         <span className="text-sky-600 dark:text-sky-400 font-mono font-bold">SHIFT 2 (1600 - 2300 HRS)</span> - On-Duty Operations
                       </td>
                     </tr>
                   )}
                   {isShift3Start && (
                     <tr className="bg-purple-500/[0.06] dark:bg-purple-500/[0.08] text-zinc-800 dark:text-zinc-200 border-y border-purple-500/20 select-none shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-                      <td colSpan={14} className="py-2 px-4 font-bold text-[11px] tracking-wide">
+                      <td colSpan={14} className="py-2.5 px-4 font-bold text-xs tracking-wide">
                         <span className="text-purple-600 dark:text-purple-400 font-mono font-bold">SHIFT 3 (2400 - 0700 HRS)</span> - On-Duty Operations
                       </td>
                     </tr>
@@ -220,7 +215,7 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
                     </td>
 
                     {/* Filter Cut */}
-                    <td className="py-2.5 px-2 text-center border-r border-zinc-200/70 dark:border-zinc-800/70 font-mono text-[11px]">
+                    <td className="py-2.5 px-2 text-center border-r border-zinc-200/70 dark:border-zinc-800/70 font-mono text-xs">
                       {entry.filter_change_time || "-"}
                     </td>
 
@@ -241,7 +236,7 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
 
                     {/* Remarks */}
                     <td className="py-2.5 px-3 border-r border-zinc-200/70 dark:border-zinc-800/70 text-zinc-600 dark:text-zinc-300 truncate max-w-[220px]">
-                      {entry.remarks || <span className="text-zinc-400 dark:text-zinc-600 italic">Tiada catatan</span>}
+                      {entry.remarks || <span className="text-zinc-400 dark:text-zinc-600 italic">No remarks recorded</span>}
                     </td>
 
                     {/* Actions / Real-time Status */}
@@ -266,28 +261,28 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
                       >
                         {isCurrent ? (
                           <>
-                            <Edit3 className="w-3 h-3 text-white" />
-                            <span>Log (Buka)</span>
+                            <Edit3 className="w-3.5 h-3.5 text-white" />
+                            <span>Log Entry</span>
                           </>
                         ) : isSupervisorOverride ? (
                           <>
-                            <Unlock className="w-3 h-3 text-emerald-500" />
+                            <Unlock className="w-3.5 h-3.5 text-emerald-500" />
                             <span>Override</span>
                           </>
                         ) : isSaved ? (
                           <>
-                            <Eye className="w-3 h-3 text-zinc-400" />
-                            <span>Semak</span>
+                            <Eye className="w-3.5 h-3.5 text-zinc-400" />
+                            <span>Review</span>
                           </>
                         ) : access.status === 'past_locked' ? (
                           <>
-                            <Lock className="w-3 h-3 text-zinc-400" />
-                            <span>Terkunci</span>
+                            <Lock className="w-3.5 h-3.5 text-zinc-400" />
+                            <span>Locked</span>
                           </>
                         ) : (
                           <>
-                            <Clock className="w-3 h-3 text-zinc-400" />
-                            <span>Terkunci</span>
+                            <Clock className="w-3.5 h-3.5 text-zinc-400" />
+                            <span>Pending</span>
                           </>
                         )}
                       </button>

@@ -271,7 +271,7 @@ export function RadioSelect({
 
   // Size specific styling for trigger
   const sizeClasses = {
-    xs: "px-2 py-1 text-[11px] rounded-lg",
+    xs: "px-2.5 py-1 text-xs rounded-lg",
     sm: "px-2.5 py-1.5 text-xs rounded-xl",
     md: "px-3 py-2 text-xs rounded-xl",
   }[size];

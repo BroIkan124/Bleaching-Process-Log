@@ -107,7 +107,7 @@ export const SupervisorReviewModal: React.FC<SupervisorReviewModalProps> = ({
           {/* Summary metrics */}
           <div className="grid grid-cols-3 gap-3">
             <div className="telemetry-card p-3 rounded-xl">
-              <span className="text-[11px] text-zinc-500 font-semibold block font-display">Total Slots Filled</span>
+              <span className="text-xs text-zinc-500 font-semibold block font-display">Total Slots Filled</span>
               <span className="text-lg font-bold font-mono text-zinc-900 dark:text-white mt-0.5 block tabular-nums">
                 {completedSlots} / 24
               </span>
@@ -118,14 +118,14 @@ export const SupervisorReviewModal: React.FC<SupervisorReviewModalProps> = ({
                 ? 'bg-rose-500/10 border-rose-500/30 text-rose-800 dark:text-rose-200' 
                 : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-800 dark:text-emerald-200'
             }`}>
-              <span className="text-[11px] font-semibold block font-display">Out-of-Spec Readings</span>
+              <span className="text-xs font-semibold block font-display">Out-of-Spec Readings</span>
               <span className="text-lg font-bold font-mono mt-0.5 block tabular-nums">
                 {outOfSpecSlots.length} Slots
               </span>
             </div>
 
             <div className="telemetry-card p-3 rounded-xl">
-              <span className="text-[11px] text-zinc-500 font-semibold block font-display">Reviewer</span>
+              <span className="text-xs text-zinc-500 font-semibold block font-display">Reviewer</span>
               <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate block mt-1 font-mono">
                 {currentUser.name}
               </span>

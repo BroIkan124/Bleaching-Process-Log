@@ -140,7 +140,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
             </div>
 
             {/* Technician Shift Assignments */}
-            <div className="grid grid-cols-3 gap-2 text-[11px] text-gray-800">
+            <div className="grid grid-cols-3 gap-2 text-xs text-gray-800">
               <div>
                 <strong>Tech 1st Shift (0800-1500): </strong>
                 <span>{sheet.tech_s1_name || "Ahmad Razif"}</span>
@@ -157,25 +157,25 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
           </div>
 
           {/* Operating Parameters Block */}
-          <div className="border border-black p-2 mb-2 text-[11px]">
+          <div className="border border-black p-2 mb-2 text-xs">
             <div className="grid grid-cols-4 gap-2 divide-x divide-gray-300">
               <div className="px-1">
-                <strong className="block text-[10px] text-gray-600 uppercase">Input Flowrate</strong>
+                <strong className="block text-xs text-gray-600 uppercase">Input Flowrate</strong>
                 <div>MT/HR: <span className="font-mono font-bold">{sheet.input_mt_hr ?? '-'}</span></div>
                 <div>MT/DAY: <span className="font-mono font-bold">{sheet.input_mt_day ?? '-'}</span></div>
               </div>
               <div className="px-2">
-                <strong className="block text-[10px] text-gray-600 uppercase">Degumming Acid ({sheet.acid_type})</strong>
+                <strong className="block text-xs text-gray-600 uppercase">Degumming Acid ({sheet.acid_type})</strong>
                 <div>Mm: <span className="font-mono font-bold">{sheet.acid_mm ?? '-'}</span> | Cm/Hr: <span className="font-mono font-bold">{sheet.acid_cm_hr ?? '-'}</span></div>
                 <div>%: <span className="font-mono font-bold">{sheet.acid_pct ?? '-'}%</span></div>
               </div>
               <div className="px-2">
-                <strong className="block text-[10px] text-gray-600 uppercase">Bleaching Earth ({sheet.earth_type || 'Standard'})</strong>
+                <strong className="block text-xs text-gray-600 uppercase">Bleaching Earth ({sheet.earth_type || 'Standard'})</strong>
                 <div>Setting: <span className="font-mono font-bold">{sheet.earth_setting ?? '-'}</span> | Min %: <span className="font-mono font-bold">{sheet.earth_min_pct ?? '-'}</span></div>
                 <div>Kgs/Day: <span className="font-mono font-bold">{sheet.earth_kgs_day ?? '-'}</span></div>
               </div>
               <div className="px-2">
-                <strong className="block text-[10px] text-gray-600 uppercase">Filter Aids</strong>
+                <strong className="block text-xs text-gray-600 uppercase">Filter Aids</strong>
                 <div>1: {sheet.aid1_type || '-'} ({sheet.aid1_qty ?? '-'} kg)</div>
                 <div>2: {sheet.aid2_type || '-'} ({sheet.aid2_qty ?? '-'} kg)</div>
               </div>
@@ -183,7 +183,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
           </div>
 
           {/* 24-Hour Process Grid Table */}
-          <table className="w-full border-2 border-black border-collapse text-[10px] text-center mb-3">
+          <table className="w-full border-2 border-black border-collapse text-xs text-center mb-3">
             <thead>
               <tr className="bg-gray-100 border-b border-black font-bold">
                 <th className="border border-black py-1 px-1">Time<br/>(Hrs)</th>
@@ -221,7 +221,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
                     <td className="border border-black py-0.5 font-mono">{entry.ffa_pct ?? ''}</td>
                     <td className="border border-black py-0.5 font-mono">{entry.colour_r ?? ''}</td>
                     <td className="border border-black py-0.5 font-mono">{entry.colour_y ?? ''}</td>
-                    <td className="border border-black py-0.5 text-left px-1 font-mono text-[9px] truncate">
+                    <td className="border border-black py-0.5 text-left px-1 font-mono text-xs truncate">
                       {entry.remarks}
                     </td>
                   </tr>
@@ -248,7 +248,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
               </div>
             </div>
 
-            <div className="text-[10px] text-gray-500 font-mono">
+            <div className="text-xs text-gray-500 font-mono">
               E-Verified System RF-FR-003 Rev 03
             </div>
           </div>

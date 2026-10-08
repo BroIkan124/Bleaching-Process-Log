@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Clock, Shield, Lock, Unlock, Play, CheckCircle2, AlertCircle, RefreshCw, Sparkles, Layers } from "lucide-react";
+import { Clock, Unlock } from "lucide-react";
 import { RealtimeClockState, getHourForSlotIndex } from "@/lib/realtimeTimeline";
 
 interface RealtimeTimelineBannerProps {
@@ -44,50 +44,50 @@ export const RealtimeTimelineBanner: React.FC<RealtimeTimelineBannerProps> = ({
               <span className="font-mono font-extrabold text-base tracking-tight text-zinc-900 dark:text-white">
                 {clockState.formattedTime}
               </span>
-              <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-mono">
-                {clockState.isSimulated ? "SIMULASI UJIAN" : "LIVE MASA NYATA"}
+              <span className="text-xs uppercase font-bold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-mono">
+                {clockState.isSimulated ? "TEST SIMULATION" : "LIVE REAL-TIME"}
               </span>
-              <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 font-display">
-                Slot {clockState.slotLabel} ({formattedSlotHour}) AKTIF
+              <span className="text-xs px-3 py-1 rounded-full font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 font-display">
+                Slot {clockState.slotLabel} ({formattedSlotHour}) ACTIVE
               </span>
             </div>
 
-            <p className="text-xs text-zinc-600 dark:text-zinc-300 font-medium mt-0.5 flex items-center gap-1.5 flex-wrap">
-              <span className="font-bold text-zinc-800 dark:text-zinc-200">Peraturan Akses Operasi:</span>
+            <p className="text-xs text-zinc-600 dark:text-zinc-300 font-medium mt-1 flex items-center gap-1.5 flex-wrap">
+              <span className="font-bold text-zinc-800 dark:text-zinc-200">Operational Access Policy:</span>
               <span className="text-zinc-500 dark:text-zinc-400">
-                Hanya slot <strong className="text-amber-600 dark:text-amber-400 font-mono">{clockState.slotLabel}</strong> dibenarkan untuk diisi. Slot lepas dikunci, slot akan datang belum dibuka.
+                Only slot <strong className="text-amber-600 dark:text-amber-400 font-mono">{clockState.slotLabel}</strong> is open for data entry. Past slots are locked, future slots are pending.
               </span>
             </p>
           </div>
         </div>
 
-        {/* Right: Quick Simulation Tester (Ujian Peraturan Jam) */}
-        <div className="flex items-center gap-2 flex-wrap bg-zinc-100/90 dark:bg-black/40 p-2 rounded-xl border border-zinc-200/90 dark:border-white/10 shadow-inner">
-          <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 px-1 font-display uppercase tracking-wider">
-            Uji Simulasi Jam:
+        {/* Right: Quick Simulation Tester */}
+        <div className="flex items-center gap-2 flex-wrap bg-zinc-100/90 dark:bg-black/40 p-2.5 rounded-xl border border-zinc-200/90 dark:border-white/10 shadow-inner">
+          <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 px-1 font-display uppercase tracking-wider">
+            Clock Simulation:
           </span>
 
           <button
             type="button"
             onClick={() => onSetSimulatedHour(null)}
-            className={`btn-tactile px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all ${
+            className={`btn-tactile px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
               simulatedHour === null
                 ? "bg-amber-500 text-white shadow-xs"
                 : "bg-white dark:bg-white/5 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white border border-zinc-200/80 dark:border-white/5"
             }`}
           >
-            🔴 Masa Sebenar
+            🔴 Live Clock
           </button>
 
           <button
             type="button"
             onClick={() => onSetSimulatedHour(9)}
-            className={`btn-tactile px-2.5 py-1 text-[11px] font-mono font-bold rounded-lg transition-all ${
+            className={`btn-tactile px-3 py-1.5 text-xs font-mono font-bold rounded-lg transition-all ${
               simulatedHour === 9
                 ? "bg-[#2F81F7] text-white shadow-xs"
                 : "bg-white dark:bg-white/5 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white border border-zinc-200/80 dark:border-white/5"
             }`}
-            title="Uji Jam 09:00 (Slot 0800 dikunci, Slot 0900 dibuka)"
+            title="Simulate 09:00 (Slot 0800 locked, Slot 0900 active)"
           >
             09:00 (Slot 0900)
           </button>
@@ -95,12 +95,12 @@ export const RealtimeTimelineBanner: React.FC<RealtimeTimelineBannerProps> = ({
           <button
             type="button"
             onClick={() => onSetSimulatedHour(8)}
-            className={`btn-tactile px-2.5 py-1 text-[11px] font-mono font-bold rounded-lg transition-all ${
+            className={`btn-tactile px-3 py-1.5 text-xs font-mono font-bold rounded-lg transition-all ${
               simulatedHour === 8
                 ? "bg-[#2F81F7] text-white shadow-xs"
                 : "bg-white dark:bg-white/5 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white border border-zinc-200/80 dark:border-white/5"
             }`}
-            title="Uji Jam 08:00 (Slot 0800 dibuka, 0900+ dikunci)"
+            title="Simulate 08:00 (Slot 0800 active, 0900+ locked)"
           >
             08:00 (Slot 0800)
           </button>
@@ -108,19 +108,19 @@ export const RealtimeTimelineBanner: React.FC<RealtimeTimelineBannerProps> = ({
           <button
             type="button"
             onClick={() => onSetSimulatedHour(14)}
-            className={`btn-tactile px-2.5 py-1 text-[11px] font-mono font-bold rounded-lg transition-all ${
+            className={`btn-tactile px-3 py-1.5 text-xs font-mono font-bold rounded-lg transition-all ${
               simulatedHour === 14
                 ? "bg-[#2F81F7] text-white shadow-xs"
                 : "bg-white dark:bg-white/5 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white border border-zinc-200/80 dark:border-white/5"
             }`}
-            title="Uji Jam 14:00 (Slot 1400 dibuka, semua sebelumnya dikunci)"
+            title="Simulate 14:00 (Slot 1400 active, earlier slots locked)"
           >
             14:00 (Slot 1400)
           </button>
 
           {supervisorUnlockedCount > 0 && (
-            <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-              <Unlock className="w-3 h-3" /> {supervisorUnlockedCount} Override Aktif
+            <span className="flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+              <Unlock className="w-3.5 h-3.5" /> {supervisorUnlockedCount} Overrides Active
             </span>
           )}
         </div>
@@ -128,4 +128,3 @@ export const RealtimeTimelineBanner: React.FC<RealtimeTimelineBannerProps> = ({
     </div>
   );
 };
-

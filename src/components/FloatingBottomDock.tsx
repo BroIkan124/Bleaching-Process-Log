@@ -87,7 +87,7 @@ export const FloatingBottomDock: React.FC<FloatingBottomDockProps> = ({
           <FlaskConical className="w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-110" />
           <span className="whitespace-nowrap font-display">QC Lab</span>
 
-          <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded-full font-bold ml-0.5 transition-colors ${
+          <span className={`text-xs font-mono px-1.5 py-0.5 rounded-full font-bold ml-0.5 transition-colors ${
             activeTab === 'qc'
               ? 'bg-white/20 dark:bg-zinc-900/20 text-white dark:text-zinc-900'
               : 'bg-zinc-200/90 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
@@ -131,7 +131,7 @@ export const FloatingBottomDock: React.FC<FloatingBottomDockProps> = ({
             <span className="whitespace-nowrap font-display">Supervisor</span>
 
             {unacknowledgedAlertsCount > 0 && (
-              <span className="px-1.5 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-bold font-mono animate-pulse shadow-sm">
+              <span className="px-1.5 py-0.5 rounded-full bg-rose-500 text-white text-xs font-bold font-mono animate-pulse shadow-sm">
                 {unacknowledgedAlertsCount}
               </span>
             )}

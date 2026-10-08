@@ -90,7 +90,7 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
     switch (severity) {
       case "alert":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-500/30">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-500/30">
             <span className="relative flex h-1.5 w-1.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-500"></span>
@@ -100,19 +100,19 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
         );
       case "warning":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30">
             <AlertTriangle className="w-3 h-3 text-amber-500" /> Attention Required
           </span>
         );
       case "success":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
             <CheckCircle2 className="w-3 h-3 text-emerald-500" /> Completed / In-Spec
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-zinc-100 text-zinc-800 dark:bg-white/10 dark:text-zinc-300 border border-zinc-200 dark:border-white/10">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-zinc-100 text-zinc-800 dark:bg-white/10 dark:text-zinc-300 border border-zinc-200 dark:border-white/10">
             <Clock className="w-3 h-3 text-zinc-400" /> Info
           </span>
         );
@@ -181,14 +181,14 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-sm font-bold font-display text-zinc-900 dark:text-zinc-100">
-                  Pusat Kawalan Alur Kerja Kilang (Integrated Workflow Pipeline)
+                  Integrated Workflow Pipeline Command Center
                 </h2>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
-                  {pipelineMetrics.completionRatePercent}% Disegerakkan
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold font-mono bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                  {pipelineMetrics.completionRatePercent}% Synchronized
                 </span>
               </div>
-              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium mt-0.5">
-                Bleaching Log &#10140; QC Lab &#10140; Reports &#10140; Supervisor Monitoring diselaraskan 100% masa nyata.
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium mt-0.5">
+                Bleaching Log &#10140; QC Lab &#10140; Reports &#10140; Supervisor Monitoring 100% synchronized in real-time.
               </p>
             </div>
           </div>
@@ -203,7 +203,7 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
               }`}
             >
               {showUnlockPanel ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5 text-amber-500" />}
-              <span>{showUnlockPanel ? "Tutup Kawalan Kunci" : "Kawalan Kunci Slot Operator"}</span>
+              <span>{showUnlockPanel ? "Close Lock Controls" : "Operator Slot Lock Controls"}</span>
             </button>
           </div>
         </div>
@@ -217,18 +217,18 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
                 <span className="flex items-center gap-1.5">
                   <Layers className="w-3.5 h-3.5" /> Stage 1: Bleaching Log
                 </span>
-                <span className="font-mono text-[10px]">ALUR 1</span>
+                <span className="font-mono text-xs font-bold">STAGE 1</span>
               </div>
               <div className="text-base font-bold font-mono text-zinc-900 dark:text-zinc-100 mt-1">
-                {pipelineMetrics.savedSlotsCount} / 24 Slot
+                {pipelineMetrics.savedSlotsCount} / 24 Slots
               </div>
-              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1">
-                Rekod data telemetri proses oleh operator bertugas.
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                Process telemetry data recorded by duty operator.
               </p>
             </div>
-            <div className="mt-2.5 pt-2 border-t border-amber-500/20 text-[10px] text-amber-600 dark:text-amber-400 font-semibold flex items-center justify-between">
-              <span>Slot Aktif: {getSlotTimeLabel(activeCurrentHourIndex)} Hrs</span>
-              <span>🔒 Kunci Masa Auto</span>
+            <div className="mt-2.5 pt-2 border-t border-amber-500/20 text-xs text-amber-600 dark:text-amber-400 font-semibold flex items-center justify-between">
+              <span>Active Slot: {getSlotTimeLabel(activeCurrentHourIndex)} Hrs</span>
+              <span>🔒 Auto-Time Lock</span>
             </div>
           </div>
 
@@ -239,17 +239,17 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
                 <span className="flex items-center gap-1.5">
                   <FlaskConical className="w-3.5 h-3.5" /> Stage 2: QC Lab
                 </span>
-                <span className="font-mono text-[10px]">ALUR 2</span>
+                <span className="font-mono text-xs font-bold">STAGE 2</span>
               </div>
               <div className="text-base font-bold font-mono text-zinc-900 dark:text-zinc-100 mt-1">
-                {pipelineMetrics.qcDecidedSamples} Disahkan
+                {pipelineMetrics.qcDecidedSamples} Verified
               </div>
-              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1">
-                {pipelineMetrics.qcPendingSamples} sampel sedang dalam ujian makmal (RF-FR-001).
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                {pipelineMetrics.qcPendingSamples} samples undergoing lab testing (RF-FR-001).
               </p>
             </div>
-            <div className="mt-2.5 pt-2 border-t border-sky-500/20 text-[10px] text-sky-600 dark:text-sky-400 font-semibold flex items-center justify-between">
-              <span>Hasil Analisis: Diselaraskan</span>
+            <div className="mt-2.5 pt-2 border-t border-sky-500/20 text-xs text-sky-600 dark:text-sky-400 font-semibold flex items-center justify-between">
+              <span>Lab Results: Synchronized</span>
               <span>Colour &amp; FFA</span>
             </div>
           </div>
@@ -261,17 +261,17 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
                 <span className="flex items-center gap-1.5">
                   <BarChart3 className="w-3.5 h-3.5" /> Stage 3: Reports
                 </span>
-                <span className="font-mono text-[10px]">ALUR 3</span>
+                <span className="font-mono text-xs font-bold">STAGE 3</span>
               </div>
               <div className="text-base font-bold font-mono text-zinc-900 dark:text-zinc-100 mt-1">
-                {pipelineMetrics.reportsReadyCount} Data Matang
+                {pipelineMetrics.reportsReadyCount} Processed Slots
               </div>
-              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1">
-                Kalkulasi hasil proses, analisis keabnormalan &amp; eksport audit.
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                Yield calculation, deviation analysis &amp; audit exports.
               </p>
             </div>
-            <div className="mt-2.5 pt-2 border-t border-purple-500/20 text-[10px] text-purple-600 dark:text-purple-400 font-semibold flex items-center justify-between">
-              <span>Kepatuhan: In-Spec</span>
+            <div className="mt-2.5 pt-2 border-t border-purple-500/20 text-xs text-purple-600 dark:text-purple-400 font-semibold flex items-center justify-between">
+              <span>Compliance: In-Spec</span>
               <span>RF-FR-003 Rev 03</span>
             </div>
           </div>
@@ -283,18 +283,18 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
                 <span className="flex items-center gap-1.5">
                   <ShieldCheck className="w-3.5 h-3.5" /> Stage 4: Supervisor
                 </span>
-                <span className="font-mono text-[10px]">ALUR 4</span>
+                <span className="font-mono text-xs font-bold">STAGE 4</span>
               </div>
               <div className="text-base font-bold font-mono text-zinc-900 dark:text-zinc-100 mt-1">
-                {sheet.status === 'Approved' ? 'Telah Diluluskan' : 'Pengawasan Aktif'}
+                {sheet.status === 'Approved' ? 'Fully Approved' : 'Active Oversight'}
               </div>
-              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1">
-                Pengesahan integriti borang dan kawalan pelepasan kunci kecemasan.
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                Form integrity verification and emergency slot release control.
               </p>
             </div>
-            <div className="mt-2.5 pt-2 border-t border-emerald-500/20 text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center justify-between">
+            <div className="mt-2.5 pt-2 border-t border-emerald-500/20 text-xs text-emerald-600 dark:text-emerald-400 font-semibold flex items-center justify-between">
               <span>Status: {sheet.status}</span>
-              <span>100% Kuasa Penuh</span>
+              <span>100% Authority</span>
             </div>
           </div>
         </div>
@@ -306,12 +306,12 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
               <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
               <div className="text-xs">
                 <strong className="text-zinc-900 dark:text-zinc-100 block">
-                  Peraturan Integriti Masa Nyata (Real-Time Slot Locking):
+                  Real-Time Slot Locking Policy:
                 </strong>
-                <p className="text-zinc-600 dark:text-zinc-300 mt-0.5 text-[11px]">
-                  Operator hanya dibenarkan mengisi log pada slot masa aktif (cth: pukul 09:00 hanya slot 09:00).
-                  Slot masa lampau dikunci secara automatik untuk melindungi integriti audit. Sekiranya terdapat pembetulan log kecemasan,
-                  Supervisor boleh membuka kunci mana-mana slot di bawah ini.
+                <p className="text-zinc-600 dark:text-zinc-300 mt-0.5 text-xs">
+                  Operators are only permitted to enter data for active hourly slots (e.g., at 09:00 only the 09:00 slot is accessible).
+                  Past time slots are automatically locked to safeguard audit integrity. In case of emergency retrospective logging,
+                  supervisors can unlock any slot below.
                 </p>
               </div>
             </div>
@@ -339,28 +339,28 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
                     <div className="text-xs font-mono font-bold text-zinc-900 dark:text-zinc-100">
                       {entry.time_label} Hrs
                     </div>
-                    <div className="text-[10px] text-zinc-500 mt-0.5 font-medium">
+                    <div className="text-xs text-zinc-500 mt-0.5 font-medium">
                       {isCurrent ? (
-                        <span className="text-emerald-500 font-bold">AKTIF</span>
+                        <span className="text-emerald-500 font-bold">ACTIVE</span>
                       ) : isOverride ? (
-                        <span className="text-amber-500 font-bold">DIBUKA</span>
+                        <span className="text-amber-500 font-bold">UNLOCKED</span>
                       ) : isPast ? (
-                        <span>TERKUNCI</span>
+                        <span>LOCKED</span>
                       ) : (
-                        <span>AKAN DTG</span>
+                        <span>UPCOMING</span>
                       )}
                     </div>
 
                     {isPast && onUnlockSlot && (
                       <button
                         onClick={() => onUnlockSlot(idx)}
-                        className={`mt-1.5 w-full py-1 px-1.5 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
+                        className={`mt-1.5 w-full py-1 px-1.5 rounded-lg text-xs font-bold cursor-pointer transition-all ${
                           isOverride
                             ? 'bg-rose-500/15 text-rose-500 border border-rose-500/30 hover:bg-rose-500/25'
                             : 'bg-amber-500/15 text-amber-500 border border-amber-500/30 hover:bg-amber-500/25'
                         }`}
                       >
-                        {isOverride ? "Kunci Semula" : "Buka Kunci"}
+                        {isOverride ? "Re-Lock Slot" : "Unlock Slot"}
                       </button>
                     )}
                   </div>
@@ -567,7 +567,7 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
                             {evt.title}
                           </h3>
                           {getSeverityBadge(evt.severity)}
-                          <span className="text-[11px] font-mono font-medium text-zinc-500">
+                          <span className="text-xs font-mono font-medium text-zinc-500">
                             {formattedTime}
                           </span>
                         </div>
@@ -576,7 +576,7 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
                           {evt.description}
                         </p>
 
-                        <div className="flex items-center gap-3 text-[11px] text-zinc-500 font-medium pt-1 flex-wrap">
+                        <div className="flex items-center gap-3 text-xs text-zinc-500 font-medium pt-1 flex-wrap">
                           <span>Recorded by: <strong className="text-zinc-800 dark:text-zinc-200">{evt.author_name}</strong> ({evt.author_role})</span>
                           {evt.shift && <span>· Shift {evt.shift}</span>}
                           {evt.slot_time && <span className="font-mono">· Slot {evt.slot_time} Hrs</span>}
@@ -589,7 +589,7 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
                     <div className="shrink-0 flex sm:flex-col items-end justify-between gap-2 pt-2 sm:pt-0">
                       {evt.requires_acknowledgment ? (
                         evt.acknowledged ? (
-                          <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
+                          <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs font-bold text-emerald-700 dark:text-emerald-300">
                             <Check className="w-3.5 h-3.5" />
                             <span>Acknowledged ({evt.acknowledged_by || currentUser.name})</span>
                           </div>
@@ -604,7 +604,7 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
                           </button>
                         )
                       ) : (
-                        <span className="text-[11px] text-zinc-400 font-mono">
+                        <span className="text-xs text-zinc-400 font-mono">
                           Auto-Audit
                         </span>
                       )}

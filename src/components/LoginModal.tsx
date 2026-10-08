@@ -132,7 +132,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                     <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate">
                       {currentUser.name}
                     </span>
-                    <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 font-bold shrink-0">
+                    <span className="text-xs font-mono uppercase px-2 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 font-bold shrink-0">
                       {currentUser.role}
                     </span>
                   </div>
@@ -255,7 +255,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
 
         {/* Footer info */}
         <div className="px-6 py-3 bg-zinc-100 dark:bg-[#101113] border-t border-[var(--border-color)] text-center">
-          <p className="text-[11px] text-zinc-500 font-mono">
+          <p className="text-xs text-zinc-500 font-mono">
             Complies with ISO 9001:2015 &amp; Halal Audit Trail standards. All sessions logged.
           </p>
         </div>

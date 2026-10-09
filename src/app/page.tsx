@@ -141,6 +141,7 @@ export default function BleachingProcessLogApp() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [isPdfOpen, setIsPdfOpen] = useState(false);
+  const [showTimelineRail, setShowTimelineRail] = useState(false);
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
 
   // 6. Dynamic Refinery Products Catalog (45 Standard Products, Persisted in LocalStorage)
@@ -1067,23 +1068,19 @@ export default function BleachingProcessLogApp() {
                 onUpdateHeader={handleUpdateHeader}
               />
 
-              {/* Realtime Clock & Timeline Slot Locking Banner */}
-              <RealtimeTimelineBanner
-                clockState={clockState}
-                supervisorUnlockedCount={supervisorUnlockedSlots.length}
-                userRole={currentUser?.role}
-                isSupervisor={currentUser.role === 'supervisor' || currentUser.role === 'admin'}
-              />
-
-              {/* 24-Hour Timeline Slot Rail */}
-              <SlotRail
-                entries={sheet.entries}
-                selectedSlotIndex={selectedSlotIndex}
-                onSelectSlot={handleSelectSlot}
-                activeCurrentHourIndex={currentSlotIndex}
-                supervisorUnlockedSlots={supervisorUnlockedSlots}
-                userRole={currentUser?.role}
-              />
+              {/* Optional 24-Hour Timeline Slot Rail (Togglable for clean, uncluttered interface) */}
+              {showTimelineRail && (
+                <div className="animate-in fade-in duration-200">
+                  <SlotRail
+                    entries={sheet.entries}
+                    selectedSlotIndex={selectedSlotIndex}
+                    onSelectSlot={handleSelectSlot}
+                    activeCurrentHourIndex={currentSlotIndex}
+                    supervisorUnlockedSlots={supervisorUnlockedSlots}
+                    userRole={currentUser?.role}
+                  />
+                </div>
+              )}
 
               {/* Full 24-Slot Paper-Like Grid */}
               <HourlyTableGrid
@@ -1097,6 +1094,8 @@ export default function BleachingProcessLogApp() {
                 supervisorUnlockedSlots={supervisorUnlockedSlots}
                 userRole={currentUser?.role}
                 onDispatchToQc={handleDispatchToQc}
+                showTimelineRail={showTimelineRail}
+                onToggleTimelineRail={() => setShowTimelineRail(prev => !prev)}
               />
             </>
           )}

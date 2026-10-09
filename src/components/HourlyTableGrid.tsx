@@ -25,6 +25,8 @@ interface HourlyTableGridProps {
   supervisorUnlockedSlots?: number[];
   userRole?: string;
   onDispatchToQc?: (slotIndex: number) => void;
+  showTimelineRail?: boolean;
+  onToggleTimelineRail?: () => void;
 }
 
 export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
@@ -36,11 +38,13 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
   supervisorUnlockedSlots = [],
   userRole,
   onDispatchToQc,
+  showTimelineRail,
+  onToggleTimelineRail,
 }) => {
   return (
-    <div className="glass-panel rounded-2xl overflow-hidden mb-8 shadow-[0_8px_32px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_48px_rgba(0,0,0,0.4)]">
+    <div className="glass-panel rounded-2xl overflow-hidden mb-8 shadow-sm border border-zinc-200/80 dark:border-white/10">
       {/* Table Header Bar */}
-      <div className="px-5 py-3.5 bg-gradient-to-r from-zinc-50 via-zinc-100/80 to-zinc-50 dark:from-[#0E1626] dark:via-[#121A30] dark:to-[#0E1626] border-b border-zinc-200/80 dark:border-zinc-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+      <div className="px-4 sm:px-5 py-3 bg-zinc-50/90 dark:bg-[#0E1626]/90 border-b border-zinc-200/80 dark:border-zinc-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
         <div className="flex items-center gap-2.5">
           <div className="p-2 rounded-xl bg-amber-500/15 text-amber-500 border border-amber-500/20 shadow-2xs">
             <Clock className="w-4 h-4" />
@@ -50,18 +54,35 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
               Bleaching Process Log Sheet
             </h2>
             <p className="text-xs text-zinc-500 font-normal">
-              24-Hour Continuous Telemetry  -  Real-Time Access Window
+              24-Hour Continuous Telemetry (RF-FR-003)
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-3 text-xs font-medium text-zinc-500 flex-wrap">
+          {/* 24h Timeline Rail Toggle */}
+          {onToggleTimelineRail && (
+            <button
+              type="button"
+              onClick={onToggleTimelineRail}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer flex items-center gap-1.5 ${
+                showTimelineRail
+                  ? "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30 shadow-xs"
+                  : "bg-white dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700/80"
+              }`}
+              title="Toggle visual 24-Hour Timeline Slot Rail"
+            >
+              <Clock className="w-3.5 h-3.5 text-amber-500" />
+              <span>{showTimelineRail ? "Hide Timeline Rail" : "Show 24h Timeline Rail"}</span>
+            </button>
+          )}
+
           <span className="flex items-center gap-1.5">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
             </span>
-            <span className="text-amber-600 dark:text-amber-400 font-semibold">Active Slot</span>
+            <span className="text-amber-600 dark:text-amber-400 font-semibold">Active</span>
           </span>
           <span className="flex items-center gap-1.5">
             <Lock className="w-3.5 h-3.5 text-zinc-400" />

@@ -7,14 +7,11 @@ import {
   Building2, 
   Clock, 
   ShieldCheck, 
-  Wifi, 
-  WifiOff, 
   Moon, 
   Sun, 
   Send, 
   Printer,
-  LogOut,
-  RefreshCw
+  LogOut
 } from "lucide-react";
 
 interface HeaderNavProps {
@@ -24,7 +21,7 @@ interface HeaderNavProps {
   onRoleChange: (user: UserProfile) => void;
   isDark: boolean;
   onToggleDark: () => void;
-  isOffline: boolean;
+  isOffline?: boolean;
   onOpenPdf: () => void;
   onSubmitSheet: () => void;
   onOpenReview: () => void;
@@ -43,7 +40,6 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   currentRole,
   isDark,
   onToggleDark,
-  isOffline,
   onOpenPdf,
   onSubmitSheet,
   onOpenReview,
@@ -51,8 +47,6 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   activeTab,
   onLogout,
   clockState,
-  isSyncing = false,
-  onManualSync,
 }) => {
   const getStatusBadge = () => {
     switch (sheetStatus) {

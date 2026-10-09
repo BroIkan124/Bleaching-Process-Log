@@ -4,9 +4,7 @@ import React from "react";
 import { LogEntry, UserProfile } from "@/types";
 import { 
   Check, 
-  AlertTriangle, 
   Edit3, 
-  Eye, 
   Clock, 
   Lock, 
   Unlock,
@@ -34,7 +32,6 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
   selectedSlotIndex,
   activeCurrentHourIndex,
   supervisorUnlockedSlots = [],
-  userRole,
   onDispatchToQc,
 }) => {
   return (

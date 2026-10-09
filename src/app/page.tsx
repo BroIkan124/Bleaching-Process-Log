@@ -645,7 +645,7 @@ export default function BleachingProcessLogApp() {
       slot_time: entry.time_label,
     };
 
-    const updatedEvents = [dispatchEvent, ...(pipelineEvent ? [pipelineEvent] : []), ...supervisorEvents];
+    const updatedEvents = [dispatchEvent, pipelineEvent, ...supervisorEvents];
     setSupervisorEvents(updatedEvents);
     syncSupervisorEventsToInsForge(updatedEvents, currentUser);
 

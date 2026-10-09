@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React from "react";
 import { UserProfile, SheetStatus, DashboardTab } from "@/types";
@@ -7,11 +7,14 @@ import {
   Building2, 
   Clock, 
   ShieldCheck, 
+  Wifi, 
+  WifiOff, 
   Moon, 
   Sun, 
   Send, 
   Printer,
-  LogOut
+  LogOut,
+  RefreshCw
 } from "lucide-react";
 
 interface HeaderNavProps {
@@ -21,7 +24,7 @@ interface HeaderNavProps {
   onRoleChange: (user: UserProfile) => void;
   isDark: boolean;
   onToggleDark: () => void;
-  isOffline?: boolean;
+  isOffline: boolean;
   onOpenPdf: () => void;
   onSubmitSheet: () => void;
   onOpenReview: () => void;
@@ -40,6 +43,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   currentRole,
   isDark,
   onToggleDark,
+  isOffline,
   onOpenPdf,
   onSubmitSheet,
   onOpenReview,
@@ -47,6 +51,8 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   activeTab,
   onLogout,
   clockState,
+  isSyncing = false,
+  onManualSync,
 }) => {
   const getStatusBadge = () => {
     switch (sheetStatus) {
@@ -168,6 +174,38 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
               </span>
             </div>
           )}
+
+          {/* Cloud Synced UI hidden from frontend, background auto-sync active */}
+          <div className="hidden">
+            {isOffline ? (
+              <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-semibold font-mono text-xs">
+                <WifiOff className="w-3.5 h-3.5" /> Offline
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={onManualSync}
+                disabled={isSyncing}
+                title="InsForge Multi-Device Cloud Sync. Click to force refresh data from all devices."
+                className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold font-mono text-xs hover:text-emerald-500 transition-colors cursor-pointer disabled:opacity-70"
+              >
+                {isSyncing ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-500" />
+                    <span className="text-amber-500">Syncing...</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    <span>Cloud Synced</span>
+                  </>
+                )}
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Right: Actions, User Profile & Dark Mode */}
@@ -257,3 +295,4 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
     </header>
   );
 };
+

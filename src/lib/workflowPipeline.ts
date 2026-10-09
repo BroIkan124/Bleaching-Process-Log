@@ -13,13 +13,63 @@ export function createOrUpdateQcSampleFromLogEntry(
   // Normalize time label to HH:00 format (e.g. "0900" -> "09:00")
   const hourPart = entry.time_label.slice(0, 2);
   const formattedTimeCheck = `${hourPart}:00`;
-  const reportNo = `SAR-2026-${entry.time_label}`;
-  const lotNo = `LOT-${(sheet.plant_name || sheet.plant_id || "REF1").toUpperCase().replace(/\s+/g, '')}-${entry.time_label}`;
+  const sheetDate = sheet.sheet_date || new Date().toISOString().split('T')[0];
+  const reportNo = `SAR-${sheetDate.slice(0, 4)}-${entry.time_label}`;
+  const plantCleanCode = (sheet.plant_name || sheet.plant_id || "REF1").toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const lotNo = `LOT-${plantCleanCode}-${sheetDate.replace(/-/g, '')}-${entry.time_label}`;
+  const sampleId = `sample-${sheetDate}-${entry.time_label}`;
 
-  // Find if a report for this slot already exists
+  // Find if a report for this slot on this specific sheet date already exists
   const existingIndex = existingReports.findIndex(
-    (r) => r.report_no === reportNo || r.time_check === formattedTimeCheck
+    (r) => r.id === sampleId || (r.report_no === reportNo && r.sample_date === sheetDate)
   );
+
+  const sampleResults: SampleResult[] = [
+    {
+      id: `res-color-${sampleId}`,
+      report_id: sampleId,
+      parameter_code: "COLOUR_R",
+      parameter_name: "Lovibond Colour (Red)",
+      unit: "R",
+      value_numeric: entry.colour_r ?? null,
+      in_spec: typeof entry.colour_r === 'number' ? entry.colour_r <= 2.5 : null,
+      entered_by_name: currentUser.name,
+      entered_at: new Date().toISOString(),
+    },
+    {
+      id: `res-ffa-${sampleId}`,
+      report_id: sampleId,
+      parameter_code: "FFA",
+      parameter_name: "Free Fatty Acids (% FFA)",
+      unit: "%",
+      value_numeric: entry.ffa_pct ?? null,
+      in_spec: typeof entry.ffa_pct === 'number' ? entry.ffa_pct <= 0.05 : null,
+      entered_by_name: currentUser.name,
+      entered_at: new Date().toISOString(),
+    },
+    {
+      id: `res-mi-${sampleId}`,
+      report_id: sampleId,
+      parameter_code: "H2O",
+      parameter_name: "Moisture & Impurities (M&I)",
+      unit: "%",
+      value_numeric: null,
+      in_spec: null,
+      entered_by_name: null,
+      entered_at: null,
+    },
+    {
+      id: `res-dobi-${sampleId}`,
+      report_id: sampleId,
+      parameter_code: "DOBI",
+      parameter_name: "Bleachability Index (DOBI)",
+      unit: "",
+      value_numeric: null,
+      in_spec: null,
+      entered_by_name: null,
+      entered_at: null,
+    },
+  ];
 
   let targetSample: SampleReport;
 
@@ -28,17 +78,26 @@ export function createOrUpdateQcSampleFromLogEntry(
     const existing = existingReports[existingIndex];
     targetSample = {
       ...existing,
+      id: sampleId,
+      report_no: reportNo,
+      lot_no: lotNo,
+      sample_date: sheetDate,
+      time_check: formattedTimeCheck,
       product_name: sheet.product_name || existing.product_name || "RBD Palm Oil",
       feed_tank_code: sheet.feed_tank_name || existing.feed_tank_code || "TK-101",
       discharge_tank_code: sheet.discharge_tank_name || existing.discharge_tank_code || "TK-201",
+      submitted_by_name: currentUser.name,
       remarks: `Synchronized from Bleaching Log Slot ${entry.time_label} Hrs (Flow: ${entry.flowrate_set ?? '-'} MT/HR, Vac: ${entry.vacuum_mmhg ?? '-'} mmHg, Temp: ${entry.he_temp_c ?? '-'}°C)`,
+      status: existing.decision ? existing.status : 'awaiting_results',
+      results: sampleResults,
+      updated_at: new Date().toISOString(),
     };
   } else {
     // Generate new QC sample record
     targetSample = {
-      id: `sample-sync-${sheet.id}-${entry.time_label}`,
+      id: sampleId,
       report_no: reportNo,
-      sample_date: sheet.sheet_date || new Date().toISOString().split('T')[0],
+      sample_date: sheetDate,
       time_check: formattedTimeCheck,
       lot_no: lotNo,
       product_id: sheet.product_id,
@@ -47,62 +106,17 @@ export function createOrUpdateQcSampleFromLogEntry(
       discharge_tank_code: sheet.discharge_tank_name || "TK-201",
       sampling_point_name: "Deodorizer / Bleacher Outlet (SP-01)",
       submitted_by_name: currentUser.name,
-      remarks: `Auto-generated sample from Bleaching Log Slot ${entry.time_label} Hrs (Operator: ${currentUser.name})`,
+      remarks: `Sample from Bleaching Log Slot ${entry.time_label} Hrs (Operator: ${currentUser.name})`,
       status: 'awaiting_results',
       created_at: new Date().toISOString(),
-      results: [
-        {
-          id: `res-color-${entry.time_label}`,
-          report_id: `sample-sync-${sheet.id}-${entry.time_label}`,
-          parameter_code: "COLOUR_R",
-          parameter_name: "Lovibond Colour (Red)",
-          unit: "R",
-          value_numeric: entry.colour_r ?? null,
-          in_spec: typeof entry.colour_r === 'number' ? entry.colour_r <= 2.5 : null,
-          entered_by_name: null,
-          entered_at: null,
-        },
-        {
-          id: `res-ffa-${entry.time_label}`,
-          report_id: `sample-sync-${sheet.id}-${entry.time_label}`,
-          parameter_code: "FFA",
-          parameter_name: "Free Fatty Acids (% FFA)",
-          unit: "%",
-          value_numeric: entry.ffa_pct ?? null,
-          in_spec: typeof entry.ffa_pct === 'number' ? entry.ffa_pct <= 0.05 : null,
-          entered_by_name: null,
-          entered_at: null,
-        },
-        {
-          id: `res-mi-${entry.time_label}`,
-          report_id: `sample-sync-${sheet.id}-${entry.time_label}`,
-          parameter_code: "H2O",
-          parameter_name: "Moisture & Impurities (M&I)",
-          unit: "%",
-          value_numeric: null,
-          in_spec: null,
-          entered_by_name: null,
-          entered_at: null,
-        },
-        {
-          id: `res-dobi-${entry.time_label}`,
-          report_id: `sample-sync-${sheet.id}-${entry.time_label}`,
-          parameter_code: "DOBI",
-          parameter_name: "Bleachability Index (DOBI)",
-          unit: "",
-          value_numeric: null,
-          in_spec: null,
-          entered_by_name: null,
-          entered_at: null,
-        },
-      ],
+      results: sampleResults,
       decision: null,
     };
   }
 
-  const updatedReports = existingIndex >= 0
-    ? existingReports.map((r, i) => (i === existingIndex ? targetSample : r))
-    : [targetSample, ...existingReports];
+  // Put targetSample at the VERY TOP of the reports list
+  const remaining = existingReports.filter((r) => r.id !== sampleId && r.report_no !== reportNo);
+  const updatedReports = [targetSample, ...remaining];
 
   // Audit event for Supervisor Monitoring
   const hasAlert = entry.out_of_spec && entry.out_of_spec.length > 0;

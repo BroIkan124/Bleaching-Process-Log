@@ -155,9 +155,9 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
     }
   }, [activeProductName]);
 
-  // Filtered reports
+  // Filtered reports (sorted newest first)
   const filteredReports = useMemo(() => {
-    return reports.filter((r) => {
+    const list = reports.filter((r) => {
       const q = searchQuery.toLowerCase();
       const matchesSearch = 
         r.lot_no.toLowerCase().includes(q) ||
@@ -174,6 +174,12 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
       if (statusFilter === "pending") return !r.decision || r.status === "awaiting_results" || r.status === "draft";
 
       return true;
+    });
+
+    return [...list].sort((a, b) => {
+      const timeA = new Date(a.created_at || `${a.sample_date}T${a.time_check || '00:00'}:00`).getTime() || 0;
+      const timeB = new Date(b.created_at || `${b.sample_date}T${b.time_check || '00:00'}:00`).getTime() || 0;
+      return timeB - timeA;
     });
   }, [reports, searchQuery, statusFilter]);
 

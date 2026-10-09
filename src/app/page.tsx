@@ -31,7 +31,7 @@ import { RealtimeTimelineBanner } from "@/components/RealtimeTimelineBanner";
 import { SupervisorReviewModal } from "@/components/SupervisorReviewModal";
 import { PdfExportModal } from "@/components/PdfExportModal";
 import { QCManagementView } from "@/components/QCManagementView";
-import { FloatingBottomDock } from "@/components/FloatingBottomDock";
+import { SidebarNav } from "@/components/SidebarNav";
 import { UserManagementView } from "@/components/UserManagementView";
 import { SupervisorMonitoringView } from "@/components/SupervisorMonitoringView";
 import { ReportsView } from "@/components/ReportsView";
@@ -95,15 +95,22 @@ export default function BleachingProcessLogApp() {
     } catch {}
   }, [supervisorEvents]);
 
-  // 4. Core Bleaching Log State (Persisted - Zero Dummy Data, Ready for Real Operator Entry)
+  // 4. Core Bleaching Log State (Resets automatically every new calendar day)
   const [sheet, setSheet] = useState<LogSheet>(() => {
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     if (typeof window !== "undefined") {
       try {
         const saved = localStorage.getItem("nisshin_process_sheet");
-        if (saved) return JSON.parse(saved);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.sheet_date === todayStr) {
+            return parsed;
+          }
+        }
       } catch {}
     }
-    return createCleanSheet();
+    return createCleanSheet(todayStr);
   });
 
   useEffect(() => {
@@ -432,9 +439,19 @@ export default function BleachingProcessLogApp() {
       // 3. Fetch live process log sheet (protect current drawer edit if operator actively typing)
       if (!isDrawerOpenRef.current) {
         const cloudSheetRes = await fetchBatchSheetFromInsForge();
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
         if (cloudSheetRes && cloudSheetRes.sheet) {
-          setSheet(cloudSheetRes.sheet);
-          try { localStorage.setItem("nisshin_process_sheet", JSON.stringify(cloudSheetRes.sheet)); } catch {}
+          if (cloudSheetRes.sheet.sheet_date === todayStr) {
+            setSheet(cloudSheetRes.sheet);
+            try { localStorage.setItem("nisshin_process_sheet", JSON.stringify(cloudSheetRes.sheet)); } catch {}
+          } else {
+            // Cloud sheet belongs to a previous date -> Reset for today!
+            const freshSheet = createCleanSheet(todayStr, cloudSheetRes.sheet);
+            setSheet(freshSheet);
+            try { localStorage.setItem("nisshin_process_sheet", JSON.stringify(freshSheet)); } catch {}
+            saveStateSnapshotToInsForge("CURRENT_SHEET", freshSheet, currentUser);
+          }
         }
       }
 
@@ -500,6 +517,24 @@ export default function BleachingProcessLogApp() {
       window.removeEventListener("focus", handleFocus);
     };
   }, [lastRemoteTimestamp, isSyncing]);
+
+  // Semakan automatik pertukaran tarikh (Auto-reset bila hari baru / lepas 12 tengah malam)
+  const lastActiveDateRef = React.useRef<string>("");
+  useEffect(() => {
+    const todayStr = clockState.dateString;
+    if (!lastActiveDateRef.current) {
+      lastActiveDateRef.current = todayStr;
+      return;
+    }
+    if (lastActiveDateRef.current !== todayStr || sheet.sheet_date !== todayStr) {
+      lastActiveDateRef.current = todayStr;
+      const freshSheet = createCleanSheet(todayStr, sheet);
+      setSheet(freshSheet);
+      try { localStorage.setItem("nisshin_process_sheet", JSON.stringify(freshSheet)); } catch {}
+      saveStateSnapshotToInsForge("CURRENT_SHEET", freshSheet, currentUser);
+      showNotice(`Pertukaran hari baru dikesan (${todayStr})! Bleaching Process Log telah direset bagi kitaran 24-jam hari baharu.`, "info");
+    }
+  }, [clockState.dateString, sheet, currentUser]);
 
   // Determine if current user can edit the selected slot based on Realtime Slot Rule & Supervisor Override
   const isSheetLocked = sheet.status === 'Approved';
@@ -593,18 +628,20 @@ export default function BleachingProcessLogApp() {
     }
 
     // Explicit handover: Bleaching Log -> QC Lab
-    const { updatedReports, newEvent: pipelineEvent } = createOrUpdateQcSampleFromLogEntry(
+    const { updatedReports, newEvent: pipelineEvent, createdSample } = createOrUpdateQcSampleFromLogEntry(
       entry,
       sheet,
       currentUser,
       qcReports
     );
     setQcReports(updatedReports);
+    try { localStorage.setItem("nisshin_qc_reports", JSON.stringify(updatedReports)); } catch {}
 
     const updatedEntry: LogEntry = {
       ...entry,
       qc_sample_sent: true,
       qc_sample_sent_at: new Date().toISOString(),
+      qc_sample_id: createdSample.id,
     };
 
     const updatedEntries = sheet.entries.map((e, idx) =>
@@ -617,9 +654,11 @@ export default function BleachingProcessLogApp() {
       updated_at: new Date().toISOString(),
     };
     setSheet(updatedSheet);
+    try { localStorage.setItem("nisshin_process_sheet", JSON.stringify(updatedSheet)); } catch {}
 
     // Real-time synchronization to InsForge PostgreSQL & cloud snapshots
     syncSlotToInsForge(updatedEntry, "BP001", currentUser, updatedSheet);
+    syncQcSampleToInsForge(createdSample, currentUser, updatedReports);
     saveStateSnapshotToInsForge("QC_REPORTS", updatedReports, currentUser);
     saveStateSnapshotToInsForge("CURRENT_SHEET", updatedSheet, currentUser);
 
@@ -985,9 +1024,22 @@ export default function BleachingProcessLogApp() {
         </div>
       )}
 
-      {/* Main Workspace Body */}
-      <main className="flex-1 max-w-[1680px] w-full mx-auto p-3 sm:p-5 pb-28 sm:pb-32 [perspective:1400px]">
-        <div key={activeTab} className="fade-in-tactile">
+      {/* Layout Container: Left Sidebar Menu Dashboard + Main Content */}
+      <div className="flex-1 flex flex-col md:flex-row w-full max-w-[1920px] mx-auto min-w-0">
+        {/* Left Sidebar Menu Dashboard */}
+        <SidebarNav
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          onOpenPdf={() => setIsPdfOpen(true)}
+          sheetStatus={sheet.status}
+          qcSampleCount={qcReports.length}
+          currentUser={currentUser}
+          unacknowledgedAlertsCount={unacknowledgedAlertsCount}
+        />
+
+        {/* Main Workspace Body */}
+        <main className="flex-1 min-w-0 p-3 sm:p-5 md:p-6 pb-16 overflow-x-auto [perspective:1400px]">
+          <div key={activeTab} className="fade-in-tactile">
           {/* Tab 1: Bleaching Process Log (RF-FR-003) */}
           {activeTab === 'bleaching' && (
             <>
@@ -1122,6 +1174,7 @@ export default function BleachingProcessLogApp() {
           )}
         </div>
       </main>
+      </div>
 
       {/* Hourly Entry Drawer (Bleaching Tab) */}
       {isDrawerOpen && activeTab === 'bleaching' && (
@@ -1166,17 +1219,6 @@ export default function BleachingProcessLogApp() {
         sheet={sheet}
         isOpen={isPdfOpen}
         onClose={() => setIsPdfOpen(false)}
-      />
-
-      {/* Floating Bottom Dock Navigation */}
-      <FloatingBottomDock
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        onOpenPdf={() => setIsPdfOpen(true)}
-        sheetStatus={sheet.status}
-        qcSampleCount={qcReports.length}
-        currentUser={currentUser}
-        unacknowledgedAlertsCount={unacknowledgedAlertsCount}
       />
     </div>
   );

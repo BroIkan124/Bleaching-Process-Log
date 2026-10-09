@@ -298,46 +298,51 @@ export const MOCK_TANKS: Tank[] = [
   { id: 'tnk-d3', name: 'Discharge Tank TK-203 (Bleached Oil)', kind: 'discharge' },
 ];
 
-// Helper to construct clean live sheet with zero dummy entries
-export function createCleanSheet(): LogSheet {
-  const sheetDate = new Date().toISOString().split('T')[0];
-  const entries = generateInitialEntries('sheet-live-01', sheetDate);
+// Helper to construct clean live sheet with zero dummy entries (supports daily reset)
+export function createCleanSheet(targetDate?: string, templateSheet?: Partial<LogSheet>): LogSheet {
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  const sheetDate = targetDate || `${yyyy}-${mm}-${dd}`;
+  const sheetId = `sheet-${sheetDate}`;
+  const entries = generateInitialEntries(sheetId, sheetDate);
 
   return {
-    id: 'sheet-live-01',
+    id: sheetId,
     form_no: 'RF-FR-003',
     form_rev: '03',
     sheet_date: sheetDate,
-    plant_id: 'plt-1',
-    plant_name: 'Refinery Plant 1 (Auto Bleaching Line 1)',
-    product_id: 'prd-1',
-    product_name: 'CHOCOHI 357A NPHO',
-    feed_tank_id: 'tnk-f1',
-    feed_tank_name: 'Feed Tank TK-101 (Crude Feed)',
-    discharge_tank_id: 'tnk-d1',
-    discharge_tank_name: 'Discharge Tank TK-201 (Bleached Oil)',
-    tech_s1: 'usr-1',
-    tech_s1_name: 'Ahmad Razif',
-    tech_s2: 'usr-2',
-    tech_s2_name: 'Mohd Danial',
-    tech_s3: 'usr-3',
-    tech_s3_name: 'K. Subramaniam',
+    plant_id: templateSheet?.plant_id || 'plt-1',
+    plant_name: templateSheet?.plant_name || 'Refinery Plant 1 (Auto Bleaching Line 1)',
+    product_id: templateSheet?.product_id || 'prd-1',
+    product_name: templateSheet?.product_name || 'CHOCOHI 357A NPHO',
+    feed_tank_id: templateSheet?.feed_tank_id || 'tnk-f1',
+    feed_tank_name: templateSheet?.feed_tank_name || 'Feed Tank TK-101 (Crude Feed)',
+    discharge_tank_id: templateSheet?.discharge_tank_id || 'tnk-d1',
+    discharge_tank_name: templateSheet?.discharge_tank_name || 'Discharge Tank TK-201 (Bleached Oil)',
+    tech_s1: templateSheet?.tech_s1 || 'usr-1',
+    tech_s1_name: templateSheet?.tech_s1_name || 'Ahmad Razif',
+    tech_s2: templateSheet?.tech_s2 || 'usr-2',
+    tech_s2_name: templateSheet?.tech_s2_name || 'Mohd Danial',
+    tech_s3: templateSheet?.tech_s3 || 'usr-3',
+    tech_s3_name: templateSheet?.tech_s3_name || 'K. Subramaniam',
     
-    // Clean initial parameters (ready for operator input)
-    input_mt_hr: null,
-    input_mt_day: null,
-    acid_type: 'Phosphoric Acid',
-    acid_mm: null,
-    acid_cm_hr: null,
-    acid_pct: null,
-    earth_type: 'Taiko Classic Bleaching Earth',
-    earth_setting: null,
-    earth_min_pct: null,
-    earth_kgs_day: null,
-    aid1_type: 'Celite 545',
-    aid1_qty: null,
-    aid2_type: 'Hyflo Super-Cel',
-    aid2_qty: null,
+    // Operating parameters preserved from template or initialized clean
+    input_mt_hr: templateSheet?.input_mt_hr ?? null,
+    input_mt_day: templateSheet?.input_mt_day ?? null,
+    acid_type: templateSheet?.acid_type || 'Phosphoric Acid',
+    acid_mm: templateSheet?.acid_mm ?? null,
+    acid_cm_hr: templateSheet?.acid_cm_hr ?? null,
+    acid_pct: templateSheet?.acid_pct ?? null,
+    earth_type: templateSheet?.earth_type || 'Taiko Classic Bleaching Earth',
+    earth_setting: templateSheet?.earth_setting ?? null,
+    earth_min_pct: templateSheet?.earth_min_pct ?? null,
+    earth_kgs_day: templateSheet?.earth_kgs_day ?? null,
+    aid1_type: templateSheet?.aid1_type || 'Celite 545',
+    aid1_qty: templateSheet?.aid1_qty ?? null,
+    aid2_type: templateSheet?.aid2_type || 'Hyflo Super-Cel',
+    aid2_qty: templateSheet?.aid2_qty ?? null,
 
     status: 'InProgress',
     submitted_at: null,

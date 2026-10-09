@@ -142,6 +142,7 @@ export interface RealtimeClockState {
   shiftLabel: string;
   formattedTime: string;
   formattedDate: string;
+  dateString: string; // YYYY-MM-DD local date
   isSimulated: boolean;
 }
 
@@ -171,6 +172,11 @@ export function getRealtimeClockState(): RealtimeClockState {
     day: 'numeric',
   });
 
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  const dateString = `${yyyy}-${mm}-${dd}`;
+
   return {
     now,
     hour24: effectiveHour,
@@ -184,6 +190,7 @@ export function getRealtimeClockState(): RealtimeClockState {
     shiftLabel,
     formattedTime,
     formattedDate,
+    dateString,
     isSimulated: false,
   };
 }

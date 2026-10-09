@@ -573,20 +573,30 @@ export async function fetchQcReportsFromInsForge(): Promise<SampleReport[] | nul
       };
     });
 
-    if (snapshot && Array.isArray(snapshot.data) && snapshot.data.length > 0) {
-      // Merge snapshot with DB rows: prefer snapshot for items present in both
-      const map = new Map<string, SampleReport>();
-      for (const r of reportsFromDb) {
-        map.set(r.id, r);
-        map.set(r.lot_no, r);
-      }
+    // Merge snapshot and DB rows with single-key deduplication (snapshot has highest fidelity)
+    const map = new Map<string, SampleReport>();
+    if (snapshot && Array.isArray(snapshot.data)) {
       for (const s of snapshot.data) {
-        map.set(s.id, s);
+        if (s && s.id) {
+          map.set(s.id, s);
+        }
       }
-      return Array.from(map.values());
+    }
+    for (const r of reportsFromDb) {
+      if (r && r.id && !map.has(r.id)) {
+        map.set(r.id, r);
+      }
     }
 
-    return reportsFromDb;
+    const merged = Array.from(map.values());
+    // Sort newest first
+    merged.sort((a, b) => {
+      const timeA = new Date(a.created_at || `${a.sample_date}T${a.time_check || '00:00'}:00`).getTime() || 0;
+      const timeB = new Date(b.created_at || `${b.sample_date}T${b.time_check || '00:00'}:00`).getTime() || 0;
+      return timeB - timeA;
+    });
+
+    return merged.length > 0 ? merged : reportsFromDb;
   } catch (err) {
     console.warn("Failed to fetch QC reports from InsForge:", err);
     return null;

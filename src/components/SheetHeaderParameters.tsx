@@ -62,39 +62,42 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
   const currentDischarge = dischargeTanks.find((t) => t.id === sheet.discharge_tank_id)?.name || "TK-201";
 
   return (
-    <div className={`glass-panel rounded-2xl mb-5 transition-all shadow-md hover:shadow-xl border border-zinc-200/90 dark:border-white/10 ${
+    <div className={`rounded-xl mb-4 transition-all border border-zinc-200/80 dark:border-white/10 bg-white/90 dark:bg-[#0B101D]/90 shadow-2xs ${
       isExpanded ? "overflow-visible relative z-30" : "overflow-hidden"
     }`}>
-      {/* 1. Sleek Compact Parameter Summary Bar with 3D Depth */}
-      <div className="px-4 sm:px-5 py-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-gradient-to-r from-zinc-50 via-zinc-100/70 to-zinc-50 dark:from-[#0D1424] dark:via-[#131D33] dark:to-[#0D1424] border-b border-zinc-200/80 dark:border-white/10">
+      {/* 1. Sleek Compact Parameter Summary Bar */}
+      <div className="px-3.5 sm:px-4 py-2.5 flex flex-col md:flex-row md:items-center justify-between gap-2.5 bg-zinc-50/60 dark:bg-zinc-900/40 border-b border-zinc-200/60 dark:border-zinc-800/60">
         {/* Left: Key Meta Badges */}
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 shadow-[0_2px_8px_rgba(245,158,11,0.2)]">
-              <Factory className="w-4 h-4" />
-            </div>
-            <div>
-              <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 block leading-tight">
-                {currentPlant}
-              </span>
-              <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium block leading-none mt-1">
-                {currentProduct} · Date: <span className="text-zinc-800 dark:text-zinc-200 font-medium">{sheet.sheet_date}</span>
-              </span>
-            </div>
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <div className="flex items-center gap-2">
+            <Factory className="w-4 h-4 text-amber-500 shrink-0" />
+            <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+              {currentPlant}
+            </span>
+            <span className="text-zinc-300 dark:text-zinc-700">·</span>
+            <span className="text-xs text-zinc-600 dark:text-zinc-300 font-medium">
+              {currentProduct}
+            </span>
+            <span className="text-zinc-300 dark:text-zinc-700">·</span>
+            <span className="text-xs text-zinc-400 font-mono">
+              {sheet.sheet_date}
+            </span>
           </div>
 
-          <div className="h-4 w-[1px] bg-zinc-300 dark:bg-zinc-700 hidden sm:block" />
+          <div className="h-3.5 w-[1px] bg-zinc-200 dark:bg-zinc-700 hidden sm:block" />
 
           {/* Telemetry info */}
           <div className="flex items-center gap-2 text-xs flex-wrap">
-            <span className="px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 font-medium">
-              Feed: <strong className="text-zinc-900 dark:text-zinc-100 font-semibold">{currentFeed.split(" ")[0]}</strong>
+            <span className="text-zinc-500 dark:text-zinc-400">
+              Feed: <strong className="text-zinc-800 dark:text-zinc-200 font-medium">{currentFeed.split(" ")[0]}</strong>
             </span>
-            <span className="px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 font-medium">
-              Discharge: <strong className="text-zinc-900 dark:text-zinc-100 font-semibold">{currentDischarge.split(" ")[0]}</strong>
+            <span className="text-zinc-300 dark:text-zinc-700">·</span>
+            <span className="text-zinc-500 dark:text-zinc-400">
+              Discharge: <strong className="text-zinc-800 dark:text-zinc-200 font-medium">{currentDischarge.split(" ")[0]}</strong>
             </span>
-            <span className="px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300 font-semibold flex items-center gap-1.5">
-              <span>Target: {sheet.input_mt_hr ?? 45.0} MT/HR</span>
+            <span className="text-zinc-300 dark:text-zinc-700">·</span>
+            <span className="text-zinc-500 dark:text-zinc-400">
+              Target: <strong className="text-amber-600 dark:text-amber-400 font-semibold">{sheet.input_mt_hr ?? 45.0} MT/HR</strong>
             </span>
           </div>
         </div>
@@ -104,18 +107,18 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
           <button
             type="button"
             onClick={() => setIsExpanded(!isExpanded)}
-            className={`btn-tactile flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold cursor-pointer group shadow-sm ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-all border ${
               isExpanded
-                ? "btn-premium-amber text-white"
-                : "btn-premium-glass text-zinc-700 dark:text-zinc-300"
+                ? "bg-amber-500 text-white border-amber-500 shadow-2xs"
+                : "bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700/80"
             }`}
           >
-            <Settings2 className="w-3.5 h-3.5 transition-transform duration-300 group-hover:rotate-45" />
+            <Settings2 className="w-3.5 h-3.5" />
             <span>{isExpanded ? "Close Settings" : "Configure Parameters"}</span>
             {isExpanded ? (
-              <ChevronUp className="w-3.5 h-3.5 transition-transform duration-200 group-hover:-translate-y-0.5" />
+              <ChevronUp className="w-3.5 h-3.5" />
             ) : (
-              <ChevronDown className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-y-0.5" />
+              <ChevronDown className="w-3.5 h-3.5" />
             )}
           </button>
         </div>

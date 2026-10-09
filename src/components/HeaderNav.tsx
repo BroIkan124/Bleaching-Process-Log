@@ -58,42 +58,36 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
     switch (sheetStatus) {
       case "Draft":
         return (
-          <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
+          <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
             Draft
           </span>
         );
       case "InProgress":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-bold rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30 shadow-xs">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-            </span>
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-semibold rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
             <span>In Progress</span>
           </span>
         );
       case "Submitted":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-bold rounded-full bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/30">
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-semibold rounded-full bg-sky-500/10 text-sky-700 dark:text-sky-400 border border-sky-500/20">
             <span className="w-1.5 h-1.5 rounded-full bg-sky-500" />
             <span>Submitted</span>
           </span>
         );
       case "Returned":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-bold rounded-full bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-500/30">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
-            </span>
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-semibold rounded-full bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
             <span>Returned</span>
           </span>
         );
       case "Approved":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-bold rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 shadow-xs">
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-semibold rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            <span>Approved &amp; Locked</span>
+            <span>Approved</span>
           </span>
         );
     }
@@ -104,73 +98,67 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
       case "bleaching":
         return "Bleaching Process Log";
       case "qc":
-        return "QC Management & Lab Tests";
+        return "QC Management";
       case "reports":
-        return "Plant Performance Reports & Analytics";
+        return "Reports & Analytics";
       case "supervisor":
-        return "Supervisor Live Monitoring & Audit Hub";
+        return "Supervisor Hub";
       case "users":
-        return "User Management & Access Control";
+        return "User Management";
     }
   };
 
   return (
-    <header className="sticky top-0 z-30 w-full border-b border-zinc-200/80 dark:border-white/[0.08] bg-white/90 dark:bg-[#080C14]/90 backdrop-blur-2xl shadow-[0_4px_24px_rgba(0,0,0,0.06),0_1px_3px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_32px_rgba(0,0,0,0.5),0_0_20px_rgba(0,0,0,0.3)]">
+    <header className="sticky top-0 z-30 w-full border-b border-zinc-200/80 dark:border-white/[0.08] bg-white/95 dark:bg-[#080C14]/95 backdrop-blur-xl">
       <div className="max-w-[1680px] mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3">
         {/* Left: Brand Identity & Active Section */}
-        <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-700 flex items-center justify-center text-white shadow-[0_4px_24px_rgba(245,158,11,0.6)] font-bold shrink-0 border border-amber-400/40">
-            <Building2 className="w-5 h-5" />
+        <div className="flex items-center gap-2.5">
+          <div className="h-8 w-8 rounded-xl bg-amber-500 flex items-center justify-center text-white font-bold shrink-0 shadow-2xs">
+            <Building2 className="w-4 h-4" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-bold text-sm tracking-tight text-zinc-900 dark:text-white">
+              <span className="font-bold text-xs sm:text-sm tracking-tight text-zinc-900 dark:text-white">
                 Lam Soon Edible Oils
               </span>
-              <span className="text-xs text-zinc-300 dark:text-zinc-700 hidden sm:inline">|</span>
-              <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-300 hidden md:inline">
+              <span className="text-zinc-300 dark:text-zinc-700 hidden sm:inline">|</span>
+              <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400 hidden md:inline">
                 {getSectionTitle()}
               </span>
               {activeTab === "bleaching" && getStatusBadge()}
             </div>
-            <p className="text-xs text-zinc-500 font-medium hidden lg:block">
-              Nisshin Process Management System - Refinery Plant Control Line 1
-            </p>
           </div>
         </div>
 
         {/* Center: Shift, Realtime Clock & Active Slot Telemetry */}
-        <div className="hidden md:flex items-center gap-3 bg-zinc-100/95 dark:bg-zinc-900/90 shadow-inner px-3.5 py-1.5 rounded-xl border border-zinc-200/80 dark:border-zinc-700/60 text-xs">
+        <div className="hidden md:flex items-center gap-2.5 bg-zinc-100/80 dark:bg-zinc-800/60 px-3 py-1 rounded-lg border border-zinc-200/60 dark:border-zinc-700/60 text-xs">
           {clockState ? (
             <>
               {/* Live Real-time Clock */}
-              <div className="flex items-center gap-2 font-medium">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-                </span>
+              <div className="flex items-center gap-1.5 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                 <span className="text-zinc-500 dark:text-zinc-400">Time:</span>
-                <span className="font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">
+                <span className="font-semibold text-zinc-900 dark:text-zinc-100 tabular-nums">
                   {clockState.formattedTime}
                 </span>
               </div>
 
-              <div className="h-3.5 w-[1px] bg-zinc-300 dark:bg-zinc-700" />
+              <div className="h-3 w-[1px] bg-zinc-300 dark:bg-zinc-700" />
 
               {/* Active Slot */}
-              <div className="flex items-center gap-1.5 font-medium text-zinc-700 dark:text-zinc-300">
+              <div className="flex items-center gap-1 font-medium text-zinc-700 dark:text-zinc-300">
                 <span>Slot <strong className="text-amber-600 dark:text-amber-400 font-semibold">{clockState.slotTimeLabel}</strong></span>
                 <span className="text-zinc-400 dark:text-zinc-500 hidden lg:inline">
-                  - {clockState.shiftLabel}
+                  ({clockState.shiftLabel})
                 </span>
               </div>
             </>
           ) : (
-            <div className="flex items-center gap-2 font-medium">
+            <div className="flex items-center gap-1.5 font-medium">
               <Clock className="w-3.5 h-3.5 text-amber-500" />
               <span className="text-zinc-500 dark:text-zinc-400">Shift:</span>
-              <span className="font-bold text-zinc-900 dark:text-zinc-100">
-                Shift {currentShift} {currentShift === 1 ? '(08:00 - 15:00)' : currentShift === 2 ? '(16:00 - 23:00)' : '(24:00 - 07:00)'}
+              <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                Shift {currentShift}
               </span>
             </div>
           )}

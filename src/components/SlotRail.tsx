@@ -24,42 +24,32 @@ export const SlotRail: React.FC<SlotRailProps> = ({
   userRole,
 }) => {
   return (
-    <div className="glass-panel p-4 sm:p-5 rounded-2xl mb-5 shadow-[0_8px_32px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_48px_rgba(0,0,0,0.4)]">
+    <div className="rounded-xl p-3.5 sm:p-4 mb-4 border border-zinc-200/80 dark:border-white/10 bg-white/90 dark:bg-[#0B101D]/90 shadow-2xs">
       {/* Title & Legend Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3.5 pb-3 border-b border-zinc-200/80 dark:border-white/10">
-        <div className="flex items-center gap-2.5">
-          <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-500 border border-amber-500/20 shadow-2xs">
-            <Clock className="w-4 h-4" />
-          </div>
-          <div>
-            <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 block leading-tight">
-              24-Hour Continuous Plant Timeline Rail
-            </span>
-            <span className="text-xs text-zinc-500 hidden md:inline mt-0.5 block leading-none font-normal">
-              Automatic Time-Locking Synchronized with Real-Time Plant Clock
-            </span>
-          </div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3.5 pb-2.5 border-b border-zinc-200/60 dark:border-white/10">
+        <div className="flex items-center gap-2">
+          <Clock className="w-4 h-4 text-amber-500" />
+          <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+            24-Hour Continuous Timeline Rail
+          </span>
         </div>
 
         {/* Legend */}
-        <div className="flex items-center gap-3 text-xs font-semibold text-zinc-500 flex-wrap">
+        <div className="flex items-center gap-3 text-xs font-medium text-zinc-500 flex-wrap">
           <div className="flex items-center gap-1.5">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
-            </span>
-            <span className="text-amber-600 dark:text-amber-400 font-bold">Current Active Slot (Open)</span>
+            <span className="w-2 h-2 rounded-full bg-amber-500" />
+            <span className="text-amber-600 dark:text-amber-400 font-semibold">Current Active Slot</span>
           </div>
           <div className="flex items-center gap-1.5">
             <Lock className="w-3.5 h-3.5 text-zinc-400" />
-            <span>Locked (Past / Upcoming)</span>
+            <span>Locked</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-xs" />
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
             <span>In-Spec</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-xs" />
+            <span className="w-2 h-2 rounded-full bg-rose-500" />
             <span>Out of Spec</span>
           </div>
         </div>
@@ -152,10 +142,7 @@ export const SlotRail: React.FC<SlotRailProps> = ({
 
                       {/* Current Live Beacon */}
                       {isCurrent && (
-                        <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500 shadow-xs"></span>
-                        </span>
+                        <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-500 ring-2 ring-white dark:ring-zinc-950" />
                       )}
 
                       {/* Supervisor Override Tag */}

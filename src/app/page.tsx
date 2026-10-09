@@ -1039,18 +1039,18 @@ export default function BleachingProcessLogApp() {
         />
 
         {/* Main Workspace Body */}
-        <main className="flex-1 min-w-0 p-3 sm:p-5 md:p-6 pb-16 overflow-x-auto [perspective:1400px]">
+        <main className="flex-1 min-w-0 p-3 sm:p-4 md:p-5 pb-12 overflow-x-auto">
           <div key={activeTab} className="fade-in-tactile">
           {/* Tab 1: Bleaching Process Log (RF-FR-003) */}
           {activeTab === 'bleaching' && (
             <>
-              {/* Banner if Sheet was Returned with 3D Neon Alert */}
+              {/* Banner if Sheet was Returned */}
               {sheet.status === 'Returned' && sheet.review_note && (
-                <div className="mb-5 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-rose-50 to-rose-100/70 dark:from-rose-950/70 dark:to-rose-900/40 border border-rose-400 dark:border-rose-700/80 text-rose-800 dark:text-rose-200 flex items-start gap-3.5 shadow-[0_8px_24px_rgba(239,68,68,0.15)] [transform-style:preserve-3d]">
-                  <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5 animate-pulse" />
+                <div className="mb-4 p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-200 flex items-start gap-2.5 shadow-2xs">
+                  <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
                   <div>
-                    <span className="font-bold font-display text-sm">Sheet Returned by Supervisor ({sheet.reviewed_by_name}):</span>
-                    <p className="text-xs mt-1 font-mono leading-relaxed">{sheet.review_note}</p>
+                    <span className="font-bold text-sm">Sheet Returned by Supervisor ({sheet.reviewed_by_name}):</span>
+                    <p className="text-xs mt-0.5 font-mono leading-relaxed">{sheet.review_note}</p>
                   </div>
                 </div>
               )}

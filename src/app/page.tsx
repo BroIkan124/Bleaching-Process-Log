@@ -837,7 +837,6 @@ export default function BleachingProcessLogApp() {
     );
     setSupervisorEvents(updatedEvents);
     syncSupervisorEventsToInsForge(updatedEvents, currentUser);
-  };
 
     // Log acknowledgment in InsForge audit trail
     if (currentUser) {

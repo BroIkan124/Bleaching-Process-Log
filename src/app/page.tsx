@@ -37,6 +37,7 @@ import { SupervisorMonitoringView } from "@/components/SupervisorMonitoringView"
 import { ReportsView } from "@/components/ReportsView";
 import { MasterDataView } from "@/components/MasterDataView";
 import LoginView from "@/components/LoginView";
+import { AlertCircle, CheckCircle, Info } from "lucide-react";
 import {
   logActivityToInsForge,
   fetchUsersFromInsForge,

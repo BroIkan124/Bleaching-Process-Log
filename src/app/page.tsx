@@ -478,17 +478,26 @@ export default function BleachingProcessLogApp() {
     loadCloudData(false);
   }, []);
 
-  // Sinkronisasi berkala pintar (Background Auto-Sync Polling setiap 6 saat & window focus)
+  // Sinkronisasi berkala pintar (Background Auto-Sync Polling setiap 1 saat tanpa butang UI)
+  const isPollingRef = React.useRef(false);
+  const lastRemoteTsRef = React.useRef(lastRemoteTimestamp);
+  useEffect(() => {
+    lastRemoteTsRef.current = lastRemoteTimestamp;
+  }, [lastRemoteTimestamp]);
+
   useEffect(() => {
     const pollInterval = setInterval(async () => {
-      if (isSyncing || isDrawerOpenRef.current) return;
+      if (isSyncing || isDrawerOpenRef.current || isPollingRef.current) return;
+      isPollingRef.current = true;
       try {
         const latestTs = await checkCloudUpdateTimestamp();
-        if (latestTs && latestTs !== lastRemoteTimestamp) {
+        if (latestTs && latestTs !== lastRemoteTsRef.current) {
           await loadCloudData(false);
         }
-      } catch {}
-    }, 6000);
+      } catch {} finally {
+        isPollingRef.current = false;
+      }
+    }, 1000);
 
     const handleFocus = () => {
       loadCloudData(false);
@@ -499,7 +508,7 @@ export default function BleachingProcessLogApp() {
       clearInterval(pollInterval);
       window.removeEventListener("focus", handleFocus);
     };
-  }, [lastRemoteTimestamp, isSyncing]);
+  }, [isSyncing]);
 
   // Determine if current user can edit the selected slot based on Realtime Slot Rule & Supervisor Override
   const isSheetLocked = sheet.status === 'Approved';
@@ -530,7 +539,7 @@ export default function BleachingProcessLogApp() {
     setIsDrawerOpen(true);
   };
 
-  // Handle Save Slot - Multi-Department Workflow Handover: Bleaching Log -> QC Lab -> Reports -> Supervisor (STAGE 1)
+  // Handle Save Slot - Operator saves parameters and syncs data (does not auto-dispatch sample to QC)
   const handleSaveSlot = (updatedEntry: LogEntry) => {
     if (!currentUser) return;
     const updatedEntries = sheet.entries.map((e, idx) => 
@@ -539,15 +548,6 @@ export default function BleachingProcessLogApp() {
 
     const hasSavedAny = updatedEntries.some(e => e.is_saved);
     const newStatus = sheet.status === 'Draft' && hasSavedAny ? 'InProgress' : sheet.status;
-
-    // 1. Bleaching Log -> QC Lab automatic handover (Stage 1)
-    const { updatedReports, newEvent: pipelineEvent } = createOrUpdateQcSampleFromLogEntry(
-      updatedEntry,
-      sheet,
-      currentUser,
-      qcReports
-    );
-    setQcReports(updatedReports);
 
     const updatedSheet: LogSheet = {
       ...sheet,
@@ -559,14 +559,14 @@ export default function BleachingProcessLogApp() {
 
     // Real-time synchronization to InsForge PostgreSQL (PL001 + full sheet snapshot)
     syncSlotToInsForge(updatedEntry, "BP001", currentUser, updatedSheet);
-    saveStateSnapshotToInsForge("QC_REPORTS", updatedReports, currentUser);
+    saveStateSnapshotToInsForge("CURRENT_SHEET", updatedSheet, currentUser);
 
     // Check if reading is out of spec
     const isVacAlert = typeof updatedEntry.vacuum_mmhg === 'number' && updatedEntry.vacuum_mmhg < 600;
     const isTempAlert = typeof updatedEntry.he_temp_c === 'number' && (updatedEntry.he_temp_c < 70 || updatedEntry.he_temp_c > 115);
     const hasAlert = isVacAlert || isTempAlert || (updatedEntry.out_of_spec && updatedEntry.out_of_spec.length > 0);
 
-    // Event 1: Bleaching Log slot recording alert
+    // Event: Bleaching Log slot recording alert
     const slotEvent: SupervisorUpdateEvent = {
       id: `evt-save-${Date.now()}`,
       timestamp: new Date().toISOString(),
@@ -574,7 +574,7 @@ export default function BleachingProcessLogApp() {
       title: hasAlert 
         ? `ALERT: Out of Spec Recorded (Slot ${updatedEntry.time_label} Hrs)`
         : `Slot ${updatedEntry.time_label} Hrs Successfully Saved & Synchronized`,
-      description: `${currentUser.name} recorded Slot ${updatedEntry.time_label} (Flow ${updatedEntry.flowrate_set ?? '-'} MT/HR, Vac ${updatedEntry.vacuum_mmhg ?? '-'} mmHg, Temp ${updatedEntry.he_temp_c ?? '-'}°C). Lab sample synchronized to QC Lab.`,
+      description: `${currentUser.name} recorded Slot ${updatedEntry.time_label} (Flow ${updatedEntry.flowrate_set ?? '-'} MT/HR, Vac ${updatedEntry.vacuum_mmhg ?? '-'} mmHg, Temp ${updatedEntry.he_temp_c ?? '-'}°C).`,
       severity: hasAlert ? 'alert' : 'success',
       author_name: currentUser.name,
       author_role: currentUser.role,
@@ -584,12 +584,72 @@ export default function BleachingProcessLogApp() {
       acknowledged: false,
     };
 
-    const updatedEvents = [slotEvent, pipelineEvent, ...supervisorEvents];
+    const updatedEvents = [slotEvent, ...supervisorEvents];
     setSupervisorEvents(updatedEvents);
     syncSupervisorEventsToInsForge(updatedEvents, currentUser);
 
     setIsDrawerOpen(false);
-    showNotice(`Slot ${updatedEntry.time_label} Hrs saved & synchronized to QC Lab & Cloud.`, 'success');
+    showNotice(`Slot ${updatedEntry.time_label} Hrs saved & synchronized. Click "Send to QC" to dispatch sample.`, 'success');
+  };
+
+  // Handle Operator Explicit Dispatch Sample to QC Management
+  const handleDispatchToQc = (slotIndex: number) => {
+    if (!currentUser) return;
+    const entry = sheet.entries[slotIndex];
+    if (!entry || !entry.is_saved) {
+      showNotice(`Sila simpan data bagi Slot ${entry?.time_label ?? slotIndex} terlebih dahulu sebelum menghantar ke QC.`, 'warning');
+      return;
+    }
+
+    // Explicit handover: Bleaching Log -> QC Lab
+    const { updatedReports, newEvent: pipelineEvent } = createOrUpdateQcSampleFromLogEntry(
+      entry,
+      sheet,
+      currentUser,
+      qcReports
+    );
+    setQcReports(updatedReports);
+
+    const updatedEntry: LogEntry = {
+      ...entry,
+      qc_sample_sent: true,
+      qc_sample_sent_at: new Date().toISOString(),
+    };
+
+    const updatedEntries = sheet.entries.map((e, idx) =>
+      idx === slotIndex ? updatedEntry : e
+    );
+
+    const updatedSheet: LogSheet = {
+      ...sheet,
+      entries: updatedEntries,
+      updated_at: new Date().toISOString(),
+    };
+    setSheet(updatedSheet);
+
+    // Real-time synchronization to InsForge PostgreSQL & cloud snapshots
+    syncSlotToInsForge(updatedEntry, "BP001", currentUser, updatedSheet);
+    saveStateSnapshotToInsForge("QC_REPORTS", updatedReports, currentUser);
+    saveStateSnapshotToInsForge("CURRENT_SHEET", updatedSheet, currentUser);
+
+    const dispatchEvent: SupervisorUpdateEvent = {
+      id: `evt-dispatch-${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      source: 'Bleaching Log',
+      title: `Sample Dispatched to QC: Slot ${entry.time_label} Hrs`,
+      description: `${currentUser.name} has dispatched sample for Slot ${entry.time_label} Hrs to QC Management lab analysis queue.`,
+      severity: 'info',
+      author_name: currentUser.name,
+      author_role: currentUser.role,
+      shift: entry.shift,
+      slot_time: entry.time_label,
+    };
+
+    const updatedEvents = [dispatchEvent, ...(pipelineEvent ? [pipelineEvent] : []), ...supervisorEvents];
+    setSupervisorEvents(updatedEvents);
+    syncSupervisorEventsToInsForge(updatedEvents, currentUser);
+
+    showNotice(`Sample bagi Slot ${entry.time_label} Hrs berjaya dihantar ke paparan QC Management!`, 'success');
   };
 
   // QC Lab -> Bleaching Log & Reports Sync (STAGE 2)
@@ -993,6 +1053,7 @@ export default function BleachingProcessLogApp() {
                 activeCurrentHourIndex={currentSlotIndex}
                 supervisorUnlockedSlots={supervisorUnlockedSlots}
                 userRole={currentUser?.role}
+                onDispatchToQc={handleDispatchToQc}
               />
             </>
           )}

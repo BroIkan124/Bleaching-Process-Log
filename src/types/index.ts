@@ -139,6 +139,9 @@ export interface LogEntry {
   entered_at: string | null;
   is_saved: boolean;
   is_overdue?: boolean;
+  qc_sample_sent?: boolean;
+  qc_sample_sent_at?: string;
+  qc_sample_id?: string;
 }
 
 export interface LogSheet extends ParameterBlock {

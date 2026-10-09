@@ -9,7 +9,8 @@ import {
   Eye, 
   Clock, 
   Lock, 
-  Unlock 
+  Unlock,
+  Send
 } from "lucide-react";
 import { evaluateSlotAccess } from "@/lib/realtimeTimeline";
 
@@ -23,6 +24,7 @@ interface HourlyTableGridProps {
   activeCurrentHourIndex: number;
   supervisorUnlockedSlots?: number[];
   userRole?: string;
+  onDispatchToQc?: (slotIndex: number) => void;
 }
 
 export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
@@ -33,6 +35,7 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
   activeCurrentHourIndex,
   supervisorUnlockedSlots = [],
   userRole,
+  onDispatchToQc,
 }) => {
   return (
     <div className="glass-panel rounded-2xl overflow-hidden mb-8 shadow-[0_8px_32px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_48px_rgba(0,0,0,0.4)]">
@@ -98,7 +101,8 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
               <th className="py-2.5 px-2 text-right border-r border-zinc-200 dark:border-zinc-800 text-amber-600 dark:text-amber-400">Red (R)</th>
               <th className="py-2.5 px-2 text-right border-r border-zinc-200 dark:border-zinc-800">Yel (Y)</th>
               <th className="py-2.5 px-3 border-r border-zinc-200 dark:border-zinc-800 min-w-[200px]">Remarks</th>
-              <th className="py-2.5 px-3 text-center w-32">Status / Action</th>
+              <th className="py-2.5 px-3 text-center border-r border-zinc-200 dark:border-zinc-800 w-32">Status / Action</th>
+              <th className="py-2.5 px-3 text-center w-36">QC Sample</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/80 font-sans">
@@ -123,21 +127,21 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
                   {/* Shift Divider Banners */}
                   {isShift1Start && (
                     <tr className="bg-amber-500/[0.04] dark:bg-amber-500/[0.06] text-zinc-800 dark:text-zinc-200 border-y border-amber-500/15 select-none">
-                      <td colSpan={14} className="py-2 px-4 font-semibold text-xs">
+                      <td colSpan={15} className="py-2 px-4 font-semibold text-xs">
                         <span className="text-amber-600 dark:text-amber-400 font-bold">Shift 1 (08:00 - 15:00)</span> · On-Duty Operations
                       </td>
                     </tr>
                   )}
                   {isShift2Start && (
                     <tr className="bg-sky-500/[0.04] dark:bg-sky-500/[0.06] text-zinc-800 dark:text-zinc-200 border-y border-sky-500/15 select-none">
-                      <td colSpan={14} className="py-2 px-4 font-semibold text-xs">
+                      <td colSpan={15} className="py-2 px-4 font-semibold text-xs">
                         <span className="text-sky-600 dark:text-sky-400 font-bold">Shift 2 (16:00 - 23:00)</span> · On-Duty Operations
                       </td>
                     </tr>
                   )}
                   {isShift3Start && (
                     <tr className="bg-purple-500/[0.04] dark:bg-purple-500/[0.06] text-zinc-800 dark:text-zinc-200 border-y border-purple-500/15 select-none">
-                      <td colSpan={14} className="py-2 px-4 font-semibold text-xs">
+                      <td colSpan={15} className="py-2 px-4 font-semibold text-xs">
                         <span className="text-purple-600 dark:text-purple-400 font-bold">Shift 3 (24:00 - 07:00)</span> · On-Duty Operations
                       </td>
                     </tr>
@@ -249,7 +253,7 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
                       </td>
 
                       {/* Actions / Real-time Status */}
-                      <td className="py-2.5 px-3 text-center">
+                      <td className="py-2.5 px-3 text-center border-r border-zinc-200/70 dark:border-zinc-800/70">
                         <button
                           type="button"
                           disabled={!isAccessible}
@@ -284,6 +288,41 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
                             </span>
                           )}
                         </button>
+                      </td>
+
+                      {/* QC Sample Dispatch Button */}
+                      <td className="py-2.5 px-3 text-center">
+                        {isSaved ? (
+                          entry.qc_sample_sent ? (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (onDispatchToQc) onDispatchToQc(idx);
+                              }}
+                              title="Sampel telah dihantar ke QC Management. Klik untuk kemaskini / hantar semula."
+                              className="btn-tactile inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500 hover:text-white transition-all cursor-pointer shadow-2xs"
+                            >
+                              <Check className="w-3.5 h-3.5" />
+                              <span>Sample Sent</span>
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (onDispatchToQc) onDispatchToQc(idx);
+                              }}
+                              title="Hantar sampel slot ini ke QC Management"
+                              className="btn-tactile inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white border border-amber-500 transition-all cursor-pointer shadow-2xs hover:shadow-amber-500/25 active:scale-95"
+                            >
+                              <Send className="w-3.5 h-3.5" />
+                              <span>Send to QC</span>
+                            </button>
+                          )
+                        ) : (
+                          <span className="text-zinc-400 dark:text-zinc-600 text-xs font-medium">-</span>
+                        )}
                       </td>
                     </tr>
                 </React.Fragment>

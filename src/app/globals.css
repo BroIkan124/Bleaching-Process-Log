@@ -77,22 +77,28 @@
    BASE TYPOGRAPHY & BODY
    ========================================================================== */
 
-body {
+body, html {
   background-color: var(--bg-primary);
   color: var(--text-main);
-  font-family: var(--font-sans), 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  font-weight: 500;
+  font-family: var(--font-sans), 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-weight: 400;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 
-/* Telemetry Numbers: High-contrast monospace with tabular alignment */
+/* Normal, Eye-Pleasing Numbers & Data */
 .tabular-nums, .font-mono {
-  font-family: var(--font-mono), 'JetBrains Mono', monospace;
-  font-weight: 650;
+  font-family: var(--font-sans), 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
+  font-feature-settings: "tnum";
+  letter-spacing: normal;
+}
+
+.font-display {
+  font-family: var(--font-sans), 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  letter-spacing: -0.01em;
 }
 
 /* Touch Target Minimum 48px standard for plant floor tablet use */

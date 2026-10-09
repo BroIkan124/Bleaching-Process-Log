@@ -102,15 +102,15 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   const getSectionTitle = () => {
     switch (activeTab) {
       case "bleaching":
-        return "Auto Bleaching Log (RF-FR-003 Rev 03)";
+        return "Bleaching Process Log";
       case "qc":
-        return "QC Management & Lab Tests (RF-FR-001)";
+        return "QC Management & Lab Tests";
       case "reports":
         return "Plant Performance Reports & Analytics";
       case "supervisor":
         return "Supervisor Live Monitoring & Audit Hub";
       case "users":
-        return "User Management & Access Control (Admin)";
+        return "User Management & Access Control";
     }
   };
 
@@ -119,12 +119,12 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
       <div className="max-w-[1680px] mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3">
         {/* Left: Brand Identity & Active Section */}
         <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-700 flex items-center justify-center text-white shadow-[0_4px_24px_rgba(245,158,11,0.6)] font-display font-bold shrink-0 border border-amber-400/40">
+          <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-700 flex items-center justify-center text-white shadow-[0_4px_24px_rgba(245,158,11,0.6)] font-bold shrink-0 border border-amber-400/40">
             <Building2 className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-display font-bold text-sm tracking-tight text-zinc-900 dark:text-white">
+              <span className="font-bold text-sm tracking-tight text-zinc-900 dark:text-white">
                 Lam Soon Edible Oils
               </span>
               <span className="text-xs text-zinc-300 dark:text-zinc-700 hidden sm:inline">|</span>
@@ -139,7 +139,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
           </div>
         </div>
 
-        {/* Center: Shift, Realtime Clock & Active Slot Telemetry Badge */}
+        {/* Center: Shift, Realtime Clock & Active Slot Telemetry */}
         <div className="hidden md:flex items-center gap-3 bg-zinc-100/95 dark:bg-zinc-900/90 shadow-inner px-3.5 py-1.5 rounded-xl border border-zinc-200/80 dark:border-zinc-700/60 text-xs">
           {clockState ? (
             <>
@@ -150,20 +150,18 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
                 </span>
                 <span className="text-zinc-500 dark:text-zinc-400">Time:</span>
-                <span className="font-bold text-zinc-900 dark:text-zinc-100 font-mono tracking-tight tabular-nums">
+                <span className="font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">
                   {clockState.formattedTime}
                 </span>
               </div>
 
               <div className="h-3.5 w-[1px] bg-zinc-300 dark:bg-zinc-700" />
 
-              {/* Active Slot Badge */}
-              <div className="flex items-center gap-1.5">
-                <span className="px-2 py-0.5 rounded-lg text-xs font-bold font-mono bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
-                  Slot {clockState.slotTimeLabel} Active
-                </span>
-                <span className="text-xs text-zinc-500 font-mono hidden lg:inline">
-                  ({clockState.shiftLabel})
+              {/* Active Slot */}
+              <div className="flex items-center gap-1.5 font-medium text-zinc-700 dark:text-zinc-300">
+                <span>Slot <strong className="text-amber-600 dark:text-amber-400 font-semibold">{clockState.slotTimeLabel}</strong></span>
+                <span className="text-zinc-400 dark:text-zinc-500 hidden lg:inline">
+                  · {clockState.shiftLabel}
                 </span>
               </div>
             </>
@@ -171,8 +169,8 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
             <div className="flex items-center gap-2 font-medium">
               <Clock className="w-3.5 h-3.5 text-amber-500" />
               <span className="text-zinc-500 dark:text-zinc-400">Shift:</span>
-              <span className="font-bold text-zinc-900 dark:text-zinc-100 font-mono tracking-tight">
-                Shift {currentShift} {currentShift === 1 ? '(0800-1500)' : currentShift === 2 ? '(1600-2300)' : '(2400-0700)'}
+              <span className="font-bold text-zinc-900 dark:text-zinc-100">
+                Shift {currentShift} {currentShift === 1 ? '(08:00 - 15:00)' : currentShift === 2 ? '(16:00 - 23:00)' : '(24:00 - 07:00)'}
               </span>
             </div>
           )}

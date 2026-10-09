@@ -96,32 +96,32 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
     switch (role) {
       case "admin":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800 dark:bg-purple-950/70 dark:text-purple-300 border border-purple-300 dark:border-purple-800">
-            <Shield className="w-3 h-3" /> System Administrator
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300">
+            <Shield className="w-3.5 h-3.5" /> System Administrator
           </span>
         );
       case "supervisor":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
-            <ShieldCheck className="w-3 h-3" /> Plant Supervisor
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
+            <ShieldCheck className="w-3.5 h-3.5" /> Plant Supervisor
           </span>
         );
       case "manager_qa":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
-            <ShieldCheck className="w-3 h-3" /> QA Manager
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+            <ShieldCheck className="w-3.5 h-3.5" /> QA Manager
           </span>
         );
       case "chemist":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-sky-100 text-sky-800 dark:bg-sky-950/70 dark:text-sky-300 border border-sky-300 dark:border-sky-800">
-            <FlaskConical className="w-3 h-3" /> QC Chemist
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300">
+            <FlaskConical className="w-3.5 h-3.5" /> QC Chemist
           </span>
         );
       case "technician":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-zinc-200 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200 border border-zinc-300 dark:border-zinc-700">
-            <Wrench className="w-3 h-3" /> Operations Technician
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+            <Wrench className="w-3.5 h-3.5" /> Operations Technician
           </span>
         );
     }

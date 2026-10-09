@@ -111,8 +111,8 @@ export function createOrUpdateQcSampleFromLogEntry(
     timestamp: new Date().toISOString(),
     source: 'Bleaching Log',
     title: hasAlert
-      ? `[PIPELINE STAGE 1] ALERT: Slot ${entry.time_label} Hrs Logged (QC Attention Required)`
-      : `[PIPELINE STAGE 1] Bleaching Log Slot ${entry.time_label} Hrs Logged -> Dispatched to QC Lab`,
+      ? `ALERT: Slot ${entry.time_label} Hrs Logged (QC Attention Required)`
+      : `Bleaching Log Slot ${entry.time_label} Hrs Logged -> Dispatched to QC Lab`,
     description: `${currentUser.name} recorded operating parameters for ${entry.time_label} Hrs. Sample ${reportNo} was automatically created and dispatched to QC Lab for chemical analysis.`,
     severity: hasAlert ? 'alert' : 'info',
     author_name: currentUser.name,
@@ -180,8 +180,8 @@ export function syncQcResultToLogEntries(
     timestamp: new Date().toISOString(),
     source: 'QC Lab',
     title: isReject
-      ? `[PIPELINE STAGE 2] CRITICAL: QC Sample Slot ${timeLabel} Hrs REJECTED (Hold/Disposition)`
-      : `[PIPELINE STAGE 2] QC Lab Approved Sample Slot ${timeLabel} Hrs (In-Spec)`,
+      ? `CRITICAL: QC Sample Slot ${timeLabel} Hrs REJECTED (Hold/Disposition)`
+      : `QC Lab Approved Sample Slot ${timeLabel} Hrs (In-Spec)`,
     description: `Chemist ${currentUser.name} verified laboratory analysis for ${qcReport.report_no}: Lovibond Colour ${colorVal ?? '-'}R, FFA ${ffaVal ?? '-'}%. Decision: ${qcReport.decision?.decision.toUpperCase() || 'ANALYZED'}. Telemetry synchronized to Bleaching Log & Reports.`,
     severity: isReject ? 'alert' : 'success',
     author_name: currentUser.name,

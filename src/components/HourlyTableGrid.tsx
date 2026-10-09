@@ -43,34 +43,34 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
             <Clock className="w-4 h-4" />
           </div>
           <div>
-            <h2 className="font-display font-bold text-sm text-zinc-900 dark:text-zinc-100 uppercase tracking-wider">
-              Bleaching Process Log Sheet (RF-FR-003 Rev 03)
+            <h2 className="font-bold text-sm text-zinc-900 dark:text-zinc-100">
+              Bleaching Process Log Sheet
             </h2>
-            <p className="text-xs text-zinc-500 font-medium">
-              Complete 24-Hour Continuous Telemetry · Real-Time Access Window Verification
+            <p className="text-xs text-zinc-500 font-normal">
+              24-Hour Continuous Telemetry · Real-Time Access Window
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 text-xs font-semibold text-zinc-500 flex-wrap">
+        <div className="flex items-center gap-3 text-xs font-medium text-zinc-500 flex-wrap">
           <span className="flex items-center gap-1.5">
-            <span className="relative flex h-2.5 w-2.5">
+            <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
             </span>
-            <span className="font-bold text-amber-600 dark:text-amber-400">Active Slot (Open)</span>
+            <span className="text-amber-600 dark:text-amber-400 font-semibold">Active Slot</span>
           </span>
           <span className="flex items-center gap-1.5">
             <Lock className="w-3.5 h-3.5 text-zinc-400" />
-            <span className="font-medium text-zinc-600 dark:text-zinc-400">Locked (Past / Upcoming)</span>
+            <span>Locked</span>
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-xs" />
-            <span className="font-medium text-zinc-700 dark:text-zinc-300">In-Spec</span>
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            <span>In-Spec</span>
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-xs" />
-            <span className="font-medium text-zinc-700 dark:text-zinc-300">Out of Spec</span>
+            <span className="w-2 h-2 rounded-full bg-rose-500" />
+            <span>Out of Spec</span>
           </span>
         </div>
       </div>
@@ -80,25 +80,25 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
         <table className="w-full border-collapse text-left text-xs">
           <thead>
             {/* Unified Sticky Header */}
-            <tr className="sticky top-0 z-20 backdrop-blur-xl bg-zinc-100/95 dark:bg-[#0E1626]/95 text-zinc-700 dark:text-zinc-300 font-bold border-b border-zinc-200 dark:border-zinc-800 text-xs uppercase tracking-wider select-none shadow-xs">
-              <th className="py-3 px-3 text-center border-r border-zinc-200 dark:border-zinc-800 w-24">Time (Hrs)</th>
-              <th className="py-3 px-3 text-right border-r border-zinc-200 dark:border-zinc-800">Flow (MT/HR)</th>
-              <th className="py-3 px-2 text-center border-r border-zinc-200 dark:border-zinc-800">Acid Dose</th>
-              <th className="py-3 px-3 text-right border-r border-zinc-200 dark:border-zinc-800 text-amber-600 dark:text-amber-400">
+            <tr className="sticky top-0 z-20 backdrop-blur-xl bg-zinc-100/95 dark:bg-[#0E1626]/95 text-zinc-700 dark:text-zinc-300 font-semibold border-b border-zinc-200 dark:border-zinc-800 text-xs select-none">
+              <th className="py-2.5 px-3 text-center border-r border-zinc-200 dark:border-zinc-800 w-24">Time (Hrs)</th>
+              <th className="py-2.5 px-3 text-right border-r border-zinc-200 dark:border-zinc-800">Flow (MT/HR)</th>
+              <th className="py-2.5 px-2 text-center border-r border-zinc-200 dark:border-zinc-800">Acid Dose</th>
+              <th className="py-2.5 px-3 text-right border-r border-zinc-200 dark:border-zinc-800 text-amber-600 dark:text-amber-400">
                 HE Temp (°C)
               </th>
-              <th className="py-3 px-2 text-center border-r border-zinc-200 dark:border-zinc-800">BE Dose</th>
-              <th className="py-3 px-2 text-center border-r border-zinc-200 dark:border-zinc-800">Level</th>
-              <th className="py-3 px-3 text-right border-r border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300">
+              <th className="py-2.5 px-2 text-center border-r border-zinc-200 dark:border-zinc-800">BE Dose</th>
+              <th className="py-2.5 px-2 text-center border-r border-zinc-200 dark:border-zinc-800">Level</th>
+              <th className="py-2.5 px-3 text-right border-r border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300">
                 Vacuum (mmHg)
               </th>
-              <th className="py-3 px-2 text-center border-r border-zinc-200 dark:border-zinc-800">Niagara</th>
-              <th className="py-3 px-2 text-center border-r border-zinc-200 dark:border-zinc-800">Filter Cut</th>
-              <th className="py-3 px-2 text-right border-r border-zinc-200 dark:border-zinc-800 text-sky-600 dark:text-sky-400">FFA (%)</th>
-              <th className="py-3 px-2 text-right border-r border-zinc-200 dark:border-zinc-800 text-amber-600 dark:text-amber-400">Red (R)</th>
-              <th className="py-3 px-2 text-right border-r border-zinc-200 dark:border-zinc-800">Yel (Y)</th>
-              <th className="py-3 px-3 border-r border-zinc-200 dark:border-zinc-800 min-w-[200px]">Remarks</th>
-              <th className="py-3 px-3 text-center w-32">Status / Action</th>
+              <th className="py-2.5 px-2 text-center border-r border-zinc-200 dark:border-zinc-800">Niagara</th>
+              <th className="py-2.5 px-2 text-center border-r border-zinc-200 dark:border-zinc-800">Filter Cut</th>
+              <th className="py-2.5 px-2 text-right border-r border-zinc-200 dark:border-zinc-800 text-sky-600 dark:text-sky-400">FFA (%)</th>
+              <th className="py-2.5 px-2 text-right border-r border-zinc-200 dark:border-zinc-800 text-amber-600 dark:text-amber-400">Red (R)</th>
+              <th className="py-2.5 px-2 text-right border-r border-zinc-200 dark:border-zinc-800">Yel (Y)</th>
+              <th className="py-2.5 px-3 border-r border-zinc-200 dark:border-zinc-800 min-w-[200px]">Remarks</th>
+              <th className="py-2.5 px-3 text-center w-32">Status / Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/80 font-sans">
@@ -122,23 +122,23 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
                 <React.Fragment key={entry.id}>
                   {/* Shift Divider Banners */}
                   {isShift1Start && (
-                    <tr className="bg-amber-500/[0.06] dark:bg-amber-500/[0.08] text-zinc-800 dark:text-zinc-200 border-y border-amber-500/20 select-none shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-                      <td colSpan={14} className="py-2.5 px-4 font-bold text-xs tracking-wide">
-                        <span className="text-amber-600 dark:text-amber-400 font-mono font-bold">SHIFT 1 (0800 - 1500 HRS)</span> - On-Duty Operations
+                    <tr className="bg-amber-500/[0.04] dark:bg-amber-500/[0.06] text-zinc-800 dark:text-zinc-200 border-y border-amber-500/15 select-none">
+                      <td colSpan={14} className="py-2 px-4 font-semibold text-xs">
+                        <span className="text-amber-600 dark:text-amber-400 font-bold">Shift 1 (08:00 - 15:00)</span> · On-Duty Operations
                       </td>
                     </tr>
                   )}
                   {isShift2Start && (
-                    <tr className="bg-sky-500/[0.06] dark:bg-sky-500/[0.08] text-zinc-800 dark:text-zinc-200 border-y border-sky-500/20 select-none shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-                      <td colSpan={14} className="py-2.5 px-4 font-bold text-xs tracking-wide">
-                        <span className="text-sky-600 dark:text-sky-400 font-mono font-bold">SHIFT 2 (1600 - 2300 HRS)</span> - On-Duty Operations
+                    <tr className="bg-sky-500/[0.04] dark:bg-sky-500/[0.06] text-zinc-800 dark:text-zinc-200 border-y border-sky-500/15 select-none">
+                      <td colSpan={14} className="py-2 px-4 font-semibold text-xs">
+                        <span className="text-sky-600 dark:text-sky-400 font-bold">Shift 2 (16:00 - 23:00)</span> · On-Duty Operations
                       </td>
                     </tr>
                   )}
                   {isShift3Start && (
-                    <tr className="bg-purple-500/[0.06] dark:bg-purple-500/[0.08] text-zinc-800 dark:text-zinc-200 border-y border-purple-500/20 select-none shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-                      <td colSpan={14} className="py-2.5 px-4 font-bold text-xs tracking-wide">
-                        <span className="text-purple-600 dark:text-purple-400 font-mono font-bold">SHIFT 3 (2400 - 0700 HRS)</span> - On-Duty Operations
+                    <tr className="bg-purple-500/[0.04] dark:bg-purple-500/[0.06] text-zinc-800 dark:text-zinc-200 border-y border-purple-500/15 select-none">
+                      <td colSpan={14} className="py-2 px-4 font-semibold text-xs">
+                        <span className="text-purple-600 dark:text-purple-400 font-bold">Shift 3 (24:00 - 07:00)</span> · On-Duty Operations
                       </td>
                     </tr>
                   )}
@@ -276,20 +276,12 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
                               <span>Override</span>
                             </>
                           ) : isSaved ? (
-                            <>
-                              <Lock className="w-3.5 h-3.5 text-zinc-400" />
-                              <span>Locked (Saved)</span>
-                            </>
-                          ) : access.status === 'past_locked' ? (
-                            <>
-                              <Lock className="w-3.5 h-3.5 text-zinc-400" />
-                              <span>Locked (Past)</span>
-                            </>
+                            <span>Saved</span>
                           ) : (
-                            <>
-                              <Lock className="w-3.5 h-3.5 text-zinc-400" />
-                              <span>Locked (Pending)</span>
-                            </>
+                            <span className="flex items-center gap-1">
+                              <Lock className="w-3 h-3 text-zinc-400" />
+                              <span>Locked</span>
+                            </span>
                           )}
                         </button>
                       </td>

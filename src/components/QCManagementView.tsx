@@ -24,7 +24,6 @@ import {
   Database,
   Building2,
   Sparkles,
-  Tag,
   Droplets,
   Layers
 } from "lucide-react";
@@ -274,17 +273,13 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 font-display">
+              <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
                 Synchronized Bleaching Log Product
               </span>
-              <span className="px-2 py-0.5 rounded-full text-xs font-bold font-mono bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Live Sync Connected
-              </span>
             </div>
-            <p className="text-sm font-bold text-zinc-900 dark:text-white mt-0.5">
+            <p className="text-sm font-semibold text-zinc-900 dark:text-white mt-0.5">
               Current Operating Oil:{" "}
-              <span className="text-amber-600 dark:text-amber-400 font-display font-black">
+              <span className="text-amber-600 dark:text-amber-400 font-bold">
                 {activeProductName || newSample.product_name || "CHOCOHI 357A NPHO"}
               </span>
             </p>
@@ -308,20 +303,17 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
         </div>
       </div>
 
-      {/* 1. Header Metrics Banner with Glassmorphism & Specular Rims */}
+      {/* 1. Header Metrics Banner */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {/* Total Samples */}
         <div className="telemetry-card p-4 rounded-2xl flex items-center justify-between">
           <div>
-            <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block font-display">
+            <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 block">
               Total Lab Samples
             </span>
-            <div className="text-2xl font-bold font-mono text-zinc-900 dark:text-white mt-1 tabular-nums">
+            <div className="text-2xl font-bold text-zinc-900 dark:text-white mt-1 tabular-nums">
               {totalCount}
             </div>
-            <span className="text-xs text-zinc-400 dark:text-zinc-500 font-mono">
-              Form RF-FR-001 (Rev 02/03)
-            </span>
           </div>
           <div className="p-3 rounded-xl bg-zinc-100 dark:bg-white/5 text-zinc-700 dark:text-zinc-300 border border-zinc-200/80 dark:border-white/10 shadow-xs">
             <FlaskConical className="w-6 h-6 text-amber-500" />
@@ -1072,7 +1064,7 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
             <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/10 pb-3">
               <div className="flex items-center gap-2">
                 <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20">
-                  <Tag className="w-4 h-4" />
+                  <Droplets className="w-4 h-4" />
                 </div>
                 <div>
                   <h3 className="text-sm font-bold font-display text-zinc-900 dark:text-white">

@@ -572,8 +572,8 @@ export default function BleachingProcessLogApp() {
       timestamp: new Date().toISOString(),
       source: 'Bleaching Log',
       title: hasAlert 
-        ? `[STAGE 1] ALERT: Out of Spec Recorded (Slot ${updatedEntry.time_label} Hrs)`
-        : `[STAGE 1] Slot ${updatedEntry.time_label} Hrs Successfully Saved & Synchronized`,
+        ? `ALERT: Out of Spec Recorded (Slot ${updatedEntry.time_label} Hrs)`
+        : `Slot ${updatedEntry.time_label} Hrs Successfully Saved & Synchronized`,
       description: `${currentUser.name} recorded Slot ${updatedEntry.time_label} (Flow ${updatedEntry.flowrate_set ?? '-'} MT/HR, Vac ${updatedEntry.vacuum_mmhg ?? '-'} mmHg, Temp ${updatedEntry.he_temp_c ?? '-'}°C). Lab sample synchronized to QC Lab.`,
       severity: hasAlert ? 'alert' : 'success',
       author_name: currentUser.name,
@@ -628,7 +628,7 @@ export default function BleachingProcessLogApp() {
       id: `evt-qc-create-${Date.now()}`,
       timestamp: new Date().toISOString(),
       source: 'QC Lab',
-      title: `[STAGE 2] New Sample Registered: ${newReport.report_no}`,
+      title: `New Sample Registered: ${newReport.report_no}`,
       description: `${currentUser?.name} registered new laboratory sample (${newReport.lot_no}).`,
       severity: 'info',
       author_name: currentUser?.name || 'QC Staff',
@@ -674,8 +674,8 @@ export default function BleachingProcessLogApp() {
       timestamp: new Date().toISOString(),
       source: 'Supervisor Monitoring',
       title: isCurrentlyUnlocked 
-        ? `[STAGE 4] Time Lock Restored: Slot ${slotLabel} Hrs`
-        : `[STAGE 4] EMERGENCY OVERRIDE: Slot ${slotLabel} Hrs Unlocked by Supervisor`,
+        ? `Time Lock Restored: Slot ${slotLabel} Hrs`
+        : `EMERGENCY OVERRIDE: Slot ${slotLabel} Hrs Unlocked by Supervisor`,
       description: `Supervisor ${currentUser?.name} ${isCurrentlyUnlocked ? 're-locked' : 'manually unlocked'} Slot ${slotLabel} Hrs for audit log corrections.`,
       severity: isCurrentlyUnlocked ? 'info' : 'warning',
       author_name: currentUser?.name || 'Supervisor',

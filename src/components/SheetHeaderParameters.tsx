@@ -17,8 +17,7 @@ import {
   CheckCircle2,
   Settings2,
   Plus,
-  X,
-  Tag
+  X
 } from "lucide-react";
 import { RadioSelect } from "./RadioSelect";
 
@@ -75,30 +74,26 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
               <Factory className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-xs font-bold font-display uppercase tracking-wider text-zinc-900 dark:text-zinc-100 block leading-tight">
+              <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 block leading-tight">
                 {currentPlant}
               </span>
               <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium block leading-none mt-1">
-                {currentProduct} · Date: <span className="font-mono text-zinc-800 dark:text-zinc-200 font-bold">{sheet.sheet_date}</span>
+                {currentProduct} · Date: <span className="text-zinc-800 dark:text-zinc-200 font-medium">{sheet.sheet_date}</span>
               </span>
             </div>
           </div>
 
           <div className="h-4 w-[1px] bg-zinc-300 dark:bg-zinc-700 hidden sm:block" />
 
-          {/* Quick 3D Telemetry Chips */}
+          {/* Telemetry info */}
           <div className="flex items-center gap-2 text-xs flex-wrap">
-            <span className="px-2.5 py-1 rounded-lg bg-white/95 dark:bg-white/[0.08] border border-zinc-200/90 dark:border-white/10 text-zinc-700 dark:text-zinc-300 font-medium shadow-sm">
-              Feed: <strong className="text-zinc-900 dark:text-zinc-100 font-mono font-bold">{currentFeed.split(" ")[0]}</strong>
+            <span className="px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 font-medium">
+              Feed: <strong className="text-zinc-900 dark:text-zinc-100 font-semibold">{currentFeed.split(" ")[0]}</strong>
             </span>
-            <span className="px-2.5 py-1 rounded-lg bg-white/95 dark:bg-white/[0.08] border border-zinc-200/90 dark:border-white/10 text-zinc-700 dark:text-zinc-300 font-medium shadow-sm">
-              Discharge: <strong className="text-zinc-900 dark:text-zinc-100 font-mono font-bold">{currentDischarge.split(" ")[0]}</strong>
+            <span className="px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 font-medium">
+              Discharge: <strong className="text-zinc-900 dark:text-zinc-100 font-semibold">{currentDischarge.split(" ")[0]}</strong>
             </span>
-            <span className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-500/15 to-amber-500/5 border border-amber-500/35 text-amber-700 dark:text-amber-300 font-mono font-bold shadow-sm flex items-center gap-1.5">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-              </span>
+            <span className="px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300 font-semibold flex items-center gap-1.5">
               <span>Target: {sheet.input_mt_hr ?? 45.0} MT/HR</span>
             </span>
           </div>
@@ -517,7 +512,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
             <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/10 pb-3">
               <div className="flex items-center gap-2">
                 <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20">
-                  <Tag className="w-4 h-4" />
+                  <Droplets className="w-4 h-4" />
                 </div>
                 <div>
                   <h3 className="text-sm font-bold font-display text-zinc-900 dark:text-white">

@@ -175,14 +175,14 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold font-display text-zinc-900 dark:text-white">
+                <h3 className="text-base font-bold text-zinc-900 dark:text-white">
                   Slot Hourly Entry: {formData.time_label} Hrs
                 </h3>
-                <span className="text-xs px-2.5 py-0.5 rounded-full font-mono font-semibold bg-zinc-200/80 dark:bg-white/10 text-zinc-700 dark:text-zinc-300 border border-black/5 dark:border-white/5">
-                  Shift {formData.shift}
+                <span className="text-xs text-zinc-500 font-medium">
+                  · Shift {formData.shift}
                 </span>
               </div>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 font-mono mt-0.5">
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
                 Timestamp: {new Date(formData.actual_timestamp).toLocaleString('en-US', { timeZone: 'Asia/Kuala_Lumpur' })}
               </p>
             </div>

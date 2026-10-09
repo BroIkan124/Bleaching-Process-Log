@@ -32,11 +32,11 @@ export const SlotRail: React.FC<SlotRailProps> = ({
             <Clock className="w-4 h-4" />
           </div>
           <div>
-            <span className="text-xs font-bold font-display uppercase tracking-wider text-zinc-900 dark:text-zinc-100 block leading-tight">
+            <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 block leading-tight">
               24-Hour Continuous Plant Timeline Rail
             </span>
-            <span className="text-xs text-zinc-500 font-mono hidden md:inline mt-0.5 block leading-none font-medium">
-              Form RF-FR-003 · Automatic Time-Locking Synchronized with Real-Time Plant Clock
+            <span className="text-xs text-zinc-500 hidden md:inline mt-0.5 block leading-none font-normal">
+              Automatic Time-Locking Synchronized with Real-Time Plant Clock
             </span>
           </div>
         </div>

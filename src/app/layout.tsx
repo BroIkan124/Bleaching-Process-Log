@@ -1,23 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-sans",
   display: "swap",
 });
 
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  weight: ["500", "600", "700", "800"],
-  variable: "--font-mono",
-  display: "swap",
-});
-
 export const metadata: Metadata = {
-  title: "Digital Bleaching Process Log (RF-FR-003, Rev 03)",
+  title: "Bleaching Process Log",
   description: "Refinery Department - Lam Soon Edible Oils Sdn Bhd / Nisshin Process Log",
 };
 
@@ -32,8 +25,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
-      <body className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-main)] transition-colors duration-200 overflow-x-hidden">
+    <html lang="en" className={inter.variable}>
+      <body className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-main)] transition-colors duration-200 overflow-x-hidden font-sans">
         {/* 3D Ambient Background System */}
         <div className="ambient-orb-1" style={{ top: '-10%', left: '-5%' }} aria-hidden="true" />
         <div className="ambient-orb-2" style={{ bottom: '-10%', right: '-5%' }} aria-hidden="true" />

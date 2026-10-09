@@ -36,58 +36,31 @@ export const RealtimeTimelineBanner: React.FC<RealtimeTimelineBannerProps> = ({
           </div>
 
           <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-mono font-extrabold text-base tracking-tight text-zinc-900 dark:text-white">
+            <div className="flex items-center gap-3 flex-wrap">
+              <span className="font-bold text-lg tracking-tight text-zinc-900 dark:text-white tabular-nums">
                 {clockState.formattedTime}
               </span>
-              <span className="text-xs uppercase font-bold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-mono flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                LIVE REAL-TIME (UTC+8)
-              </span>
-              <span className="text-xs px-3 py-1 rounded-full font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 font-display flex items-center gap-1.5">
-                <Activity className="w-3.5 h-3.5" />
-                Active Slot: {clockState.slotLabel} Hrs ({formattedSlotHour} – {formattedNextHour})
+              <span className="text-xs text-zinc-600 dark:text-zinc-300 font-medium">
+                Active Slot: <strong className="text-amber-600 dark:text-amber-400 font-semibold">{clockState.slotLabel} Hrs</strong> ({formattedSlotHour} – {formattedNextHour})
               </span>
             </div>
 
-            <p className="text-xs text-zinc-600 dark:text-zinc-300 font-medium mt-1 flex items-center gap-1.5 flex-wrap">
-              <span className="font-bold text-zinc-800 dark:text-zinc-200">Strict Plant Time-Lock Policy:</span>
-              <span className="text-zinc-500 dark:text-zinc-400">
-                Only the current real-time slot (<strong className="text-amber-600 dark:text-amber-400 font-mono">{clockState.slotLabel} Hrs</strong>) is open for operator data logging. All past &amp; upcoming slots are strictly locked.
-              </span>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal mt-1 flex items-center gap-1.5 flex-wrap">
+              <span>Current real-time slot (<strong className="text-amber-600 dark:text-amber-400 font-medium">{clockState.slotLabel} Hrs</strong>) is open for operator logging.</span>
             </p>
           </div>
         </div>
 
-        {/* Right: Live Telemetry & Shift Synchronization Status */}
-        <div className="flex items-center gap-2.5 flex-wrap">
-          <div className="flex items-center gap-2 bg-zinc-100/90 dark:bg-black/40 px-3.5 py-2 rounded-xl border border-zinc-200/90 dark:border-white/10 shadow-inner">
+        {/* Right: Operational Status */}
+        <div className="flex items-center gap-3 text-xs text-zinc-600 dark:text-zinc-400 flex-wrap">
+          <div className="flex items-center gap-1.5 font-medium">
             <ShieldCheck className="w-4 h-4 text-emerald-500" />
-            <div className="text-left">
-              <div className="text-xs font-bold text-zinc-800 dark:text-zinc-200 leading-tight">
-                Shift {clockState.shiftNumber} Synchronized
-              </div>
-              <div className="text-xs text-zinc-500 dark:text-zinc-400 font-mono leading-none mt-0.5">
-                Refinery Operations
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 bg-zinc-100/90 dark:bg-black/40 px-3.5 py-2 rounded-xl border border-zinc-200/90 dark:border-white/10 shadow-inner">
-            <Lock className="w-4 h-4 text-amber-500" />
-            <div className="text-left">
-              <div className="text-xs font-bold text-zinc-800 dark:text-zinc-200 leading-tight">
-                Auto Time-Lock
-              </div>
-              <div className="text-xs text-emerald-600 dark:text-emerald-400 font-bold leading-none mt-0.5">
-                Enforced (23 Slots Locked)
-              </div>
-            </div>
+            <span>Shift {clockState.shiftNumber} Refinery Operations</span>
           </div>
 
           {supervisorUnlockedCount > 0 && (
-            <div className="flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25 shadow-xs">
-              <Unlock className="w-4 h-4 text-emerald-500" />
+            <div className="flex items-center gap-1.5 font-medium text-emerald-600 dark:text-emerald-400">
+              <Unlock className="w-4 h-4" />
               <span>{supervisorUnlockedCount} Supervisor Override{supervisorUnlockedCount > 1 ? "s" : ""}</span>
             </div>
           )}

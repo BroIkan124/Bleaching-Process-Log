@@ -574,7 +574,7 @@ export default function BleachingProcessLogApp() {
       title: hasAlert 
         ? `ALERT: Out of Spec Recorded (Slot ${updatedEntry.time_label} Hrs)`
         : `Slot ${updatedEntry.time_label} Hrs Successfully Saved & Synchronized`,
-      description: `${currentUser.name} recorded Slot ${updatedEntry.time_label} (Flow ${updatedEntry.flowrate_set ?? '-'} MT/HR, Vac ${updatedEntry.vacuum_mmhg ?? '-'} mmHg, Temp ${updatedEntry.he_temp_c ?? '-'}°C).`,
+      description: `${currentUser.name} recorded Slot ${updatedEntry.time_label} (Flow ${updatedEntry.flowrate_set ?? '-'} MT/HR, Vac ${updatedEntry.vacuum_mmhg ?? '-'} mmHg, Temp ${updatedEntry.he_temp_c ?? '-'} C)..`,
       severity: hasAlert ? 'alert' : 'success',
       author_name: currentUser.name,
       author_role: currentUser.role,

@@ -50,7 +50,7 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
               Bleaching Process Log Sheet
             </h2>
             <p className="text-xs text-zinc-500 font-normal">
-              24-Hour Continuous Telemetry · Real-Time Access Window
+              24-Hour Continuous Telemetry  -  Real-Time Access Window
             </p>
           </div>
         </div>
@@ -88,7 +88,7 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
               <th className="py-2.5 px-3 text-right border-r border-zinc-200 dark:border-zinc-800">Flow (MT/HR)</th>
               <th className="py-2.5 px-2 text-center border-r border-zinc-200 dark:border-zinc-800">Acid Dose</th>
               <th className="py-2.5 px-3 text-right border-r border-zinc-200 dark:border-zinc-800 text-amber-600 dark:text-amber-400">
-                HE Temp (°C)
+                HE Temp (deg C)
               </th>
               <th className="py-2.5 px-2 text-center border-r border-zinc-200 dark:border-zinc-800">BE Dose</th>
               <th className="py-2.5 px-2 text-center border-r border-zinc-200 dark:border-zinc-800">Level</th>
@@ -128,21 +128,21 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
                   {isShift1Start && (
                     <tr className="bg-amber-500/[0.04] dark:bg-amber-500/[0.06] text-zinc-800 dark:text-zinc-200 border-y border-amber-500/15 select-none">
                       <td colSpan={15} className="py-2 px-4 font-semibold text-xs">
-                        <span className="text-amber-600 dark:text-amber-400 font-bold">Shift 1 (08:00 - 15:00)</span> · On-Duty Operations
+                        <span className="text-amber-600 dark:text-amber-400 font-bold">Shift 1 (08:00 - 15:00)</span>  -  On-Duty Operations
                       </td>
                     </tr>
                   )}
                   {isShift2Start && (
                     <tr className="bg-sky-500/[0.04] dark:bg-sky-500/[0.06] text-zinc-800 dark:text-zinc-200 border-y border-sky-500/15 select-none">
                       <td colSpan={15} className="py-2 px-4 font-semibold text-xs">
-                        <span className="text-sky-600 dark:text-sky-400 font-bold">Shift 2 (16:00 - 23:00)</span> · On-Duty Operations
+                        <span className="text-sky-600 dark:text-sky-400 font-bold">Shift 2 (16:00 - 23:00)</span>  -  On-Duty Operations
                       </td>
                     </tr>
                   )}
                   {isShift3Start && (
                     <tr className="bg-purple-500/[0.04] dark:bg-purple-500/[0.06] text-zinc-800 dark:text-zinc-200 border-y border-purple-500/15 select-none">
                       <td colSpan={15} className="py-2 px-4 font-semibold text-xs">
-                        <span className="text-purple-600 dark:text-purple-400 font-bold">Shift 3 (24:00 - 07:00)</span> · On-Duty Operations
+                        <span className="text-purple-600 dark:text-purple-400 font-bold">Shift 3 (24:00 - 07:00)</span>  -  On-Duty Operations
                       </td>
                     </tr>
                   )}

@@ -122,7 +122,7 @@ export interface LogEntry {
 
   flowrate_set: number | null;
   acid_dosage_ok: boolean;
-  he_temp_c: number | null; // Spec: 70.0 - 115.0 °C
+  he_temp_c: number | null; // Spec: 70.0 - 115.0 deg C
   earth_dosage_ok: boolean;
   bleacher_level: 'L' | 'H' | null;
   vacuum_mmhg: number | null; // Spec: >= 600.0 mmHg

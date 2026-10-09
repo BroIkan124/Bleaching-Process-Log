@@ -161,7 +161,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
               <div className="flex items-center gap-1.5 font-medium text-zinc-700 dark:text-zinc-300">
                 <span>Slot <strong className="text-amber-600 dark:text-amber-400 font-semibold">{clockState.slotTimeLabel}</strong></span>
                 <span className="text-zinc-400 dark:text-zinc-500 hidden lg:inline">
-                  · {clockState.shiftLabel}
+                  - {clockState.shiftLabel}
                 </span>
               </div>
             </>

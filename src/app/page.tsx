@@ -478,25 +478,16 @@ export default function BleachingProcessLogApp() {
     loadCloudData(false);
   }, []);
 
-  // Sinkronisasi berkala pintar (Background Auto-Sync Polling setiap 1 saat tanpa butang UI)
-  const isPollingRef = React.useRef(false);
-  const lastRemoteTsRef = React.useRef(lastRemoteTimestamp);
-  useEffect(() => {
-    lastRemoteTsRef.current = lastRemoteTimestamp;
-  }, [lastRemoteTimestamp]);
-
+  // Sinkronisasi berkala pintar (Background Auto-Sync Polling setiap 1 saat & window focus)
   useEffect(() => {
     const pollInterval = setInterval(async () => {
-      if (isSyncing || isDrawerOpenRef.current || isPollingRef.current) return;
-      isPollingRef.current = true;
+      if (isSyncing || isDrawerOpenRef.current) return;
       try {
         const latestTs = await checkCloudUpdateTimestamp();
-        if (latestTs && latestTs !== lastRemoteTsRef.current) {
+        if (latestTs && latestTs !== lastRemoteTimestamp) {
           await loadCloudData(false);
         }
-      } catch {} finally {
-        isPollingRef.current = false;
-      }
+      } catch {}
     }, 1000);
 
     const handleFocus = () => {
@@ -508,7 +499,7 @@ export default function BleachingProcessLogApp() {
       clearInterval(pollInterval);
       window.removeEventListener("focus", handleFocus);
     };
-  }, [isSyncing]);
+  }, [lastRemoteTimestamp, isSyncing]);
 
   // Determine if current user can edit the selected slot based on Realtime Slot Rule & Supervisor Override
   const isSheetLocked = sheet.status === 'Approved';
@@ -574,7 +565,7 @@ export default function BleachingProcessLogApp() {
       title: hasAlert 
         ? `ALERT: Out of Spec Recorded (Slot ${updatedEntry.time_label} Hrs)`
         : `Slot ${updatedEntry.time_label} Hrs Successfully Saved & Synchronized`,
-      description: `${currentUser.name} recorded Slot ${updatedEntry.time_label} (Flow ${updatedEntry.flowrate_set ?? '-'} MT/HR, Vac ${updatedEntry.vacuum_mmhg ?? '-'} mmHg, Temp ${updatedEntry.he_temp_c ?? '-'} C)..`,
+      description: `${currentUser.name} recorded Slot ${updatedEntry.time_label} (Flow ${updatedEntry.flowrate_set ?? '-'} MT/HR, Vac ${updatedEntry.vacuum_mmhg ?? '-'} mmHg, Temp ${updatedEntry.he_temp_c ?? '-'} C).`,
       severity: hasAlert ? 'alert' : 'success',
       author_name: currentUser.name,
       author_role: currentUser.role,

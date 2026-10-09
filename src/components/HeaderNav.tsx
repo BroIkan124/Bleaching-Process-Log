@@ -13,7 +13,8 @@ import {
   Sun, 
   Send, 
   Printer,
-  LogOut
+  LogOut,
+  RefreshCw
 } from "lucide-react";
 
 interface HeaderNavProps {
@@ -33,6 +34,8 @@ interface HeaderNavProps {
   qcSampleCount?: number;
   onLogout: () => void;
   clockState?: RealtimeClockState;
+  isSyncing?: boolean;
+  onManualSync?: () => void;
 }
 
 export const HeaderNav: React.FC<HeaderNavProps> = ({
@@ -48,6 +51,8 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   activeTab,
   onLogout,
   clockState,
+  isSyncing = false,
+  onManualSync,
 }) => {
   const getStatusBadge = () => {
     switch (sheetStatus) {
@@ -174,21 +179,34 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
 
           <div className="h-3.5 w-[1px] bg-zinc-300 dark:bg-zinc-700" />
 
-          <div className="flex items-center gap-1.5">
             {isOffline ? (
               <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-semibold font-mono text-xs">
                 <WifiOff className="w-3.5 h-3.5" /> Offline
               </span>
             ) : (
-              <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold font-mono text-xs">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </span>
-                <span>Live Synced</span>
-              </span>
+              <button
+                type="button"
+                onClick={onManualSync}
+                disabled={isSyncing}
+                title="InsForge Multi-Device Cloud Sync. Click to force refresh data from all devices."
+                className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold font-mono text-xs hover:text-emerald-500 transition-colors cursor-pointer disabled:opacity-70"
+              >
+                {isSyncing ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-500" />
+                    <span className="text-amber-500">Syncing...</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    <span>Cloud Synced</span>
+                  </>
+                )}
+              </button>
             )}
-          </div>
         </div>
 
         {/* Right: Actions, User Profile & Dark Mode */}

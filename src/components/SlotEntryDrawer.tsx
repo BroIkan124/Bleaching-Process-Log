@@ -19,6 +19,7 @@ import {
   Unlock
 } from "lucide-react";
 import { evaluateSlotAccess } from "@/lib/realtimeTimeline";
+import { GliderRadioGroup } from "./GliderRadioGroup";
 
 interface SlotEntryDrawerProps {
   entry: LogEntry;
@@ -479,25 +480,20 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
               <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
                 Bleacher Level (L / H)
               </label>
-              <div className="grid grid-cols-2 gap-2">
-                {BLEACHER_LEVELS.map((lvl) => (
-                  <button
-                    key={lvl}
-                    type="button"
-                    disabled={!isEditable}
-                    onClick={() => handleFieldChange('bleacher_level', lvl)}
-                    className={`btn-tactile touch-target rounded-xl border font-bold text-base select-none transition-all ${
-                      !isEditable ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
-                    } ${
-                      formData.bleacher_level === lvl
-                        ? 'btn-premium-amber text-white shadow-md ring-2 ring-amber-500/30'
-                        : 'bg-white dark:bg-white/5 border-zinc-300 dark:border-white/10 text-zinc-700 dark:text-zinc-300 hover:border-zinc-400'
-                    }`}
-                  >
-                    Level {lvl}
-                  </button>
-                ))}
-              </div>
+              <GliderRadioGroup
+                disabled={!isEditable}
+                value={formData.bleacher_level || 'L'}
+                onChange={(lvl) => handleFieldChange('bleacher_level', lvl)}
+                themeColor="amber"
+                size="sm"
+                variant="rounded"
+                equalWidth
+                className="w-full"
+                options={BLEACHER_LEVELS.map((lvl) => ({
+                  value: lvl,
+                  label: `Level ${lvl}`,
+                }))}
+              />
             </div>
 
             {/* Niagara Filter Selector (N60-1..4) */}
@@ -505,25 +501,20 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
               <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
                 Niagara Filter (Select 1 of 4)
               </label>
-              <div className="grid grid-cols-4 gap-1.5">
-                {NIAGARA_FILTERS.map((nf) => (
-                  <button
-                    key={nf}
-                    type="button"
-                    disabled={!isEditable}
-                    onClick={() => handleFieldChange('niagara_filter', nf)}
-                    className={`btn-tactile touch-target rounded-xl border text-xs font-bold font-mono select-none transition-all ${
-                      !isEditable ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
-                    } ${
-                      formData.niagara_filter === nf
-                        ? 'btn-premium-amber text-white shadow-md ring-2 ring-amber-500/30'
-                        : 'bg-white dark:bg-white/5 border-zinc-300 dark:border-white/10 text-zinc-700 dark:text-zinc-300 hover:border-zinc-400'
-                    }`}
-                  >
-                    {nf}
-                  </button>
-                ))}
-              </div>
+              <GliderRadioGroup
+                disabled={!isEditable}
+                value={formData.niagara_filter || 'N60-1'}
+                onChange={(nf) => handleFieldChange('niagara_filter', nf)}
+                themeColor="amber"
+                size="xs"
+                variant="rounded"
+                equalWidth
+                className="w-full"
+                options={NIAGARA_FILTERS.map((nf) => ({
+                  value: nf,
+                  label: nf,
+                }))}
+              />
             </div>
           </div>
 

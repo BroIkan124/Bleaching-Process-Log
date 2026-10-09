@@ -20,6 +20,7 @@ import {
   X
 } from "lucide-react";
 import { RadioSelect } from "./RadioSelect";
+import { GliderRadioGroup } from "./GliderRadioGroup";
 
 interface SheetHeaderParametersProps {
   sheet: LogSheet;
@@ -345,19 +346,17 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                     <Beaker className="w-3.5 h-3.5 text-sky-500" />
                     <span>Degumming Acid</span>
                   </span>
-                  <div className="w-32">
-                    <RadioSelect
-                      disabled={isLocked}
-                      size="xs"
-                      value={sheet.acid_type}
-                      onChange={(val) => onUpdateHeader({ acid_type: val })}
-                      options={[
-                        { value: "Phosphoric Acid", label: "Phosphoric" },
-                        { value: "Citric Acid", label: "Citric" }
-                      ]}
-                      className="py-1 px-2.5 text-xs font-bold"
-                    />
-                  </div>
+                  <GliderRadioGroup
+                    disabled={isLocked}
+                    size="xs"
+                    themeColor="amber"
+                    value={sheet.acid_type || "Phosphoric Acid"}
+                    onChange={(val) => onUpdateHeader({ acid_type: val })}
+                    options={[
+                      { value: "Phosphoric Acid", label: "Phosphoric" },
+                      { value: "Citric Acid", label: "Citric" }
+                    ]}
+                  />
                 </div>
                 <div className="grid grid-cols-3 gap-1.5">
                   <div>
@@ -746,41 +745,20 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                 <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Tank Logistics Role
                 </label>
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setCustomTankKind('feed')}
-                    className={`py-2 px-3 rounded-xl text-xs font-bold border cursor-pointer transition-all ${
-                      customTankKind === 'feed'
-                        ? 'bg-amber-500 text-white border-amber-600 shadow-sm'
-                        : 'bg-zinc-100 dark:bg-white/5 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-white/10'
-                    }`}
-                  >
-                    Feed Tank
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCustomTankKind('discharge')}
-                    className={`py-2 px-3 rounded-xl text-xs font-bold border cursor-pointer transition-all ${
-                      customTankKind === 'discharge'
-                        ? 'bg-emerald-500 text-white border-emerald-600 shadow-sm'
-                        : 'bg-zinc-100 dark:bg-white/5 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-white/10'
-                    }`}
-                  >
-                    Discharge
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCustomTankKind('both')}
-                    className={`py-2 px-3 rounded-xl text-xs font-bold border cursor-pointer transition-all ${
-                      customTankKind === 'both'
-                        ? 'bg-indigo-500 text-white border-indigo-600 shadow-sm'
-                        : 'bg-zinc-100 dark:bg-white/5 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-white/10'
-                    }`}
-                  >
-                    Dual Purpose
-                  </button>
-                </div>
+                <GliderRadioGroup
+                  value={customTankKind}
+                  onChange={(val) => setCustomTankKind(val as 'feed' | 'discharge' | 'both')}
+                  themeColor="dynamic"
+                  size="sm"
+                  variant="rounded"
+                  equalWidth
+                  className="w-full"
+                  options={[
+                    { value: "feed", label: "Feed Tank", activeColor: "amber" },
+                    { value: "discharge", label: "Discharge", activeColor: "emerald" },
+                    { value: "both", label: "Dual Purpose", activeColor: "indigo" },
+                  ]}
+                />
               </div>
             </div>
 

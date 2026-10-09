@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { syncUserToInsForge, logActivityToInsForge } from "@/lib/dbService";
 import { RadioSelect } from "./RadioSelect";
+import { GliderRadioGroup } from "./GliderRadioGroup";
 
 interface UserManagementViewProps {
   currentUser: UserProfile;
@@ -572,7 +573,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
                   <label className="block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1">
                     Shift
                   </label>
-                  <RadioSelect
+                  <GliderRadioGroup
                     value={String(formData.shift)}
                     onChange={(val) => {
                       setFormData({ 
@@ -580,11 +581,16 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
                         shift: val === "ALL" ? "ALL" : (Number(val) as 1 | 2 | 3) 
                       });
                     }}
+                    themeColor="amber"
+                    size="xs"
+                    variant="rounded"
+                    equalWidth
+                    className="w-full"
                     options={[
-                      { value: "1", label: "Shift 1 (0800-1500)" },
-                      { value: "2", label: "Shift 2 (1600-2300)" },
-                      { value: "3", label: "Shift 3 (2400-0700)" },
-                      { value: "ALL", label: "All Shifts (Flexible)" },
+                      { value: "1", label: "Shift 1" },
+                      { value: "2", label: "Shift 2" },
+                      { value: "3", label: "Shift 3" },
+                      { value: "ALL", label: "All Shifts" },
                     ]}
                   />
                 </div>

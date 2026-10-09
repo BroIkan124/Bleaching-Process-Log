@@ -17,6 +17,7 @@ import {
   Info
 } from "lucide-react";
 import { UserProfile } from "@/types";
+import { GliderRadioGroup } from "./GliderRadioGroup";
 
 interface HelpSupportModalProps {
   isOpen: boolean;
@@ -85,58 +86,20 @@ export default function HelpSupportModal({ isOpen, onClose, currentUser }: HelpS
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex items-center gap-2 px-6 pt-3 border-b border-[#1F2E43] bg-[#080D18]/90 overflow-x-auto no-scrollbar">
-          <button
-            type="button"
-            onClick={() => setActiveTab('sop')}
-            className={`btn-tactile flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-all duration-200 ease-spring active:scale-[0.97] cursor-pointer whitespace-nowrap group ${
-              activeTab === 'sop'
-                ? 'border-amber-500 text-amber-400 bg-amber-500/10 rounded-t-lg font-bold shadow-[inset_0_1px_0_rgba(245,158,11,0.2)]'
-                : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-[#101927]'
-            }`}
-          >
-            <BookOpen className="h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
-            <span>1. SOP &amp; Bleaching Workflow</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('specs')}
-            className={`btn-tactile flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-all duration-200 ease-spring active:scale-[0.97] cursor-pointer whitespace-nowrap group ${
-              activeTab === 'specs'
-                ? 'border-amber-500 text-amber-400 bg-amber-500/10 rounded-t-lg font-bold shadow-[inset_0_1px_0_rgba(245,158,11,0.2)]'
-                : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-[#101927]'
-            }`}
-          >
-            <FileText className="h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
-            <span>2. Quality Specs &amp; PORAM</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('directory')}
-            className={`btn-tactile flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-all duration-200 ease-spring active:scale-[0.97] cursor-pointer whitespace-nowrap group ${
-              activeTab === 'directory'
-                ? 'border-amber-500 text-amber-400 bg-amber-500/10 rounded-t-lg font-bold shadow-[inset_0_1px_0_rgba(245,158,11,0.2)]'
-                : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-[#101927]'
-            }`}
-          >
-            <PhoneCall className="h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
-            <span>3. Plant Control Room Hotline</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('diagnostics')}
-            className={`btn-tactile flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-all duration-200 ease-spring active:scale-[0.97] cursor-pointer whitespace-nowrap group ${
-              activeTab === 'diagnostics'
-                ? 'border-amber-500 text-amber-400 bg-amber-500/10 rounded-t-lg font-bold shadow-[inset_0_1px_0_rgba(245,158,11,0.2)]'
-                : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-[#101927]'
-            }`}
-          >
-            <Activity className="h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
-            <span>4. System Diagnostics</span>
-          </button>
+        <div className="px-6 py-3 border-b border-[#1F2E43] bg-[#080D18]/90 overflow-x-auto no-scrollbar">
+          <GliderRadioGroup<'sop' | 'specs' | 'directory' | 'diagnostics'>
+            value={activeTab}
+            onChange={(val) => setActiveTab(val)}
+            themeColor="amber"
+            size="sm"
+            variant="rounded"
+            options={[
+              { value: 'sop', label: '1. SOP & Bleaching Workflow', icon: <BookOpen className="h-4 w-4" /> },
+              { value: 'specs', label: '2. Quality Specs & PORAM', icon: <FileText className="h-4 w-4" /> },
+              { value: 'directory', label: '3. Plant Control Room Hotline', icon: <PhoneCall className="h-4 w-4" /> },
+              { value: 'diagnostics', label: '4. System Diagnostics', icon: <Activity className="h-4 w-4" /> },
+            ]}
+          />
         </div>
 
         {/* Modal Scrollable Body */}

@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { recordReportExport } from "@/lib/dbService";
 import { RadioSelect } from "./RadioSelect";
+import { GliderRadioGroup } from "./GliderRadioGroup";
 import { calculatePipelineMetrics } from "@/lib/workflowPipeline";
 
 interface ReportsViewProps {
@@ -464,19 +465,19 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
 
           <div className="flex items-center gap-2">
             <span className="text-xs text-zinc-500 font-bold font-display">Filter Shift:</span>
-            <div className="w-52">
-              <RadioSelect
-                value={selectedShift}
-                onChange={(val) => setSelectedShift(val)}
-                options={[
-                  { value: "ALL", label: "All 24 Hours" },
-                  { value: "1", label: "Shift 1 (0800-1500)" },
-                  { value: "2", label: "Shift 2 (1600-2300)" },
-                  { value: "3", label: "Shift 3 (2400-0700)" },
-                ]}
-                size="sm"
-              />
-            </div>
+            <GliderRadioGroup
+              value={selectedShift}
+              onChange={(val) => setSelectedShift(val)}
+              themeColor="amber"
+              size="xs"
+              variant="rounded"
+              options={[
+                { value: "ALL", label: "All 24h" },
+                { value: "1", label: "Shift 1" },
+                { value: "2", label: "Shift 2" },
+                { value: "3", label: "Shift 3" },
+              ]}
+            />
           </div>
         </div>
 

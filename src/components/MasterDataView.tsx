@@ -58,6 +58,7 @@ import {
   ArrowUp
 } from "lucide-react";
 import { RadioSelect } from "./RadioSelect";
+import { GliderRadioGroup } from "./GliderRadioGroup";
 
 interface MasterDataViewProps {
   sheet?: LogSheet;
@@ -676,54 +677,36 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
       {/* ========================================================================= */}
       {/* 2. SUB-TABS SELECTOR                                                      */}
       {/* ========================================================================= */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-        <button
-          onClick={() => setActiveSubTab("pareto_frequency")}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
-            activeSubTab === "pareto_frequency"
-              ? "btn-premium-amber text-white shadow-md ring-1 ring-amber-500/30"
-              : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10"
-          }`}
-        >
-          <BarChart3 className="w-4 h-4" />
-          <span>QC Rejection Pareto &amp; Product Frequency</span>
-        </button>
-
-        <button
-          onClick={() => setActiveSubTab("product_specs")}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
-            activeSubTab === "product_specs"
-              ? "btn-premium-amber text-white shadow-md ring-1 ring-amber-500/30"
-              : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10"
-          }`}
-        >
-          <Boxes className="w-4 h-4" />
-          <span>Product Quality Specs Master</span>
-        </button>
-
-        <button
-          onClick={() => setActiveSubTab("reason_codes")}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
-            activeSubTab === "reason_codes"
-              ? "btn-premium-amber text-white shadow-md ring-1 ring-amber-500/30"
-              : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10"
-          }`}
-        >
-          <AlertTriangle className="w-4 h-4" />
-          <span>Defect Reason Codes Master</span>
-        </button>
-
-        <button
-          onClick={() => setActiveSubTab("plants_tanks")}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
-            activeSubTab === "plants_tanks"
-              ? "btn-premium-amber text-white shadow-md ring-1 ring-amber-500/30"
-              : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10"
-          }`}
-        >
-          <Layers className="w-4 h-4" />
-          <span>Plant Lines &amp; Tanks Inventory</span>
-        </button>
+      <div className="overflow-x-auto pb-1 scrollbar-none">
+        <GliderRadioGroup<MasterSubTab>
+          value={activeSubTab}
+          onChange={(val) => setActiveSubTab(val)}
+          themeColor="amber"
+          size="md"
+          variant="rounded"
+          options={[
+            {
+              value: "pareto_frequency",
+              label: "QC Rejection Pareto & Product Frequency",
+              icon: <BarChart3 className="w-4 h-4" />,
+            },
+            {
+              value: "product_specs",
+              label: "Product Quality Specs Master",
+              icon: <Boxes className="w-4 h-4" />,
+            },
+            {
+              value: "reason_codes",
+              label: "Defect Reason Codes Master",
+              icon: <AlertTriangle className="w-4 h-4" />,
+            },
+            {
+              value: "plants_tanks",
+              label: "Plant Lines & Tanks Inventory",
+              icon: <Layers className="w-4 h-4" />,
+            },
+          ]}
+        />
       </div>
 
       {/* ========================================================================= */}
@@ -819,92 +802,33 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
               {/* Chart Series and Shift Controls */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2.5">
                 {/* Series Selector */}
-                <div className="flex items-center gap-1 bg-zinc-100 dark:bg-black/40 p-1 rounded-2xl border border-zinc-200 dark:border-white/10 overflow-x-auto">
-                  <button
-                    type="button"
-                    onClick={() => setActiveProcessTab("combined")}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
-                      activeProcessTab === "combined"
-                        ? "bg-amber-500 text-white shadow-xs"
-                        : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-                    }`}
-                  >
-                    <Layers className="w-3.5 h-3.5" />
-                    <span>Dual Series</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveProcessTab("he_temp")}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
-                      activeProcessTab === "he_temp"
-                        ? "bg-amber-500 text-white shadow-xs"
-                        : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-                    }`}
-                  >
-                    <Thermometer className="w-3.5 h-3.5 text-amber-500" />
-                    <span>HE Temp (°C)</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveProcessTab("vacuum")}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
-                      activeProcessTab === "vacuum"
-                        ? "bg-amber-500 text-white shadow-xs"
-                        : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-                    }`}
-                  >
-                    <Gauge className="w-3.5 h-3.5 text-sky-500" />
-                    <span>Vacuum (mmHg)</span>
-                  </button>
-                </div>
+                <GliderRadioGroup<ProcessChartTab>
+                  value={activeProcessTab}
+                  onChange={(val) => setActiveProcessTab(val)}
+                  themeColor="amber"
+                  size="sm"
+                  variant="rounded"
+                  options={[
+                    { value: "combined", label: "Dual Series", icon: <Layers className="w-3.5 h-3.5" /> },
+                    { value: "he_temp", label: "HE Temp (°C)", icon: <Thermometer className="w-3.5 h-3.5 text-amber-500" /> },
+                    { value: "vacuum", label: "Vacuum (mmHg)", icon: <Gauge className="w-3.5 h-3.5 text-sky-500" /> },
+                  ]}
+                />
 
                 {/* Shift Selector */}
-                <div className="flex items-center gap-1 bg-zinc-100 dark:bg-black/40 p-1 rounded-2xl border border-zinc-200 dark:border-white/10">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedShiftFilter("all")}
-                    className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      selectedShiftFilter === "all"
-                        ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs"
-                        : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-                    }`}
-                  >
-                    All 24h
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedShiftFilter("1")}
-                    className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      selectedShiftFilter === "1"
-                        ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs"
-                        : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-                    }`}
-                  >
-                    Shift 1
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedShiftFilter("2")}
-                    className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      selectedShiftFilter === "2"
-                        ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs"
-                        : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-                    }`}
-                  >
-                    Shift 2
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedShiftFilter("3")}
-                    className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      selectedShiftFilter === "3"
-                        ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs"
-                        : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-                    }`}
-                  >
-                    Shift 3
-                  </button>
-                </div>
+                <GliderRadioGroup<ProcessShiftFilter>
+                  value={selectedShiftFilter}
+                  onChange={(val) => setSelectedShiftFilter(val)}
+                  themeColor="zinc"
+                  size="sm"
+                  variant="rounded"
+                  options={[
+                    { value: "all", label: "All 24h" },
+                    { value: "1", label: "Shift 1" },
+                    { value: "2", label: "Shift 2" },
+                    { value: "3", label: "Shift 3" },
+                  ]}
+                />
               </div>
             </div>
 
@@ -1386,32 +1310,27 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
                       ))}
                     </select>
 
-                    <div className="flex items-center bg-zinc-100 dark:bg-black/40 p-0.5 rounded-xl border border-zinc-200 dark:border-white/10">
-                      <button
-                        type="button"
-                        onClick={() => setNonConformanceMode("rejects_only")}
-                        className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                          nonConformanceMode === "rejects_only"
-                            ? "bg-rose-600 text-white shadow-xs"
-                            : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-                        }`}
-                        title="Show only lot rejections"
-                      >
-                        Rejects ({totalRejectedCount})
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setNonConformanceMode("all_non_conformances")}
-                        className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                          nonConformanceMode === "all_non_conformances"
-                            ? "bg-amber-500 text-white shadow-xs"
-                            : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-                        }`}
-                        title="Show rejections and concessions"
-                      >
-                        + Concessions ({totalRejectedCount + totalConcessionsCount})
-                      </button>
-                    </div>
+                    <GliderRadioGroup<NonConformityFilter>
+                      value={nonConformanceMode}
+                      onChange={(val) => setNonConformanceMode(val)}
+                      themeColor="dynamic"
+                      size="xs"
+                      variant="rounded"
+                      options={[
+                        {
+                          value: "rejects_only",
+                          label: "Rejects",
+                          notification: totalRejectedCount,
+                          activeColor: "rose",
+                        },
+                        {
+                          value: "all_non_conformances",
+                          label: "+ Concessions",
+                          notification: totalRejectedCount + totalConcessionsCount,
+                          activeColor: "amber",
+                        },
+                      ]}
+                    />
                   </div>
                 </div>
 
@@ -2513,41 +2432,20 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
                 <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Tank Functional Role
                 </label>
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setCustomTankKind('feed')}
-                    className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all ${
-                      customTankKind === 'feed'
-                        ? 'bg-amber-500/20 border-amber-500 text-amber-600 dark:text-amber-400'
-                        : 'border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-600 dark:text-zinc-400'
-                    }`}
-                  >
-                    Feed Tank
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCustomTankKind('discharge')}
-                    className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all ${
-                      customTankKind === 'discharge'
-                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-600 dark:text-emerald-400'
-                        : 'border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-600 dark:text-zinc-400'
-                    }`}
-                  >
-                    Discharge Tank
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCustomTankKind('both')}
-                    className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all ${
-                      customTankKind === 'both'
-                        ? 'bg-sky-500/20 border-sky-500 text-sky-600 dark:text-sky-400'
-                        : 'border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-600 dark:text-zinc-400'
-                    }`}
-                  >
-                    Dual Purpose
-                  </button>
-                </div>
+                <GliderRadioGroup
+                  value={customTankKind}
+                  onChange={(val) => setCustomTankKind(val as 'feed' | 'discharge' | 'both')}
+                  themeColor="dynamic"
+                  size="sm"
+                  variant="rounded"
+                  equalWidth
+                  className="w-full"
+                  options={[
+                    { value: "feed", label: "Feed Tank", activeColor: "amber" },
+                    { value: "discharge", label: "Discharge Tank", activeColor: "emerald" },
+                    { value: "both", label: "Dual Purpose", activeColor: "sky" },
+                  ]}
+                />
               </div>
             </div>
 

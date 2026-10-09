@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { syncQcSampleToInsForge, logActivityToInsForge } from "@/lib/dbService";
 import { RadioSelect } from "./RadioSelect";
+import { GliderRadioGroup } from "./GliderRadioGroup";
 import { DEFAULT_REJECTION_REASONS, MOCK_PRODUCTS, MOCK_TANKS, MOCK_PLANTS } from "@/lib/mockData";
 
 interface QCManagementViewProps {
@@ -407,40 +408,19 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
 
         {/* Filters and New Sample Action */}
         <div className="flex items-center gap-2.5 flex-wrap">
-          <div className="flex items-center rounded-xl bg-zinc-100/90 dark:bg-black/30 p-1 border border-zinc-200/80 dark:border-white/10 text-xs font-medium">
-            <button
-              onClick={() => setStatusFilter("all")}
-              className={`btn-tactile px-3 py-1.5 rounded-lg cursor-pointer transition-all ${
-                statusFilter === "all" ? "bg-white dark:bg-white/10 font-bold shadow-xs text-zinc-900 dark:text-white" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-              }`}
-            >
-              All ({totalCount})
-            </button>
-            <button
-              onClick={() => setStatusFilter("accept")}
-              className={`btn-tactile px-3 py-1.5 rounded-lg cursor-pointer transition-all ${
-                statusFilter === "accept" ? "bg-white dark:bg-white/10 text-emerald-600 dark:text-emerald-400 font-bold shadow-xs" : "text-zinc-600 dark:text-zinc-400 hover:text-emerald-600"
-              }`}
-            >
-              Accepted ({acceptedCount})
-            </button>
-            <button
-              onClick={() => setStatusFilter("reject")}
-              className={`btn-tactile px-3 py-1.5 rounded-lg cursor-pointer transition-all ${
-                statusFilter === "reject" ? "bg-white dark:bg-white/10 text-rose-600 dark:text-rose-400 font-bold shadow-xs" : "text-zinc-600 dark:text-zinc-400 hover:text-rose-600"
-              }`}
-            >
-              Rejected ({rejectedCount})
-            </button>
-            <button
-              onClick={() => setStatusFilter("pending")}
-              className={`btn-tactile px-3 py-1.5 rounded-lg cursor-pointer transition-all ${
-                statusFilter === "pending" ? "bg-white dark:bg-white/10 text-amber-600 dark:text-amber-400 font-bold shadow-xs" : "text-zinc-600 dark:text-zinc-400 hover:text-amber-600"
-              }`}
-            >
-              Pending ({pendingCount})
-            </button>
-          </div>
+          <GliderRadioGroup
+            value={statusFilter}
+            onChange={(val) => setStatusFilter(val as any)}
+            themeColor="dynamic"
+            size="sm"
+            variant="rounded"
+            options={[
+              { value: "all", label: "All", notification: totalCount, activeColor: "zinc" },
+              { value: "accept", label: "Accepted", notification: acceptedCount, activeColor: "emerald" },
+              { value: "reject", label: "Rejected", notification: rejectedCount, activeColor: "rose" },
+              { value: "pending", label: "Pending", notification: pendingCount, activeColor: "amber" },
+            ]}
+          />
 
           <button
             onClick={() => setIsNewSampleOpen(true)}
@@ -664,83 +644,60 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                 <label className="block text-xs font-bold text-zinc-800 dark:text-zinc-200 font-display">
                   QC Final Decision &amp; Release Authorization
                 </label>
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
+                <GliderRadioGroup
+                  value={selectedReport.decision?.decision || "accept"}
+                  onChange={(val) => {
+                    const dec = val as QCDecisionType;
+                    if (dec === "accept") {
                       setSelectedReport({
                         ...selectedReport,
                         decision: {
-                          id: `dec-${Date.now()}`,
+                          id: selectedReport.decision?.id || `dec-${Date.now()}`,
                           report_id: selectedReport.id,
                           decision: "accept",
                           decided_by_name: currentUser.name,
                           decided_at: new Date().toISOString(),
                         }
                       });
-                    }}
-                    className={`btn-tactile py-2.5 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                      selectedReport.decision?.decision === "accept"
-                        ? "btn-premium-emerald text-white border-emerald-600 shadow-sm"
-                        : "bg-white dark:bg-white/5 text-zinc-700 dark:text-zinc-300 border-zinc-300 dark:border-white/10 hover:border-zinc-400"
-                    }`}
-                  >
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>Accept (Release)</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
+                    } else if (dec === "reject") {
                       setSelectedReport({
                         ...selectedReport,
                         decision: {
-                          id: `dec-${Date.now()}`,
+                          id: selectedReport.decision?.id || `dec-${Date.now()}`,
                           report_id: selectedReport.id,
                           decision: "reject",
-                          reason_id: DEFAULT_REJECTION_REASONS[0].id,
-                          reason_label: DEFAULT_REJECTION_REASONS[0].label,
-                          disposition: DEFAULT_REJECTION_REASONS[0].defaultDisposition,
+                          reason_id: selectedReport.decision?.reason_id || DEFAULT_REJECTION_REASONS[0].id,
+                          reason_label: selectedReport.decision?.reason_label || DEFAULT_REJECTION_REASONS[0].label,
+                          disposition: selectedReport.decision?.disposition || DEFAULT_REJECTION_REASONS[0].defaultDisposition,
                           decided_by_name: currentUser.name,
                           decided_at: new Date().toISOString(),
                         }
                       });
-                    }}
-                    className={`btn-tactile py-2.5 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                      selectedReport.decision?.decision === "reject"
-                        ? "bg-rose-600 text-white border-rose-600 shadow-sm"
-                        : "bg-white dark:bg-white/5 text-zinc-700 dark:text-zinc-300 border-zinc-300 dark:border-white/10 hover:border-zinc-400"
-                    }`}
-                  >
-                    <XCircle className="w-4 h-4" />
-                    <span>Reject / Rework</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
+                    } else if (dec === "accept_concession") {
                       setSelectedReport({
                         ...selectedReport,
                         decision: {
-                          id: `dec-${Date.now()}`,
+                          id: selectedReport.decision?.id || `dec-${Date.now()}`,
                           report_id: selectedReport.id,
                           decision: "accept_concession",
-                          reason_label: "Concession approval by QC Manager",
+                          reason_label: selectedReport.decision?.reason_label || "Concession approval by QC Manager",
                           decided_by_name: currentUser.name,
                           decided_at: new Date().toISOString(),
                         }
                       });
-                    }}
-                    className={`btn-tactile py-2.5 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                      selectedReport.decision?.decision === "accept_concession"
-                        ? "btn-premium-amber text-white border-amber-600 shadow-sm"
-                        : "bg-white dark:bg-white/5 text-zinc-700 dark:text-zinc-300 border-zinc-300 dark:border-white/10 hover:border-zinc-400"
-                    }`}
-                  >
-                    <AlertTriangle className="w-4 h-4" />
-                    <span>Concession</span>
-                  </button>
-                </div>
+                    }
+                  }}
+                  themeColor="dynamic"
+                  size="sm"
+                  variant="rounded"
+                  equalWidth
+                  className="w-full"
+                  options={[
+                    { value: "accept", label: "Accept (Release)", icon: <CheckCircle2 className="w-4 h-4" />, activeColor: "emerald" },
+                    { value: "reject", label: "Reject / Rework", icon: <XCircle className="w-4 h-4" />, activeColor: "rose" },
+                    { value: "accept_concession", label: "Concession", icon: <AlertTriangle className="w-4 h-4" />, activeColor: "amber" },
+                  ]}
+                />
 
                 {/* Sub-form: Reject Reason Code & Disposition Specification */}
                 {selectedReport.decision?.decision === "reject" && (
@@ -1225,41 +1182,20 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                 <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Tank Functional Role
                 </label>
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setCustomTankKind('feed')}
-                    className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all ${
-                      customTankKind === 'feed'
-                        ? 'bg-amber-500/20 border-amber-500 text-amber-600 dark:text-amber-400'
-                        : 'border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-600 dark:text-zinc-400'
-                    }`}
-                  >
-                    Feed Tank
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCustomTankKind('discharge')}
-                    className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all ${
-                      customTankKind === 'discharge'
-                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-600 dark:text-emerald-400'
-                        : 'border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-600 dark:text-zinc-400'
-                    }`}
-                  >
-                    Discharge Tank
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCustomTankKind('both')}
-                    className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all ${
-                      customTankKind === 'both'
-                        ? 'bg-sky-500/20 border-sky-500 text-sky-600 dark:text-sky-400'
-                        : 'border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-600 dark:text-zinc-400'
-                    }`}
-                  >
-                    Dual Purpose
-                  </button>
-                </div>
+                <GliderRadioGroup
+                  value={customTankKind}
+                  onChange={(val) => setCustomTankKind(val as 'feed' | 'discharge' | 'both')}
+                  themeColor="dynamic"
+                  size="sm"
+                  variant="rounded"
+                  equalWidth
+                  className="w-full"
+                  options={[
+                    { value: "feed", label: "Feed Tank", activeColor: "amber" },
+                    { value: "discharge", label: "Discharge Tank", activeColor: "emerald" },
+                    { value: "both", label: "Dual Purpose", activeColor: "sky" },
+                  ]}
+                />
               </div>
             </div>
 

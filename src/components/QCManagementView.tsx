@@ -515,21 +515,21 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
           </span>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto custom-scrollbar">
           <table className="w-full border-collapse text-left text-xs">
             <thead>
               <tr className="sticky top-0 z-10 backdrop-blur-xl bg-zinc-100/95 dark:bg-[#0E1626]/95 text-zinc-600 dark:text-zinc-300 font-bold border-b border-zinc-200/90 dark:border-white/10">
-                <th className="py-3 px-3">Report No / Lot No</th>
-                <th className="py-3 px-2">Sample Date / Time</th>
-                <th className="py-3 px-2">Product Name</th>
-                <th className="py-3 px-2">Tank (Feed → Disch)</th>
-                <th className="py-3 px-2 text-right">FFA (%)</th>
-                <th className="py-3 px-2 text-right">Moisture (%)</th>
-                <th className="py-3 px-2 text-right">PV (meq/kg)</th>
-                <th className="py-3 px-2 text-right">IV (Wijs)</th>
-                <th className="py-3 px-2 text-center">Colour (R / Y)</th>
-                <th className="py-3 px-3 text-center">QC Decision</th>
-                <th className="py-3 px-3 text-center">Actions</th>
+                <th className="py-3 px-3.5 whitespace-nowrap">Report No / Lot No</th>
+                <th className="py-3 px-3 whitespace-nowrap">Sample Date & Time</th>
+                <th className="py-3 px-3 whitespace-nowrap">Product Name</th>
+                <th className="py-3 px-3 whitespace-nowrap">Tank (Feed → Disch)</th>
+                <th className="py-3 px-3 text-right whitespace-nowrap">FFA (%)</th>
+                <th className="py-3 px-3 text-right whitespace-nowrap">Moisture (%)</th>
+                <th className="py-3 px-3 text-right whitespace-nowrap">PV (meq/kg)</th>
+                <th className="py-3 px-3 text-right whitespace-nowrap">IV (Wijs)</th>
+                <th className="py-3 px-3 text-center whitespace-nowrap">Colour (R / Y)</th>
+                <th className="py-3 px-3 text-center whitespace-nowrap">QC Decision</th>
+                <th className="py-3 px-3 text-center whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200/60 dark:divide-white/5 font-sans">
@@ -543,75 +543,101 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                     className="hover:bg-zinc-500/5 dark:hover:bg-white/5 transition-colors group"
                   >
                     {/* Report & Lot No */}
-                    <td className="py-2.5 px-3">
-                      <div className="font-mono font-bold text-zinc-900 dark:text-white">
+                    <td className="py-2.5 px-3.5 whitespace-nowrap">
+                      <div className="font-mono font-bold text-zinc-900 dark:text-white tracking-tight">
                         {report.report_no}
                       </div>
-                      <div className="font-mono text-xs text-zinc-500 truncate max-w-[190px]">
+                      <div className="font-mono text-[11px] text-zinc-500 truncate max-w-[190px]" title={report.lot_no}>
                         {report.lot_no}
                       </div>
                     </td>
 
                     {/* Date & Time */}
-                    <td className="py-2.5 px-2 font-mono text-xs text-zinc-700 dark:text-zinc-300">
-                      <div>{report.sample_date}</div>
-                      <div className="text-zinc-400">{report.time_check} Hrs</div>
+                    <td className="py-2.5 px-3 font-mono text-xs whitespace-nowrap">
+                      <div className="font-semibold text-zinc-900 dark:text-zinc-200">{report.sample_date}</div>
+                      <div className="text-zinc-500 dark:text-zinc-400 text-[11px] flex items-center gap-1 mt-0.5">
+                        <Clock className="w-3 h-3 text-zinc-400 shrink-0" />
+                        <span>{report.time_check} Hrs</span>
+                      </div>
                     </td>
 
                     {/* Product Name */}
-                    <td className="py-2.5 px-2 font-medium text-zinc-900 dark:text-zinc-200">
-                      {report.product_name || "RBD Palm Oil"}
+                    <td className="py-2.5 px-3 whitespace-nowrap font-medium text-xs text-zinc-900 dark:text-zinc-200">
+                      <div className="inline-flex items-center gap-1.5 font-semibold">
+                        <Droplets className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                        <span>{report.product_name || "RBD Palm Oil"}</span>
+                      </div>
                     </td>
 
                     {/* Tanks */}
-                    <td className="py-2.5 px-2 font-mono text-xs text-zinc-600 dark:text-zinc-400">
-                      {report.feed_tank_code || "TK-101A"} → {report.discharge_tank_code || "TK-201A"}
+                    <td className="py-2.5 px-3 whitespace-nowrap font-mono text-xs text-zinc-600 dark:text-zinc-400">
+                      <span className="text-zinc-800 dark:text-zinc-200 font-medium">{report.feed_tank_code || "TK-101A"}</span>
+                      <span className="text-zinc-400 mx-1.5">→</span>
+                      <span className="text-emerald-700 dark:text-emerald-400 font-semibold">{report.discharge_tank_code || "TK-201A"}</span>
                     </td>
 
                     {/* FFA (%) */}
-                    <td className="py-2.5 px-2 text-right font-mono tabular-nums text-zinc-900 dark:text-zinc-100 font-semibold">
-                      {getParamVal(report, "FFA")}
+                    <td className="py-2.5 px-3 text-right font-mono tabular-nums whitespace-nowrap text-xs text-zinc-900 dark:text-zinc-100">
+                      {(() => {
+                        const val = getParamVal(report, "FFA");
+                        return val === "-" ? <span className="text-zinc-400/50 font-normal">-</span> : <span className="font-bold">{val}</span>;
+                      })()}
                     </td>
 
                     {/* Moisture (%) */}
-                    <td className="py-2.5 px-2 text-right font-mono tabular-nums text-zinc-900 dark:text-zinc-100 font-semibold">
-                      {getParamVal(report, "H2O")}
+                    <td className="py-2.5 px-3 text-right font-mono tabular-nums whitespace-nowrap text-xs text-zinc-900 dark:text-zinc-100">
+                      {(() => {
+                        const val = getParamVal(report, "H2O");
+                        return val === "-" ? <span className="text-zinc-400/50 font-normal">-</span> : <span className="font-bold">{val}</span>;
+                      })()}
                     </td>
 
                     {/* PV (meq/kg) */}
-                    <td className="py-2.5 px-2 text-right font-mono tabular-nums text-zinc-900 dark:text-zinc-100 font-semibold">
-                      {getParamVal(report, "PV")}
+                    <td className="py-2.5 px-3 text-right font-mono tabular-nums whitespace-nowrap text-xs text-zinc-900 dark:text-zinc-100">
+                      {(() => {
+                        const val = getParamVal(report, "PV");
+                        return val === "-" ? <span className="text-zinc-400/50 font-normal">-</span> : <span className="font-bold">{val}</span>;
+                      })()}
                     </td>
 
                     {/* IV */}
-                    <td className="py-2.5 px-2 text-right font-mono tabular-nums text-zinc-900 dark:text-zinc-100 font-semibold">
-                      {getParamVal(report, "IV")}
+                    <td className="py-2.5 px-3 text-right font-mono tabular-nums whitespace-nowrap text-xs text-zinc-900 dark:text-zinc-100">
+                      {(() => {
+                        const val = getParamVal(report, "IV");
+                        return val === "-" ? <span className="text-zinc-400/50 font-normal">-</span> : <span className="font-bold">{val}</span>;
+                      })()}
                     </td>
 
                     {/* Colour R/Y */}
-                    <td className="py-2.5 px-2 text-center font-mono tabular-nums text-zinc-900 dark:text-zinc-100 font-semibold">
+                    <td className="py-2.5 px-3 text-center font-mono tabular-nums whitespace-nowrap text-xs">
                       {(() => {
                         const cr = getParamVal(report, "COLOUR_R");
                         const cy = getParamVal(report, "COLOUR_Y");
-                        if (cr === "-" && cy === "-") return <span className="text-zinc-400 font-normal">-</span>;
-                        return `${cr}R / ${cy}Y`;
+                        if (cr === "-" && cy === "-") return <span className="text-zinc-400/50 font-normal">-</span>;
+                        return (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-white/5 border border-zinc-200/80 dark:border-white/10">
+                            <span className="text-rose-600 dark:text-rose-400 font-bold">{cr}R</span>
+                            <span className="text-zinc-400">/</span>
+                            <span className="text-amber-600 dark:text-amber-400 font-bold">{cy}Y</span>
+                          </span>
+                        );
                       })()}
                     </td>
 
                     {/* Decision Badge */}
-                    <td className="py-2.5 px-3 text-center">
+                    <td className="py-2.5 px-3 text-center whitespace-nowrap">
                       {isAccepted ? (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
                           <CheckCircle2 className="w-3 h-3 text-emerald-500" />
                           <span>RELEASE</span>
                         </span>
                       ) : isRejected ? (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-500/30" title={report.decision?.reason_label || "Reject"}>
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-500/30" title={report.decision?.reason_label || "Reject"}>
                           <XCircle className="w-3 h-3 text-rose-500" />
                           <span>REJECT</span>
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30">
                           <Clock className="w-3 h-3 text-amber-500" />
                           <span>PENDING</span>
                         </span>
@@ -619,7 +645,7 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                     </td>
 
                     {/* Actions */}
-                    <td className="py-2.5 px-3 text-center">
+                    <td className="py-2.5 px-3 text-center whitespace-nowrap">
                       <div className="flex items-center justify-center gap-1.5">
                         <button
                           onClick={() => {

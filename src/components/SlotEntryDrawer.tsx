@@ -16,7 +16,12 @@ import {
   Thermometer,
   Gauge,
   Lock,
-  Unlock
+  Unlock,
+  Droplets,
+  Sliders,
+  Activity,
+  FlaskConical,
+  Filter
 } from "lucide-react";
 import { evaluateSlotAccess } from "@/lib/realtimeTimeline";
 import { GliderRadioGroup } from "./GliderRadioGroup";
@@ -301,326 +306,353 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
         )}
 
         {/* Form Body - Fast Touch Optimized */}
-        <form onSubmit={handleSaveClick} className="flex-1 overflow-y-auto p-6 space-y-5">
-          {/* Group 1: Flowrate & Dosages */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {/* Flowrate MT/HR Set */}
-            <div>
-              <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                Flowrate (MT/HR Set)
-              </label>
-              <div 
-                onClick={() => setActiveNumpadField('flowrate_set')}
-                className={`touch-target flex items-center justify-between px-3 py-2 rounded-xl border cursor-pointer transition-all ${
-                  activeNumpadField === 'flowrate_set'
-                    ? 'border-amber-500 ring-2 ring-amber-500/30 bg-amber-500/5'
-                    : 'border-zinc-300 dark:border-white/10 bg-white dark:bg-white/5 hover:border-zinc-400'
-                }`}
-              >
-                <input
-                  type="number"
-                  step="0.1"
-                  readOnly={!isEditable}
-                  disabled={!isEditable}
-                  value={formData.flowrate_set ?? ''}
-                  onChange={(e) => handleFieldChange('flowrate_set', parseFloat(e.target.value) || null)}
-                  className="w-full bg-transparent font-mono text-base font-bold tabular-nums text-zinc-900 dark:text-white focus:outline-none disabled:opacity-60"
-                  placeholder="e.g. 45.0"
-                />
-                <span className="text-xs text-zinc-400 font-mono">MT/HR</span>
-              </div>
+        <form onSubmit={handleSaveClick} className="flex-1 overflow-y-auto p-5 space-y-4 custom-scrollbar">
+          {/* Card 1: Feed & Chemical Dosing */}
+          <div className="p-3.5 rounded-2xl bg-zinc-50/80 dark:bg-black/30 border border-zinc-200/80 dark:border-white/10 space-y-2.5">
+            <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5 font-display">
+              <Droplets className="w-3.5 h-3.5 text-amber-500" />
+              <span>Feed & Chemical Dosing</span>
             </div>
-
-            {/* Acid Dosage OK */}
-            <div>
-              <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                Acid Dosage
-              </label>
-              <button
-                type="button"
-                disabled={!isEditable}
-                onClick={() => handleFieldChange('acid_dosage_ok', !formData.acid_dosage_ok)}
-                className={`btn-tactile touch-target w-full rounded-xl border flex items-center justify-center gap-2 font-semibold text-sm select-none transition-all ${
-                  !isEditable ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
-                } ${
-                  formData.acid_dosage_ok
-                    ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 shadow-sm'
-                    : 'bg-zinc-100 dark:bg-white/5 border-zinc-300 dark:border-white/10 text-zinc-500 hover:border-zinc-400'
-                }`}
-              >
-                <div className={`w-5 h-5 rounded-md flex items-center justify-center border transition-transform duration-150 group-active:scale-90 ${
-                  formData.acid_dosage_ok ? 'bg-emerald-600 border-emerald-600 text-white shadow-xs' : 'border-zinc-400 dark:border-zinc-600'
-                }`}>
-                  {formData.acid_dosage_ok && <Check className="w-3.5 h-3.5" />}
-                </div>
-                <span>{formData.acid_dosage_ok ? "Dosage OK (√)" : "Not Dosed"}</span>
-              </button>
-            </div>
-
-            {/* Earth Dosage OK */}
-            <div>
-              <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                Earth Dosage
-              </label>
-              <button
-                type="button"
-                disabled={!isEditable}
-                onClick={() => handleFieldChange('earth_dosage_ok', !formData.earth_dosage_ok)}
-                className={`btn-tactile touch-target w-full rounded-xl border flex items-center justify-center gap-2 font-semibold text-sm select-none transition-all ${
-                  !isEditable ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
-                } ${
-                  formData.earth_dosage_ok
-                    ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 shadow-sm'
-                    : 'bg-zinc-100 dark:bg-white/5 border-zinc-300 dark:border-white/10 text-zinc-500 hover:border-zinc-400'
-                }`}
-              >
-                <div className={`w-5 h-5 rounded-md flex items-center justify-center border transition-transform duration-150 group-active:scale-90 ${
-                  formData.earth_dosage_ok ? 'bg-emerald-600 border-emerald-600 text-white shadow-xs' : 'border-zinc-400 dark:border-zinc-600'
-                }`}>
-                  {formData.earth_dosage_ok && <Check className="w-3.5 h-3.5" />}
-                </div>
-                <span>{formData.earth_dosage_ok ? "Dosage OK (√)" : "Not Dosed"}</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Group 2: Critical Telemetry (HE Temp & Vacuum) with 3D Specular Depth */}
-          <div className="telemetry-card grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 sm:p-5 rounded-2xl bg-zinc-50/90 dark:bg-black/35 border border-zinc-200/90 dark:border-white/10 shadow-inner">
-            {/* HE Temp */}
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5 font-display">
-                  <Thermometer className="w-3.5 h-3.5 text-amber-500" />
-                  <span>HE Temp (°C)</span>
-                  {isHeTempOutOfSpec && <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {/* Flowrate MT/HR Set */}
+              <div>
+                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                  Flowrate (MT/HR Set)
                 </label>
-                <span className="text-xs font-mono font-medium text-zinc-500">
-                  Spec: 70-115 °C
-                </span>
-              </div>
-              <div
-                onClick={() => isEditable && setActiveNumpadField('he_temp_c')}
-                className={`touch-target flex items-center justify-between px-3.5 py-2.5 rounded-xl border transition-all ${
-                  !isEditable ? 'cursor-not-allowed opacity-60 bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800' : 'cursor-pointer'
-                } ${
-                  isHeTempOutOfSpec
-                    ? 'bg-rose-500/10 border-rose-500/60 text-rose-800 dark:text-rose-200 ring-2 ring-rose-500/30'
-                    : activeNumpadField === 'he_temp_c'
+                <div 
+                  onClick={() => setActiveNumpadField('flowrate_set')}
+                  className={`touch-target flex items-center justify-between px-3 py-2 rounded-xl border cursor-pointer transition-all ${
+                    activeNumpadField === 'flowrate_set'
                       ? 'border-amber-500 ring-2 ring-amber-500/30 bg-amber-500/5'
                       : 'border-zinc-300 dark:border-white/10 bg-white dark:bg-white/5 hover:border-zinc-400'
-                }`}
-              >
-                <input
-                  type="number"
-                  step="0.1"
-                  readOnly={!isEditable}
-                  disabled={!isEditable}
-                  value={formData.he_temp_c ?? ''}
-                  onChange={(e) => handleFieldChange('he_temp_c', parseFloat(e.target.value) || null)}
-                  className="w-full bg-transparent font-mono text-xl font-bold tabular-nums text-zinc-900 dark:text-white focus:outline-none disabled:opacity-60"
-                  placeholder="e.g. 105.0"
-                />
-                <span className="font-mono text-sm font-semibold text-zinc-400">°C</span>
+                  }`}
+                >
+                  <input
+                    type="number"
+                    step="0.1"
+                    readOnly={!isEditable}
+                    disabled={!isEditable}
+                    value={formData.flowrate_set ?? ''}
+                    onChange={(e) => handleFieldChange('flowrate_set', parseFloat(e.target.value) || null)}
+                    className="w-full bg-transparent font-mono text-base font-bold tabular-nums text-zinc-900 dark:text-white focus:outline-none disabled:opacity-60"
+                    placeholder="e.g. 45.0"
+                  />
+                  <span className="text-xs text-zinc-400 font-mono">MT/HR</span>
+                </div>
               </div>
-              {isHeTempOutOfSpec && (
-                <p className="text-xs text-rose-600 dark:text-rose-400 font-semibold mt-1">
-                  Out of range! Must be between 70.0 and 115.0 °C.
-                </p>
-              )}
-            </div>
 
-            {/* Bleacher Vacuum */}
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5 font-display">
-                  <Gauge className="w-3.5 h-3.5 text-sky-500" />
-                  <span>Bleacher Vacuum (mmHg)</span>
-                  {isVacOutOfSpec && <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />}
+              {/* Acid Dosage OK */}
+              <div>
+                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                  Acid Dosage
                 </label>
-                <span className="text-xs font-mono font-medium text-zinc-500">
-                  Spec: Min. 600 mmHg
-                </span>
+                <button
+                  type="button"
+                  disabled={!isEditable}
+                  onClick={() => handleFieldChange('acid_dosage_ok', !formData.acid_dosage_ok)}
+                  className={`btn-tactile touch-target w-full rounded-xl border flex items-center justify-center gap-2 font-semibold text-xs select-none transition-all ${
+                    !isEditable ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
+                  } ${
+                    formData.acid_dosage_ok
+                      ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 shadow-sm'
+                      : 'bg-zinc-100 dark:bg-white/5 border-zinc-300 dark:border-white/10 text-zinc-500 hover:border-zinc-400'
+                  }`}
+                >
+                  <div className={`w-4 h-4 rounded flex items-center justify-center border transition-transform duration-150 group-active:scale-90 ${
+                    formData.acid_dosage_ok ? 'bg-emerald-600 border-emerald-600 text-white shadow-xs' : 'border-zinc-400 dark:border-zinc-600'
+                  }`}>
+                    {formData.acid_dosage_ok && <Check className="w-3 h-3" />}
+                  </div>
+                  <span>{formData.acid_dosage_ok ? "Dosage OK (√)" : "Not Dosed"}</span>
+                </button>
               </div>
-              <div
-                onClick={() => isEditable && setActiveNumpadField('vacuum_mmhg')}
-                className={`touch-target flex items-center justify-between px-3.5 py-2.5 rounded-xl border transition-all ${
-                  !isEditable ? 'cursor-not-allowed opacity-60 bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800' : 'cursor-pointer'
-                } ${
-                  isVacOutOfSpec
-                    ? 'bg-rose-500/10 border-rose-500/60 text-rose-800 dark:text-rose-200 ring-2 ring-rose-500/30'
-                    : activeNumpadField === 'vacuum_mmhg'
+
+              {/* Earth Dosage OK */}
+              <div>
+                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                  Earth Dosage
+                </label>
+                <button
+                  type="button"
+                  disabled={!isEditable}
+                  onClick={() => handleFieldChange('earth_dosage_ok', !formData.earth_dosage_ok)}
+                  className={`btn-tactile touch-target w-full rounded-xl border flex items-center justify-center gap-2 font-semibold text-xs select-none transition-all ${
+                    !isEditable ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
+                  } ${
+                    formData.earth_dosage_ok
+                      ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 shadow-sm'
+                      : 'bg-zinc-100 dark:bg-white/5 border-zinc-300 dark:border-white/10 text-zinc-500 hover:border-zinc-400'
+                  }`}
+                >
+                  <div className={`w-4 h-4 rounded flex items-center justify-center border transition-transform duration-150 group-active:scale-90 ${
+                    formData.earth_dosage_ok ? 'bg-emerald-600 border-emerald-600 text-white shadow-xs' : 'border-zinc-400 dark:border-zinc-600'
+                  }`}>
+                    {formData.earth_dosage_ok && <Check className="w-3 h-3" />}
+                  </div>
+                  <span>{formData.earth_dosage_ok ? "Dosage OK (√)" : "Not Dosed"}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 2: Critical Telemetry (HE Temp & Vacuum) with 3D Specular Depth */}
+          <div className="telemetry-card p-3.5 sm:p-4 rounded-2xl bg-zinc-50/90 dark:bg-black/35 border border-zinc-200/90 dark:border-white/10 shadow-inner space-y-2.5">
+            <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5 font-display">
+              <Sliders className="w-3.5 h-3.5 text-sky-500" />
+              <span>Bleaching Vessel Telemetry</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              {/* HE Temp */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5 font-display">
+                    <Thermometer className="w-3.5 h-3.5 text-amber-500" />
+                    <span>HE Temp (°C)</span>
+                    {isHeTempOutOfSpec && <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />}
+                  </label>
+                  <span className="text-[11px] font-mono font-medium text-zinc-500">
+                    Spec: 70-115 °C
+                  </span>
+                </div>
+                <div
+                  onClick={() => isEditable && setActiveNumpadField('he_temp_c')}
+                  className={`touch-target flex items-center justify-between px-3 py-2 rounded-xl border transition-all ${
+                    !isEditable ? 'cursor-not-allowed opacity-60 bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800' : 'cursor-pointer'
+                  } ${
+                    isHeTempOutOfSpec
+                      ? 'bg-rose-500/10 border-rose-500/60 text-rose-800 dark:text-rose-200 ring-2 ring-rose-500/30'
+                      : activeNumpadField === 'he_temp_c'
+                        ? 'border-amber-500 ring-2 ring-amber-500/30 bg-amber-500/5'
+                        : 'border-zinc-300 dark:border-white/10 bg-white dark:bg-white/5 hover:border-zinc-400'
+                  }`}
+                >
+                  <input
+                    type="number"
+                    step="0.1"
+                    readOnly={!isEditable}
+                    disabled={!isEditable}
+                    value={formData.he_temp_c ?? ''}
+                    onChange={(e) => handleFieldChange('he_temp_c', parseFloat(e.target.value) || null)}
+                    className="w-full bg-transparent font-mono text-lg font-bold tabular-nums text-zinc-900 dark:text-white focus:outline-none disabled:opacity-60"
+                    placeholder="e.g. 105.0"
+                  />
+                  <span className="font-mono text-xs font-semibold text-zinc-400">°C</span>
+                </div>
+                {isHeTempOutOfSpec && (
+                  <p className="text-[11px] text-rose-600 dark:text-rose-400 font-semibold mt-1">
+                    Out of range! Must be between 70.0 and 115.0 °C.
+                  </p>
+                )}
+              </div>
+
+              {/* Bleacher Vacuum */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5 font-display">
+                    <Gauge className="w-3.5 h-3.5 text-sky-500" />
+                    <span>Bleacher Vacuum (mmHg)</span>
+                    {isVacOutOfSpec && <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />}
+                  </label>
+                  <span className="text-[11px] font-mono font-medium text-zinc-500">
+                    Spec: Min. 600 mmHg
+                  </span>
+                </div>
+                <div
+                  onClick={() => isEditable && setActiveNumpadField('vacuum_mmhg')}
+                  className={`touch-target flex items-center justify-between px-3 py-2 rounded-xl border transition-all ${
+                    !isEditable ? 'cursor-not-allowed opacity-60 bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800' : 'cursor-pointer'
+                  } ${
+                    isVacOutOfSpec
+                      ? 'bg-rose-500/10 border-rose-500/60 text-rose-800 dark:text-rose-200 ring-2 ring-rose-500/30'
+                      : activeNumpadField === 'vacuum_mmhg'
+                        ? 'border-amber-500 ring-2 ring-amber-500/30 bg-amber-500/5'
+                        : 'border-zinc-300 dark:border-white/10 bg-white dark:bg-white/5 hover:border-zinc-400'
+                  }`}
+                >
+                  <input
+                    type="number"
+                    step="1"
+                    readOnly={!isEditable}
+                    disabled={!isEditable}
+                    value={formData.vacuum_mmhg ?? ''}
+                    onChange={(e) => handleFieldChange('vacuum_mmhg', parseFloat(e.target.value) || null)}
+                    className="w-full bg-transparent font-mono text-lg font-bold tabular-nums text-zinc-900 dark:text-white focus:outline-none disabled:opacity-60"
+                    placeholder="e.g. 640"
+                  />
+                  <span className="font-mono text-xs font-semibold text-zinc-400">mmHg</span>
+                </div>
+                {isVacOutOfSpec && (
+                  <p className="text-[11px] text-rose-600 dark:text-rose-400 font-semibold mt-1">
+                    Vacuum too low! Minimum required is 600.0 mmHg.
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Card 3: Level & Niagara Filtration */}
+          <div className="p-3.5 rounded-2xl bg-zinc-50/80 dark:bg-black/30 border border-zinc-200/80 dark:border-white/10 space-y-2.5">
+            <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5 font-display">
+              <Activity className="w-3.5 h-3.5 text-emerald-500" />
+              <span>Vessel Level & Filtration</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+              {/* Bleacher Level Toggle (L / H) */}
+              <div className="sm:col-span-4">
+                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                  Bleacher Level (L / H)
+                </label>
+                <GliderRadioGroup
+                  disabled={!isEditable}
+                  value={formData.bleacher_level || 'L'}
+                  onChange={(lvl) => handleFieldChange('bleacher_level', lvl)}
+                  themeColor="amber"
+                  size="sm"
+                  variant="rounded"
+                  equalWidth
+                  className="w-full"
+                  options={BLEACHER_LEVELS.map((lvl) => ({
+                    value: lvl,
+                    label: `Level ${lvl}`,
+                  }))}
+                />
+              </div>
+
+              {/* Niagara Filter Selector (N60-1..4) */}
+              <div className="sm:col-span-5">
+                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                  Niagara Filter (Select 1 of 4)
+                </label>
+                <GliderRadioGroup
+                  disabled={!isEditable}
+                  value={formData.niagara_filter || 'N60-1'}
+                  onChange={(nf) => handleFieldChange('niagara_filter', nf)}
+                  themeColor="amber"
+                  size="xs"
+                  variant="rounded"
+                  equalWidth
+                  className="w-full"
+                  options={NIAGARA_FILTERS.map((nf) => ({
+                    value: nf,
+                    label: nf,
+                  }))}
+                />
+              </div>
+
+              {/* Changing Filter Time */}
+              <div className="sm:col-span-3">
+                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                  Filter Change Time
+                </label>
+                <div className={`touch-target flex items-center px-3 rounded-xl border border-zinc-300 dark:border-white/10 ${
+                  !isEditable ? 'bg-zinc-100 dark:bg-zinc-900 opacity-60 cursor-not-allowed' : 'bg-white dark:bg-white/5'
+                }`}>
+                  <input
+                    type="text"
+                    readOnly={!isEditable}
+                    disabled={!isEditable}
+                    value={formData.filter_change_time ?? ''}
+                    onChange={(e) => handleFieldChange('filter_change_time', e.target.value)}
+                    className="w-full bg-transparent font-mono text-sm text-zinc-900 dark:text-white focus:outline-none disabled:opacity-60"
+                    placeholder="HH:mm"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 4: Laboratory Quality Telemetry */}
+          <div className="p-3.5 rounded-2xl bg-zinc-50/80 dark:bg-black/30 border border-zinc-200/80 dark:border-white/10 space-y-2.5">
+            <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5 font-display">
+              <FlaskConical className="w-3.5 h-3.5 text-amber-500" />
+              <span>Laboratory Quality Checks</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {/* Quality FFA % */}
+              <div>
+                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                  Quality: FFA (%)
+                </label>
+                <div 
+                  onClick={() => isEditable && setActiveNumpadField('ffa_pct')}
+                  className={`touch-target flex items-center justify-between px-3 py-2 rounded-xl border transition-all ${
+                    !isEditable ? 'cursor-not-allowed opacity-60 bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800' : 'cursor-pointer'
+                  } ${
+                    activeNumpadField === 'ffa_pct'
                       ? 'border-amber-500 ring-2 ring-amber-500/30 bg-amber-500/5'
                       : 'border-zinc-300 dark:border-white/10 bg-white dark:bg-white/5 hover:border-zinc-400'
-                }`}
-              >
-                <input
-                  type="number"
-                  step="1"
-                  readOnly={!isEditable}
-                  disabled={!isEditable}
-                  value={formData.vacuum_mmhg ?? ''}
-                  onChange={(e) => handleFieldChange('vacuum_mmhg', parseFloat(e.target.value) || null)}
-                  className="w-full bg-transparent font-mono text-xl font-bold tabular-nums text-zinc-900 dark:text-white focus:outline-none disabled:opacity-60"
-                  placeholder="e.g. 640"
-                />
-                <span className="font-mono text-sm font-semibold text-zinc-400">mmHg</span>
+                  }`}
+                >
+                  <input
+                    type="number"
+                    step="0.001"
+                    readOnly={!isEditable}
+                    disabled={!isEditable}
+                    value={formData.ffa_pct ?? ''}
+                    onChange={(e) => handleFieldChange('ffa_pct', parseFloat(e.target.value) || null)}
+                    className="w-full bg-transparent font-mono text-base font-bold tabular-nums text-zinc-900 dark:text-white focus:outline-none disabled:opacity-60"
+                    placeholder="0.045"
+                  />
+                  <span className="text-xs text-zinc-400 font-mono">%</span>
+                </div>
               </div>
-              {isVacOutOfSpec && (
-                <p className="text-xs text-rose-600 dark:text-rose-400 font-semibold mt-1">
-                  Vacuum too low! Minimum required is 600.0 mmHg.
-                </p>
-              )}
-            </div>
-          </div>
 
-          {/* Group 3: Segmented Controls (Bleacher Level & Niagara Filter) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Bleacher Level Toggle (L / H) */}
-            <div>
-              <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                Bleacher Level (L / H)
-              </label>
-              <GliderRadioGroup
-                disabled={!isEditable}
-                value={formData.bleacher_level || 'L'}
-                onChange={(lvl) => handleFieldChange('bleacher_level', lvl)}
-                themeColor="amber"
-                size="sm"
-                variant="rounded"
-                equalWidth
-                className="w-full"
-                options={BLEACHER_LEVELS.map((lvl) => ({
-                  value: lvl,
-                  label: `Level ${lvl}`,
-                }))}
-              />
-            </div>
-
-            {/* Niagara Filter Selector (N60-1..4) */}
-            <div>
-              <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                Niagara Filter (Select 1 of 4)
-              </label>
-              <GliderRadioGroup
-                disabled={!isEditable}
-                value={formData.niagara_filter || 'N60-1'}
-                onChange={(nf) => handleFieldChange('niagara_filter', nf)}
-                themeColor="amber"
-                size="xs"
-                variant="rounded"
-                equalWidth
-                className="w-full"
-                options={NIAGARA_FILTERS.map((nf) => ({
-                  value: nf,
-                  label: nf,
-                }))}
-              />
-            </div>
-          </div>
-
-          {/* Group 4: Changing Filter Time & Quality (FFA & Colour) */}
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-            {/* Changing Filter Time */}
-            <div>
-              <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                Filter Change Time
-              </label>
-              <div className={`touch-target flex items-center px-3 rounded-xl border border-zinc-300 dark:border-white/10 ${
-                !isEditable ? 'bg-zinc-100 dark:bg-zinc-900 opacity-60 cursor-not-allowed' : 'bg-white dark:bg-white/5'
-              }`}>
-                <input
-                  type="text"
-                  readOnly={!isEditable}
-                  disabled={!isEditable}
-                  value={formData.filter_change_time ?? ''}
-                  onChange={(e) => handleFieldChange('filter_change_time', e.target.value)}
-                  className="w-full bg-transparent font-mono text-sm text-zinc-900 dark:text-white focus:outline-none disabled:opacity-60"
-                  placeholder="HH:mm"
-                />
+              {/* Quality Colour Red (R) */}
+              <div>
+                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                  Colour (Red - R)
+                </label>
+                <div 
+                  onClick={() => isEditable && setActiveNumpadField('colour_r')}
+                  className={`touch-target flex items-center justify-between px-3 py-2 rounded-xl border transition-all ${
+                    !isEditable ? 'cursor-not-allowed opacity-60 bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800' : 'cursor-pointer'
+                  } ${
+                    activeNumpadField === 'colour_r'
+                      ? 'border-amber-500 ring-2 ring-amber-500/30 bg-amber-500/5'
+                      : 'border-zinc-300 dark:border-white/10 bg-white dark:bg-white/5 hover:border-zinc-400'
+                  }`}
+                >
+                  <input
+                    type="number"
+                    step="0.1"
+                    readOnly={!isEditable}
+                    disabled={!isEditable}
+                    value={formData.colour_r ?? ''}
+                    onChange={(e) => handleFieldChange('colour_r', parseFloat(e.target.value) || null)}
+                    className="w-full bg-transparent font-mono text-base font-bold tabular-nums text-rose-600 dark:text-rose-400 focus:outline-none disabled:opacity-60"
+                    placeholder="2.1"
+                  />
+                  <span className="text-xs text-rose-500/80 font-bold font-mono">R</span>
+                </div>
               </div>
-            </div>
 
-            {/* Quality FFA % */}
-            <div>
-              <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                Quality: FFA (%)
-              </label>
-              <div 
-                onClick={() => isEditable && setActiveNumpadField('ffa_pct')}
-                className={`touch-target flex items-center px-3 rounded-xl border transition-all ${
-                  !isEditable ? 'cursor-not-allowed opacity-60 bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800' : 'cursor-pointer'
-                } ${
-                  activeNumpadField === 'ffa_pct'
-                    ? 'border-amber-500 ring-2 ring-amber-500/30 bg-amber-500/5'
-                    : 'border-zinc-300 dark:border-white/10 bg-white dark:bg-white/5 hover:border-zinc-400'
-                }`}
-              >
-                <input
-                  type="number"
-                  step="0.001"
-                  readOnly={!isEditable}
-                  disabled={!isEditable}
-                  value={formData.ffa_pct ?? ''}
-                  onChange={(e) => handleFieldChange('ffa_pct', parseFloat(e.target.value) || null)}
-                  className="w-full bg-transparent font-mono text-sm font-semibold tabular-nums text-zinc-900 dark:text-white focus:outline-none disabled:opacity-60"
-                  placeholder="0.045"
-                />
-              </div>
-            </div>
-
-            {/* Quality Colour Red (R) */}
-            <div>
-              <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                Colour (R)
-              </label>
-              <div 
-                onClick={() => isEditable && setActiveNumpadField('colour_r')}
-                className={`touch-target flex items-center px-3 rounded-xl border transition-all ${
-                  !isEditable ? 'cursor-not-allowed opacity-60 bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800' : 'cursor-pointer'
-                } ${
-                  activeNumpadField === 'colour_r'
-                    ? 'border-amber-500 ring-2 ring-amber-500/30 bg-amber-500/5'
-                    : 'border-zinc-300 dark:border-white/10 bg-white dark:bg-white/5 hover:border-zinc-400'
-                }`}
-              >
-                <input
-                  type="number"
-                  step="0.1"
-                  readOnly={!isEditable}
-                  disabled={!isEditable}
-                  value={formData.colour_r ?? ''}
-                  onChange={(e) => handleFieldChange('colour_r', parseFloat(e.target.value) || null)}
-                  className="w-full bg-transparent font-mono text-sm font-semibold tabular-nums text-zinc-900 dark:text-white focus:outline-none disabled:opacity-60"
-                  placeholder="2.1"
-                />
-              </div>
-            </div>
-
-            {/* Quality Colour Yellow (Y) */}
-            <div>
-              <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                Colour (Y)
-              </label>
-              <div 
-                onClick={() => isEditable && setActiveNumpadField('colour_y')}
-                className={`touch-target flex items-center px-3 rounded-xl border transition-all ${
-                  !isEditable ? 'cursor-not-allowed opacity-60 bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800' : 'cursor-pointer'
-                } ${
-                  activeNumpadField === 'colour_y'
-                    ? 'border-amber-500 ring-2 ring-amber-500/30 bg-amber-500/5'
-                    : 'border-zinc-300 dark:border-white/10 bg-white dark:bg-white/5 hover:border-zinc-400'
-                }`}
-              >
-                <input
-                  type="number"
-                  step="0.1"
-                  readOnly={!isEditable}
-                  disabled={!isEditable}
-                  value={formData.colour_y ?? ''}
-                  onChange={(e) => handleFieldChange('colour_y', parseFloat(e.target.value) || null)}
-                  className="w-full bg-transparent font-mono text-sm font-semibold tabular-nums text-zinc-900 dark:text-white focus:outline-none disabled:opacity-60"
-                  placeholder="18.0"
-                />
+              {/* Quality Colour Yellow (Y) */}
+              <div>
+                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                  Colour (Yellow - Y)
+                </label>
+                <div 
+                  onClick={() => isEditable && setActiveNumpadField('colour_y')}
+                  className={`touch-target flex items-center justify-between px-3 py-2 rounded-xl border transition-all ${
+                    !isEditable ? 'cursor-not-allowed opacity-60 bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800' : 'cursor-pointer'
+                  } ${
+                    activeNumpadField === 'colour_y'
+                      ? 'border-amber-500 ring-2 ring-amber-500/30 bg-amber-500/5'
+                      : 'border-zinc-300 dark:border-white/10 bg-white dark:bg-white/5 hover:border-zinc-400'
+                  }`}
+                >
+                  <input
+                    type="number"
+                    step="0.1"
+                    readOnly={!isEditable}
+                    disabled={!isEditable}
+                    value={formData.colour_y ?? ''}
+                    onChange={(e) => handleFieldChange('colour_y', parseFloat(e.target.value) || null)}
+                    className="w-full bg-transparent font-mono text-base font-bold tabular-nums text-amber-600 dark:text-amber-400 focus:outline-none disabled:opacity-60"
+                    placeholder="18.0"
+                  />
+                  <span className="text-xs text-amber-500/80 font-bold font-mono">Y</span>
+                </div>
               </div>
             </div>
           </div>

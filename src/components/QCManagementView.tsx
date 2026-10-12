@@ -338,6 +338,14 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
     return "-";
   };
 
+  // Helper to format concise tank codes for compact table views
+  const formatTankShort = (tank?: string): string => {
+    if (!tank) return "TK-101A";
+    const match = tank.match(/TK-[0-9A-Za-z]+/i);
+    if (match) return match[0].toUpperCase();
+    return tank;
+  };
+
   return (
     <div className="space-y-4">
       {/* 0. Synchronized Bleaching Log Product Indicator Banner */}
@@ -517,20 +525,27 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
         </div>
 
         <div className="overflow-x-auto custom-scrollbar">
-          <table className="w-full border-collapse text-left text-xs">
+          <table className="w-full border-collapse text-left text-xs table-fixed">
+            <colgroup>
+              <col className="w-[17%]" />
+              <col className="w-[11%]" />
+              <col className="w-[16%]" />
+              <col className="w-[9%]" />
+              <col className="w-[11%]" />
+              <col className="w-[15%]" />
+              <col className="w-[11%]" />
+              <col className="w-[10%]" />
+            </colgroup>
             <thead>
-              <tr className="sticky top-0 z-10 backdrop-blur-xl bg-zinc-100/95 dark:bg-[#0E1626]/95 text-zinc-600 dark:text-zinc-300 font-bold border-b border-zinc-200/90 dark:border-white/10">
-                <th className="py-3 px-3.5 whitespace-nowrap">Report No / Lot No</th>
-                <th className="py-3 px-3 whitespace-nowrap">Sample Date & Time</th>
-                <th className="py-3 px-3 whitespace-nowrap">Product Name</th>
-                <th className="py-3 px-3 whitespace-nowrap">Tank (Feed → Disch)</th>
-                <th className="py-3 px-3 text-right whitespace-nowrap">FFA (%)</th>
-                <th className="py-3 px-3 text-right whitespace-nowrap">Moisture (%)</th>
-                <th className="py-3 px-3 text-right whitespace-nowrap">PV (meq/kg)</th>
-                <th className="py-3 px-3 text-right whitespace-nowrap">IV (Wijs)</th>
-                <th className="py-3 px-3 text-center whitespace-nowrap">Colour (R / Y)</th>
-                <th className="py-3 px-3 text-center whitespace-nowrap">QC Decision</th>
-                <th className="py-3 px-3 text-center whitespace-nowrap">Actions</th>
+              <tr className="sticky top-0 z-10 backdrop-blur-xl bg-zinc-100/95 dark:bg-[#0E1626]/95 text-zinc-600 dark:text-zinc-300 font-bold border-b border-zinc-200/90 dark:border-white/10 text-[11px]">
+                <th className="py-2.5 px-2.5 whitespace-nowrap truncate">Report / Lot</th>
+                <th className="py-2.5 px-2 whitespace-nowrap truncate">Date / Time</th>
+                <th className="py-2.5 px-2 whitespace-nowrap truncate">Product / Route</th>
+                <th className="py-2.5 px-2 text-right whitespace-nowrap truncate">FFA (%)</th>
+                <th className="py-2.5 px-2 text-center whitespace-nowrap truncate">Colour</th>
+                <th className="py-2.5 px-2 whitespace-nowrap truncate" title="Laboratory Tests: Moisture (H2O), Peroxide Value (PV), Iodine Value (IV)">Other Tests</th>
+                <th className="py-2.5 px-2 text-center whitespace-nowrap truncate">Status</th>
+                <th className="py-2.5 px-2 text-center whitespace-nowrap truncate">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200/60 dark:divide-white/5 font-sans">
@@ -543,80 +558,54 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                     key={report.id}
                     className="hover:bg-zinc-500/5 dark:hover:bg-white/5 transition-colors group"
                   >
-                    {/* Report & Lot No */}
-                    <td className="py-2.5 px-3.5 whitespace-nowrap">
-                      <div className="font-mono font-bold text-zinc-900 dark:text-white tracking-tight">
+                    {/* 1. Report & Lot No */}
+                    <td className="py-2 px-2.5 whitespace-nowrap">
+                      <div className="font-mono font-bold text-zinc-900 dark:text-white tracking-tight text-xs truncate" title={report.report_no}>
                         {report.report_no}
                       </div>
-                      <div className="font-mono text-[11px] text-zinc-500 truncate max-w-[190px]" title={report.lot_no}>
+                      <div className="font-mono text-[10px] text-zinc-500 dark:text-zinc-400 truncate" title={report.lot_no}>
                         {report.lot_no}
                       </div>
                     </td>
 
-                    {/* Date & Time */}
-                    <td className="py-2.5 px-3 font-mono text-xs whitespace-nowrap">
-                      <div className="font-semibold text-zinc-900 dark:text-zinc-200">{report.sample_date}</div>
-                      <div className="text-zinc-500 dark:text-zinc-400 text-[11px] flex items-center gap-1 mt-0.5">
-                        <Clock className="w-3 h-3 text-zinc-400 shrink-0" />
-                        <span>{report.time_check} Hrs</span>
+                    {/* 2. Date & Time */}
+                    <td className="py-2 px-2 whitespace-nowrap font-mono text-xs">
+                      <div className="font-semibold text-zinc-900 dark:text-zinc-200 truncate">{report.sample_date}</div>
+                      <div className="text-zinc-500 dark:text-zinc-400 text-[10px] flex items-center gap-1 mt-0.5 truncate">
+                        <Clock className="w-2.5 h-2.5 text-zinc-400 shrink-0" />
+                        <span className="truncate">{report.time_check} Hrs</span>
                       </div>
                     </td>
 
-                    {/* Product Name */}
-                    <td className="py-2.5 px-3 whitespace-nowrap font-medium text-xs text-zinc-900 dark:text-zinc-200">
-                      <div className="inline-flex items-center gap-1.5 font-semibold">
-                        <Droplets className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                        <span>{report.product_name || "RBD Palm Oil"}</span>
+                    {/* 3. Product & Tanks */}
+                    <td className="py-2 px-2 whitespace-nowrap text-xs">
+                      <div className="inline-flex items-center gap-1 font-semibold text-zinc-900 dark:text-zinc-200 truncate max-w-full" title={report.product_name}>
+                        <Droplets className="w-3 h-3 text-amber-500 shrink-0" />
+                        <span className="truncate">{report.product_name || "RBD Palm Oil"}</span>
+                      </div>
+                      <div className="font-mono text-[10px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1 mt-0.5 truncate" title={`${report.feed_tank_code || 'TK-101A'} → ${report.discharge_tank_code || 'TK-201A'}`}>
+                        <span className="text-zinc-700 dark:text-zinc-300 font-medium truncate">{formatTankShort(report.feed_tank_code)}</span>
+                        <span className="text-zinc-400 shrink-0">→</span>
+                        <span className="text-emerald-700 dark:text-emerald-400 font-semibold truncate">{formatTankShort(report.discharge_tank_code)}</span>
                       </div>
                     </td>
 
-                    {/* Tanks */}
-                    <td className="py-2.5 px-3 whitespace-nowrap font-mono text-xs text-zinc-600 dark:text-zinc-400">
-                      <span className="text-zinc-800 dark:text-zinc-200 font-medium">{report.feed_tank_code || "TK-101A"}</span>
-                      <span className="text-zinc-400 mx-1.5">→</span>
-                      <span className="text-emerald-700 dark:text-emerald-400 font-semibold">{report.discharge_tank_code || "TK-201A"}</span>
-                    </td>
-
-                    {/* FFA (%) */}
-                    <td className="py-2.5 px-3 text-right font-mono tabular-nums whitespace-nowrap text-xs text-zinc-900 dark:text-zinc-100">
+                    {/* 4. FFA (%) */}
+                    <td className="py-2 px-2 text-right font-mono tabular-nums whitespace-nowrap text-xs text-zinc-900 dark:text-zinc-100">
                       {(() => {
                         const val = getParamVal(report, "FFA");
-                        return val === "-" ? <span className="text-zinc-400/50 font-normal">-</span> : <span className="font-bold">{val}</span>;
+                        return val === "-" ? <span className="text-zinc-400/50 font-normal">-</span> : <span className="font-bold">{val}%</span>;
                       })()}
                     </td>
 
-                    {/* Moisture (%) */}
-                    <td className="py-2.5 px-3 text-right font-mono tabular-nums whitespace-nowrap text-xs text-zinc-900 dark:text-zinc-100">
-                      {(() => {
-                        const val = getParamVal(report, "H2O");
-                        return val === "-" ? <span className="text-zinc-400/50 font-normal">-</span> : <span className="font-bold">{val}</span>;
-                      })()}
-                    </td>
-
-                    {/* PV (meq/kg) */}
-                    <td className="py-2.5 px-3 text-right font-mono tabular-nums whitespace-nowrap text-xs text-zinc-900 dark:text-zinc-100">
-                      {(() => {
-                        const val = getParamVal(report, "PV");
-                        return val === "-" ? <span className="text-zinc-400/50 font-normal">-</span> : <span className="font-bold">{val}</span>;
-                      })()}
-                    </td>
-
-                    {/* IV */}
-                    <td className="py-2.5 px-3 text-right font-mono tabular-nums whitespace-nowrap text-xs text-zinc-900 dark:text-zinc-100">
-                      {(() => {
-                        const val = getParamVal(report, "IV");
-                        return val === "-" ? <span className="text-zinc-400/50 font-normal">-</span> : <span className="font-bold">{val}</span>;
-                      })()}
-                    </td>
-
-                    {/* Colour R/Y */}
-                    <td className="py-2.5 px-3 text-center font-mono tabular-nums whitespace-nowrap text-xs">
+                    {/* 5. Colour (R / Y) */}
+                    <td className="py-2 px-2 text-center font-mono tabular-nums whitespace-nowrap text-xs">
                       {(() => {
                         const cr = getParamVal(report, "COLOUR_R");
                         const cy = getParamVal(report, "COLOUR_Y");
                         if (cr === "-" && cy === "-") return <span className="text-zinc-400/50 font-normal">-</span>;
                         return (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-white/5 border border-zinc-200/80 dark:border-white/10">
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-zinc-100 dark:bg-white/5 border border-zinc-200/80 dark:border-white/10 text-[11px]">
                             <span className="text-rose-600 dark:text-rose-400 font-bold">{cr}R</span>
                             <span className="text-zinc-400">/</span>
                             <span className="text-amber-600 dark:text-amber-400 font-bold">{cy}Y</span>
@@ -625,35 +614,78 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                       })()}
                     </td>
 
-                    {/* Decision Badge */}
-                    <td className="py-2.5 px-3 text-center whitespace-nowrap">
+                    {/* 6. Other Specs (H2O, PV, IV) */}
+                    <td className="py-2 px-2 font-mono whitespace-nowrap text-xs">
+                      {(() => {
+                        const h2o = getParamVal(report, "H2O");
+                        const pv = getParamVal(report, "PV");
+                        const iv = getParamVal(report, "IV");
+                        const hasAny = h2o !== "-" || pv !== "-" || iv !== "-";
+
+                        if (!hasAny) {
+                          return <span className="text-zinc-400/50 font-normal text-xs">-</span>;
+                        }
+
+                        return (
+                          <div className="flex items-center gap-1 flex-wrap">
+                            {h2o !== "-" && (
+                              <span
+                                className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/20 text-[9.5px] leading-none"
+                                title={`Moisture (H2O): ${h2o}%`}
+                              >
+                                <span className="text-[8.5px] text-blue-500 font-sans font-bold">M</span>{h2o}%
+                              </span>
+                            )}
+                            {pv !== "-" && (
+                              <span
+                                className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20 text-[9.5px] leading-none"
+                                title={`Peroxide Value: ${pv} meq/kg`}
+                              >
+                                <span className="text-[8.5px] text-purple-500 font-sans font-bold">PV</span>{pv}
+                              </span>
+                            )}
+                            {iv !== "-" && (
+                              <span
+                                className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 text-[9.5px] leading-none"
+                                title={`Iodine Value: ${iv} Wijs`}
+                              >
+                                <span className="text-[8.5px] text-emerald-500 font-sans font-bold">IV</span>{iv}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </td>
+
+                    {/* 7. Decision Badge */}
+                    <td className="py-2 px-1.5 text-center whitespace-nowrap">
                       {isAccepted ? (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
-                          <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+                          <CheckCircle2 className="w-2.5 h-2.5 text-emerald-500" />
                           <span>RELEASE</span>
                         </span>
                       ) : isRejected ? (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-500/30" title={report.decision?.reason_label || "Reject"}>
-                          <XCircle className="w-3 h-3 text-rose-500" />
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-500/30" title={report.decision?.reason_label || "Reject"}>
+                          <XCircle className="w-2.5 h-2.5 text-rose-500" />
                           <span>REJECT</span>
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30">
-                          <Clock className="w-3 h-3 text-amber-500" />
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30">
+                          <Clock className="w-2.5 h-2.5 text-amber-500" />
                           <span>PENDING</span>
                         </span>
                       )}
                     </td>
 
-                    {/* Actions */}
-                    <td className="py-2.5 px-3 text-center whitespace-nowrap">
-                      <div className="flex items-center justify-center gap-1.5">
+                    {/* 8. Actions */}
+                    <td className="py-2 px-1 text-center whitespace-nowrap">
+                      <div className="flex items-center justify-center gap-1">
                         <button
                           onClick={() => {
                             setSelectedReport(report);
                             setIsEditorOpen(true);
                           }}
-                          className="btn-tactile p-1.5 rounded-xl border border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-700 dark:text-zinc-300 cursor-pointer group transition-all"
+                          className="btn-tactile p-1.5 rounded-lg border border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-700 dark:text-zinc-300 cursor-pointer group transition-all"
                           title="Review / Edit Laboratory Results"
                         >
                           <Edit3 className="w-3.5 h-3.5 text-zinc-700 dark:text-zinc-300 transition-transform duration-200 group-hover:scale-110" />
@@ -664,7 +696,7 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                             setSelectedReport(report);
                             setIsCertificateOpen(true);
                           }}
-                          className="btn-tactile p-1.5 rounded-xl border border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-700 dark:text-zinc-300 cursor-pointer group transition-all"
+                          className="btn-tactile p-1.5 rounded-lg border border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-700 dark:text-zinc-300 cursor-pointer group transition-all"
                           title="View / Print Certificate of Analysis (RF-FR-001)"
                         >
                           <FileText className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 transition-transform duration-200 group-hover:scale-110" />
@@ -674,6 +706,14 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                   </tr>
                 );
               })}
+              {filteredReports.length === 0 && (
+                <tr>
+                  <td colSpan={8} className="py-12 text-center text-zinc-400 dark:text-zinc-500 font-mono text-xs">
+                    <FlaskConical className="w-8 h-8 mx-auto mb-2 opacity-40 text-amber-500" />
+                    No QC sample analysis reports match your filter criteria.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

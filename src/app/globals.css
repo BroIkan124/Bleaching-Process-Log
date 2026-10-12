@@ -1013,3 +1013,105 @@ html:not(.dark) .radio-option-value.is-active {
     transform: none !important;
   }
 }
+
+/* ==========================================================================
+   UIVERSE ANIMATED CHECKBOX (From Transition/Checkbox Bleaching Log)
+   Smooth SVG stroke morphing: square border -> checkmark
+   ========================================================================== */
+
+.uiverse-checkbox-container {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.uiverse-checkbox-container.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.uiverse-checkbox-container input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
+  pointer-events: none;
+}
+
+.uiverse-checkbox-container svg {
+  overflow: visible;
+  display: block;
+  flex-shrink: 0;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.uiverse-checkbox-container:hover:not(.is-disabled) svg {
+  transform: scale(1.06);
+}
+
+.uiverse-checkbox-container:active:not(.is-disabled) svg {
+  transform: scale(0.94);
+}
+
+.uiverse-checkbox-path {
+  fill: none;
+  stroke: #9CA3AF;
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke-dasharray 0.45s cubic-bezier(0.16, 1, 0.3, 1), 
+              stroke-dashoffset 0.45s cubic-bezier(0.16, 1, 0.3, 1), 
+              stroke 0.2s ease,
+              filter 0.2s ease;
+  stroke-dasharray: 241 9999999;
+  stroke-dashoffset: 0;
+}
+
+.dark .uiverse-checkbox-path {
+  stroke: #71717A;
+}
+
+.uiverse-checkbox-container:hover:not(.is-disabled) .uiverse-checkbox-path {
+  stroke: #4B5563;
+}
+
+.dark .uiverse-checkbox-container:hover:not(.is-disabled) .uiverse-checkbox-path {
+  stroke: #A1A1AA;
+}
+
+/* Checked State - Default / Amber */
+.uiverse-checkbox-container input[type="checkbox"]:checked ~ svg .uiverse-checkbox-path,
+.uiverse-checkbox-container.is-checked svg .uiverse-checkbox-path {
+  stroke-dasharray: 70.5096664428711 9999999;
+  stroke-dashoffset: -262.2723388671875;
+  stroke: #D97706;
+}
+
+.dark .uiverse-checkbox-container input[type="checkbox"]:checked ~ svg .uiverse-checkbox-path,
+.dark .uiverse-checkbox-container.is-checked svg .uiverse-checkbox-path {
+  stroke: #F59E0B;
+  filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.5));
+}
+
+/* Emerald Color Variant */
+.uiverse-checkbox-container.theme-emerald input[type="checkbox"]:checked ~ svg .uiverse-checkbox-path,
+.uiverse-checkbox-container.theme-emerald.is-checked svg .uiverse-checkbox-path {
+  stroke: #059669;
+}
+
+.dark .uiverse-checkbox-container.theme-emerald input[type="checkbox"]:checked ~ svg .uiverse-checkbox-path,
+.dark .uiverse-checkbox-container.theme-emerald.is-checked svg .uiverse-checkbox-path {
+  stroke: #10B981;
+  filter: drop-shadow(0 0 5px rgba(16, 185, 129, 0.5));
+}
+
+/* White Color Variant */
+.uiverse-checkbox-container.theme-white input[type="checkbox"]:checked ~ svg .uiverse-checkbox-path,
+.uiverse-checkbox-container.theme-white.is-checked svg .uiverse-checkbox-path {
+  stroke: #FFFFFF;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.6));
+}

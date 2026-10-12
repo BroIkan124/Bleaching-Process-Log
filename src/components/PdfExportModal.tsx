@@ -5,6 +5,7 @@ import { LogSheet, LogEntry, SampleReport, UserProfile } from "@/types";
 import { FORM_META } from "@/lib/constants";
 import { Printer, X, CheckCircle2, ShieldCheck, FileText, FlaskConical, AlertTriangle, Layers } from "lucide-react";
 import { recordDocumentExport } from "@/lib/dbService";
+import { AnimatedCheckbox } from "./AnimatedCheckbox";
 
 interface PdfExportModalProps {
   sheet: LogSheet;
@@ -212,15 +213,17 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
           </div>
 
           <div className="flex items-center gap-3">
-            <label className="flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-300 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={highlightOutOfSpec}
-                onChange={(e) => setHighlightOutOfSpec(e.target.checked)}
-                className="w-3.5 h-3.5 rounded text-amber-500 focus:ring-amber-400"
-              />
-              <span className="text-[11px] font-medium">Serlahkan Out-of-Spec</span>
-            </label>
+            <AnimatedCheckbox
+              checked={highlightOutOfSpec}
+              onChange={(checked) => setHighlightOutOfSpec(checked)}
+              color="amber"
+              size="xs"
+              label={
+                <span className="text-[11px] font-medium text-zinc-600 dark:text-zinc-300">
+                  Highlight Out-of-Spec
+                </span>
+              }
+            />
 
             <button
               onClick={handlePrint}

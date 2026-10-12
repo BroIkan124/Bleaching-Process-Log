@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { evaluateSlotAccess } from "@/lib/realtimeTimeline";
 import { GliderRadioGroup } from "./GliderRadioGroup";
+import { AnimatedCheckbox } from "./AnimatedCheckbox";
 
 interface SlotEntryDrawerProps {
   entry: LogEntry;
@@ -309,7 +310,7 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                       type="button"
                       disabled={!isEditable}
                       onClick={() => handleFieldChange('acid_dosage_ok', !formData.acid_dosage_ok)}
-                      className={`btn-tactile touch-target w-full rounded-xl border flex items-center justify-center gap-2 font-semibold text-xs select-none transition-all ${
+                      className={`btn-tactile touch-target w-full rounded-xl border flex items-center justify-center gap-2.5 font-semibold text-xs select-none transition-all ${
                         !isEditable ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
                       } ${
                         formData.acid_dosage_ok
@@ -317,11 +318,12 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                           : 'bg-zinc-100 dark:bg-white/5 border-zinc-300 dark:border-white/10 text-zinc-500 hover:border-zinc-400'
                       }`}
                     >
-                      <div className={`w-4 h-4 rounded flex items-center justify-center border transition-transform duration-150 group-active:scale-90 ${
-                        formData.acid_dosage_ok ? 'bg-emerald-600 border-emerald-600 text-white shadow-xs' : 'border-zinc-400 dark:border-zinc-600'
-                      }`}>
-                        {formData.acid_dosage_ok && <Check className="w-3 h-3" />}
-                      </div>
+                      <AnimatedCheckbox 
+                        checked={Boolean(formData.acid_dosage_ok)} 
+                        disabled={!isEditable} 
+                        color="emerald" 
+                        size="sm" 
+                      />
                       <span>{formData.acid_dosage_ok ? "Dosage OK (√)" : "Not Dosed"}</span>
                     </button>
                   </div>
@@ -335,7 +337,7 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                       type="button"
                       disabled={!isEditable}
                       onClick={() => handleFieldChange('earth_dosage_ok', !formData.earth_dosage_ok)}
-                      className={`btn-tactile touch-target w-full rounded-xl border flex items-center justify-center gap-2 font-semibold text-xs select-none transition-all ${
+                      className={`btn-tactile touch-target w-full rounded-xl border flex items-center justify-center gap-2.5 font-semibold text-xs select-none transition-all ${
                         !isEditable ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
                       } ${
                         formData.earth_dosage_ok
@@ -343,11 +345,12 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                           : 'bg-zinc-100 dark:bg-white/5 border-zinc-300 dark:border-white/10 text-zinc-500 hover:border-zinc-400'
                       }`}
                     >
-                      <div className={`w-4 h-4 rounded flex items-center justify-center border transition-transform duration-150 group-active:scale-90 ${
-                        formData.earth_dosage_ok ? 'bg-emerald-600 border-emerald-600 text-white shadow-xs' : 'border-zinc-400 dark:border-zinc-600'
-                      }`}>
-                        {formData.earth_dosage_ok && <Check className="w-3 h-3" />}
-                      </div>
+                      <AnimatedCheckbox 
+                        checked={Boolean(formData.earth_dosage_ok)} 
+                        disabled={!isEditable} 
+                        color="emerald" 
+                        size="sm" 
+                      />
                       <span>{formData.earth_dosage_ok ? "Dosage OK (√)" : "Not Dosed"}</span>
                     </button>
                   </div>

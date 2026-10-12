@@ -31,6 +31,7 @@ import {
 import { syncQcSampleToInsForge, logActivityToInsForge } from "@/lib/dbService";
 import { RadioSelect } from "./RadioSelect";
 import { GliderRadioGroup } from "./GliderRadioGroup";
+import { AnimatedCheckbox } from "./AnimatedCheckbox";
 import { DEFAULT_REJECTION_REASONS, MOCK_PRODUCTS, MOCK_TANKS, MOCK_PLANTS } from "@/lib/mockData";
 
 interface QCManagementViewProps {
@@ -860,30 +861,29 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                       }`}
                     >
                       <div className="flex items-center justify-between gap-1 mb-1.5">
-                        <label className="flex items-center gap-2 cursor-pointer select-none">
-                          <input
-                            type="checkbox"
-                            checked={tested}
-                            onChange={(e) => {
-                              const checked = e.target.checked;
-                              const updatedResults = selectedReport.results.map((r, i) => {
-                                if (i === idx) {
-                                  return {
-                                    ...r,
-                                    is_tested: checked,
-                                    value_numeric: checked ? (r.value_numeric ?? getDefaultParamValue(r.parameter_code)) : null,
-                                  };
-                                }
-                                return r;
-                              });
-                              setSelectedReport({ ...selectedReport, results: updatedResults });
-                            }}
-                            className="w-4 h-4 rounded text-amber-500 border-zinc-300 dark:border-zinc-600 focus:ring-amber-500 accent-amber-500 cursor-pointer"
-                          />
-                          <span className={`text-xs font-bold truncate ${tested ? 'text-zinc-900 dark:text-white' : 'text-zinc-400 dark:text-zinc-500 line-through'}`}>
-                            {res.parameter_code}
-                          </span>
-                        </label>
+                        <AnimatedCheckbox
+                          checked={tested}
+                          onChange={(checked) => {
+                            const updatedResults = selectedReport.results.map((r, i) => {
+                              if (i === idx) {
+                                return {
+                                  ...r,
+                                  is_tested: checked,
+                                  value_numeric: checked ? (r.value_numeric ?? getDefaultParamValue(r.parameter_code)) : null,
+                                };
+                              }
+                              return r;
+                            });
+                            setSelectedReport({ ...selectedReport, results: updatedResults });
+                          }}
+                          color="amber"
+                          size="sm"
+                          label={
+                            <span className={`text-xs font-bold truncate ${tested ? 'text-zinc-900 dark:text-white' : 'text-zinc-400 dark:text-zinc-500 line-through'}`}>
+                              {res.parameter_code}
+                            </span>
+                          }
+                        />
                         <span className="text-xs font-semibold text-zinc-400">
                           {res.unit ? `(${res.unit})` : "-"}
                         </span>

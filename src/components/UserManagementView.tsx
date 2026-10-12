@@ -28,6 +28,7 @@ import {
 import { syncUserToInsForge, logActivityToInsForge } from "@/lib/dbService";
 import { RadioSelect } from "./RadioSelect";
 import { GliderRadioGroup } from "./GliderRadioGroup";
+import { AnimatedCheckbox } from "./AnimatedCheckbox";
 
 interface UserManagementViewProps {
   currentUser: UserProfile;
@@ -652,17 +653,19 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
                 />
               </div>
 
-              <div className="flex items-center gap-2 pt-2">
-                <input
-                  type="checkbox"
+              <div className="pt-2">
+                <AnimatedCheckbox
                   id="active-checkbox"
                   checked={formData.active}
-                  onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
-                  className="w-4 h-4 rounded text-amber-600 focus:ring-amber-500 border-zinc-300 dark:border-zinc-700"
+                  onChange={(checked) => setFormData({ ...formData, active: checked })}
+                  color="amber"
+                  size="sm"
+                  label={
+                    <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
+                      Active Account &amp; Can Sign In
+                    </span>
+                  }
                 />
-                <label htmlFor="active-checkbox" className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 cursor-pointer">
-                  Active Account &amp; Can Sign In
-                </label>
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-4 border-t border-zinc-200 dark:border-zinc-800">

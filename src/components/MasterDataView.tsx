@@ -72,7 +72,6 @@ interface MasterDataViewProps {
   onAddTank?: (tankName: string, kind?: 'feed' | 'discharge' | 'both') => Tank | null;
   onNavigateTab?: (tab: DashboardTab) => void;
   onUpdateReport?: (report: SampleReport) => void;
-  onResetCleanData?: () => void;
 }
 
 type MasterSubTab = "pareto_frequency" | "product_specs" | "reason_codes" | "plants_tanks";
@@ -158,7 +157,6 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
   onAddTank,
   onNavigateTab,
   onUpdateReport,
-  onResetCleanData,
 }) => {
   const availableProducts = externalProducts || MOCK_PRODUCTS;
   const plantList = externalPlants || MOCK_PLANTS;
@@ -561,116 +559,22 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
     return `${vacLinePath} L ${mappedVacPoints[mappedVacPoints.length - 1].x} ${baseY} L ${mappedVacPoints[0].x} ${baseY} Z`;
   }, [mappedVacPoints, vacLinePath, padTop, plotHeight]);
 
-  // =========================================================================
-  // 6. QUICK ACTIONS & SIMULATIONS
-  // =========================================================================
-  const handleSimulateQuickTestRejection = () => {
-    if (!onUpdateReport) return;
-    const testSample: SampleReport = {
-      id: `test-reject-${Date.now()}`,
-      report_no: `SAR-2026-TEST${Math.floor(1000 + Math.random() * 9000)}`,
-      sample_date: new Date().toISOString().split("T")[0],
-      time_check: new Date().toLocaleTimeString("en-MY", { hour: "2-digit", minute: "2-digit", hour12: false }),
-      lot_no: `LOT-TEST-DEFECT-${Math.floor(100 + Math.random() * 900)}`,
-      product_name: "CHOCOHI 357A NPHO",
-      feed_tank_code: "TK-101",
-      discharge_tank_code: "TK-201",
-      submitted_by_name: currentUser.name,
-      status: "decided",
-      created_at: new Date().toISOString(),
-      results: [
-        {
-          id: `res-${Date.now()}-1`,
-          report_id: `test-reject-${Date.now()}`,
-          parameter_code: "FFA",
-          parameter_name: "Free Fatty Acid",
-          unit: "%",
-          value_numeric: 0.082,
-          in_spec: false,
-        },
-        {
-          id: `res-${Date.now()}-2`,
-          report_id: `test-reject-${Date.now()}`,
-          parameter_code: "COLOUR_R",
-          parameter_name: 'Colour Red (5.25")',
-          unit: "Lovibond",
-          value_numeric: 3.4,
-          in_spec: false,
-        }
-      ],
-      decision: {
-        id: `dec-${Date.now()}`,
-        report_id: `test-reject-${Date.now()}`,
-        decision: "reject",
-        reason_id: "QC-REAS-01",
-        reason_label: "Free Fatty Acid (FFA) Exceeds Max Limit",
-        reason_detail: "Tested 0.082% FFA exceeding maximum specification threshold 0.05%",
-        disposition: "rework",
-        decided_by_name: currentUser.name,
-        decided_at: new Date().toISOString(),
-      }
-    };
-
-    onUpdateReport(testSample);
-  };
-
   return (
     <div className="space-y-6 pb-28 animate-fade-in">
       {/* ========================================================================= */}
-      {/* 1. TOP HEADER WITH INDUSTRIAL SPECULAR STYLING                            */}
+      {/* 1. TOP HEADER                                                             */}
       {/* ========================================================================= */}
-      <div className="glass-panel p-5 sm:p-6 rounded-3xl bg-white/90 dark:bg-[#0A0F1C]/90 backdrop-blur-2xl border border-zinc-200/90 dark:border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="p-3 rounded-2xl bg-gradient-to-br from-indigo-500/20 via-indigo-600/15 to-indigo-700/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 shadow-[0_0_20px_rgba(99,102,241,0.2)]">
-            <Database className="w-7 h-7" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2.5">
-              <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight font-display text-zinc-900 dark:text-white">
-                Master Data &amp; Quality Analytics
-              </h1>
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold font-mono bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Live QC Synced
-              </span>
-            </div>
-            <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1 font-medium">
-              Process trends telemetry, quality defect Pareto distribution, lot rejection frequencies by product, and refinery master specifications.
-            </p>
-          </div>
+      <div className="glass-panel p-5 sm:p-6 rounded-3xl bg-white/90 dark:bg-[#0A0F1C]/90 backdrop-blur-2xl border border-zinc-200/90 dark:border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex items-center gap-3.5">
+        <div className="p-3 rounded-2xl bg-gradient-to-br from-indigo-500/20 via-indigo-600/15 to-indigo-700/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 shadow-[0_0_20px_rgba(99,102,241,0.2)] shrink-0">
+          <Database className="w-7 h-7" />
         </div>
-
-        {/* Header Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          {onNavigateTab && (
-            <button
-              onClick={() => onNavigateTab("qc")}
-              className="btn-tactile px-3.5 py-2 rounded-xl text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 flex items-center gap-1.5 cursor-pointer"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-              <span>Open QC Lab</span>
-            </button>
-          )}
-
-          <button
-            onClick={handleSimulateQuickTestRejection}
-            className="btn-tactile px-3.5 py-2 rounded-xl text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 flex items-center gap-1.5 cursor-pointer transition-all"
-            title="Inject a realistic defect lot to test live Pareto synchronization"
-          >
-            <Plus className="w-3.5 h-3.5 text-amber-500" />
-            <span>Simulate Test Defect Lot</span>
-          </button>
-
-          {onResetCleanData && (
-            <button
-              onClick={onResetCleanData}
-              className="btn-tactile px-3.5 py-2 rounded-xl text-xs font-bold text-rose-700 dark:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 flex items-center gap-1.5 cursor-pointer transition-all"
-              title="Clear all stored dummy logs and reset to clean live recording state"
-            >
-              <RefreshCw className="w-3.5 h-3.5 text-rose-500" />
-              <span>Reset Clean Shift</span>
-            </button>
-          )}
+        <div>
+          <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight font-display text-zinc-900 dark:text-white">
+            Master Data &amp; Quality Analytics
+          </h1>
+          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1 font-medium">
+            Process trends telemetry, quality defect Pareto distribution, lot rejection frequencies by product, and refinery master specifications.
+          </p>
         </div>
       </div>
 
@@ -774,15 +678,9 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
             {/* Top Header with Title, Live Sync Badge & Controls */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-zinc-200 dark:border-white/10 pb-4">
               <div>
-                <div className="flex flex-wrap items-center gap-2.5">
-                  <h2 className="text-base sm:text-lg font-bold font-display text-zinc-900 dark:text-white">
-                    Bleaching Process Telemetry &amp; Dynamic Trend Curves
-                  </h2>
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold font-mono bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    Bleaching Log Synced: {savedEntries.length} / {sheetEntries.length || 24} Hours Logged
-                  </span>
-                </div>
+                <h2 className="text-base sm:text-lg font-bold font-display text-zinc-900 dark:text-white">
+                  Bleaching Process Telemetry &amp; Dynamic Trend Curves
+                </h2>
                 <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
                   Live Heat Exchanger Temperature (HE Temp °C) and Bleacher Vacuum (mmHg) mapped dynamically from operator hourly log records.
                 </p>
@@ -1287,9 +1185,8 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
                     <span className="font-bold font-display text-base text-zinc-900 dark:text-white">
                       {selectedMonth === "all" ? "QC Rejection Pareto by Reason Code" : `Monthly QC Rejection Pareto (${formatMonthLabel(selectedMonth)})`}
                     </span>
-                    <span className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 font-medium">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      Live QC Lab Synced: {totalRejectedCount} {totalRejectedCount === 1 ? "rejection" : "rejections"}
+                    <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
+                      {totalRejectedCount} {totalRejectedCount === 1 ? "rejection" : "rejections"}
                       {totalConcessionsCount > 0 ? ` (${totalConcessionsCount} concessions)` : ""} across {totalEvaluatedCount} lots
                     </span>
                   </div>
@@ -1451,9 +1348,8 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
                     <span className="font-bold font-display text-base text-zinc-900 dark:text-white">
                       Lot rejection frequency by product
                     </span>
-                    <span className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 font-medium">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      Synchronized with QC Management (RF-FR-001) · {totalEvaluatedCount} Lots ({totalRejectedCount} {totalRejectedCount === 1 ? "Rejection" : "Rejections"}
+                    <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
+                      {totalEvaluatedCount} Lots ({totalRejectedCount} {totalRejectedCount === 1 ? "Rejection" : "Rejections"}
                       {totalConcessionsCount > 0 ? `, ${totalConcessionsCount} Concessions` : ""})
                     </span>
                   </div>

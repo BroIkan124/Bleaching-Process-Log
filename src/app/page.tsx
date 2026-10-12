@@ -1142,7 +1142,6 @@ export default function BleachingProcessLogApp() {
               onAddTank={handleAddTank}
               onNavigateTab={setActiveTab}
               onUpdateReport={handleUpdateQcReport}
-              onResetCleanData={handleResetCleanShift}
             />
           )}
 

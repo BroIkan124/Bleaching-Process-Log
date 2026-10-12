@@ -25,7 +25,8 @@ import {
   Building2,
   Sparkles,
   Droplets,
-  Layers
+  Layers,
+  RefreshCw
 } from "lucide-react";
 import { syncQcSampleToInsForge, logActivityToInsForge } from "@/lib/dbService";
 import { RadioSelect } from "./RadioSelect";
@@ -406,10 +407,18 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                 className="p-3.5 rounded-xl bg-white/90 dark:bg-zinc-900/90 border border-amber-500/30 shadow-xs flex flex-col justify-between gap-2.5 hover:border-amber-500 transition-colors"
               >
                 <div>
-                  <div className="flex items-center justify-between gap-2 mb-1.5">
-                    <span className="font-mono text-xs font-bold text-amber-600 dark:text-amber-400">
-                      {pendingItem.report_no}
-                    </span>
+                  <div className="flex items-center justify-between gap-2 mb-1.5 flex-wrap">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="font-mono text-xs font-bold text-amber-600 dark:text-amber-400">
+                        {pendingItem.report_no}
+                      </span>
+                      {pendingItem.is_retest && (
+                        <span className="px-1.5 py-0.5 rounded text-xs font-bold bg-rose-500/15 text-rose-700 dark:text-rose-400 border border-rose-500/30 font-mono inline-flex items-center gap-1 shadow-2xs">
+                          <RefreshCw className="w-2.5 h-2.5 animate-spin-slow" />
+                          <span>RETEST (R{pendingItem.retest_sequence || 1})</span>
+                        </span>
+                      )}
+                    </div>
                     <span className="px-2 py-0.5 rounded text-xs font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20 font-mono">
                       {pendingItem.time_check || 'Live'} Hrs
                     </span>
@@ -755,6 +764,16 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
             </div>
 
             <div className="p-6 overflow-y-auto space-y-4 text-xs">
+              {/* Priority Retest Banner */}
+              {selectedReport.is_retest && (
+                <div className="p-3.5 rounded-xl border border-rose-500/30 bg-rose-500/10 dark:bg-rose-500/10 flex items-start gap-2.5 text-xs text-rose-800 dark:text-rose-200">
+                  <AlertTriangle className="w-4 h-4 shrink-0 text-rose-500 mt-0.5" />
+                  <div>
+                    <span className="font-bold">PRIORITY RETEST SAMPLE (Sequence: R{selectedReport.retest_sequence || 1}):</span> This lot was previously rejected by QC. Verify that plant corrective adjustments (e.g. Bleaching Earth dosing or filter check) have restored parameters to target specification before release.
+                  </div>
+                </div>
+              )}
+
               {/* Form RF-FR-001 Parameter Testing Selection Banner */}
               <div className="p-4 rounded-xl border border-amber-500/25 bg-amber-500/10 dark:bg-amber-500/5 space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2.5">

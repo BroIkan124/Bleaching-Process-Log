@@ -142,6 +142,10 @@ export interface LogEntry {
   qc_sample_sent?: boolean;
   qc_sample_sent_at?: string;
   qc_sample_id?: string;
+  qc_status?: 'pending' | 'passed' | 'rejected' | 'retest_pending';
+  qc_retest_count?: number;
+  qc_last_decision?: QCDecisionType | null;
+  qc_last_rejection_reason?: string | null;
 }
 
 export interface LogSheet extends ParameterBlock {
@@ -242,5 +246,21 @@ export interface SampleReport {
   updated_at?: string;
   results: SampleResult[];
   decision?: QCDecision | null;
+  is_retest?: boolean;
+  parent_report_no?: string;
+  retest_sequence?: number;
+}
+
+export interface PlantNotification {
+  id: string;
+  timestamp: string;
+  title: string;
+  message: string;
+  type: 'success' | 'warning' | 'alert' | 'info';
+  source: 'QC Lab' | 'Bleaching Log' | 'Supervisor' | 'System';
+  read?: boolean;
+  targetTab?: DashboardTab;
+  slotIndex?: number;
+  reportNo?: string;
 }
 

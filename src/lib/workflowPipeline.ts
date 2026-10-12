@@ -216,12 +216,20 @@ export function syncQcResultToLogEntries(
   const colorYVal = colorYRes?.value_numeric ?? null;
   const ffaVal = ffaRes?.value_numeric ?? null;
 
+  const isReject = qcReport.decision?.decision === 'reject';
+  const isAccept = qcReport.decision?.decision === 'accept' || qcReport.decision?.decision === 'accept_concession';
+
   const targetEntry = currentEntries[slotIndex];
   const updatedEntry: LogEntry = {
     ...targetEntry,
     colour_r: colorVal !== null ? colorVal : targetEntry.colour_r,
     colour_y: colorYVal !== null ? colorYVal : targetEntry.colour_y,
     ffa_pct: ffaVal !== null ? ffaVal : targetEntry.ffa_pct,
+    qc_status: isReject ? 'rejected' : isAccept ? 'passed' : targetEntry.qc_status,
+    qc_last_decision: qcReport.decision ? qcReport.decision.decision : targetEntry.qc_last_decision,
+    qc_last_rejection_reason: isReject
+      ? (qcReport.decision?.reason_label || qcReport.decision?.reason_detail || 'Off-spec laboratory parameters')
+      : targetEntry.qc_last_rejection_reason,
     remarks: targetEntry.remarks 
       ? targetEntry.remarks 
       : qcReport.decision 
@@ -231,7 +239,6 @@ export function syncQcResultToLogEntries(
 
   const updatedEntries = currentEntries.map((e, idx) => (idx === slotIndex ? updatedEntry : e));
 
-  const isReject = qcReport.decision?.decision === 'reject';
   const newEvent: SupervisorUpdateEvent = {
     id: `evt-qc-sync-${Date.now()}`,
     timestamp: new Date().toISOString(),
@@ -250,6 +257,139 @@ export function syncQcResultToLogEntries(
   };
 
   return { updatedEntries, newEvent };
+}
+
+/**
+ * Creates a dedicated Retest Sample ticket following a QC Rejection.
+ * Implements: QC Retest & Resampling Workflow (Stage 4 / Refined Quality SOP)
+ */
+export function createRetestSampleFromLogEntry(
+  entry: LogEntry,
+  sheet: LogSheet,
+  currentUser: UserProfile,
+  existingReports: SampleReport[],
+  retestReason?: string
+): { updatedReports: SampleReport[]; newEvent: SupervisorUpdateEvent; createdSample: SampleReport } {
+  const currentYear = sheet.sheet_date ? sheet.sheet_date.split("-")[0] : "2026";
+  const retestSeq = (entry.qc_retest_count || 0) + 1;
+
+  // Find parent report if previously dispatched
+  const parentReport = existingReports.find(
+    r => r.time_check?.replace(":", "") === entry.time_label || r.report_no.includes(entry.time_label)
+  );
+
+  const baseReportNo = parentReport ? parentReport.report_no.replace(/-R\d+$/, "") : `SAR-${currentYear}-${entry.time_label}`;
+  const reportNo = `${baseReportNo}-R${retestSeq}`;
+
+  const baseLot = parentReport ? parentReport.lot_no.replace(/-R\d+$/, "") : `LOT-${sheet.plant_id || "REFINERY"}-${(sheet.sheet_date || "20261012").replace(/-/g, "")}-${entry.time_label}`;
+  const lotNo = `${baseLot}-R${retestSeq}`;
+
+  const sampleId = `sample-retest-${Date.now()}`;
+
+  const defaultResults: SampleResult[] = [
+    {
+      id: `res-${sampleId}-ffa`,
+      report_id: sampleId,
+      parameter_code: "FFA",
+      parameter_name: "Free Fatty Acid (% Palmitic)",
+      unit: "%",
+      value_numeric: null,
+      in_spec: null,
+      is_tested: true,
+      entered_by_name: null,
+      entered_at: null,
+    },
+    {
+      id: `res-${sampleId}-color-r`,
+      report_id: sampleId,
+      parameter_code: "COLOUR_R",
+      parameter_name: 'Colour Lovibond Red (5¼" cell)',
+      unit: "R",
+      value_numeric: null,
+      in_spec: null,
+      is_tested: true,
+      entered_by_name: null,
+      entered_at: null,
+    },
+    {
+      id: `res-${sampleId}-color-y`,
+      report_id: sampleId,
+      parameter_code: "COLOUR_Y",
+      parameter_name: "Colour Lovibond Yellow",
+      unit: "Y",
+      value_numeric: null,
+      in_spec: null,
+      is_tested: true,
+      entered_by_name: null,
+      entered_at: null,
+    },
+    {
+      id: `res-${sampleId}-mi`,
+      report_id: sampleId,
+      parameter_code: "MOISTURE",
+      parameter_name: "Moisture & Impurities",
+      unit: "%",
+      value_numeric: null,
+      in_spec: null,
+      is_tested: false,
+      entered_by_name: null,
+      entered_at: null,
+    },
+    {
+      id: `res-${sampleId}-dobi`,
+      report_id: sampleId,
+      parameter_code: "DOBI",
+      parameter_name: "Deterioration of Bleachability Index",
+      unit: null,
+      value_numeric: null,
+      in_spec: null,
+      is_tested: false,
+      entered_by_name: null,
+      entered_at: null,
+    },
+  ];
+
+  const createdSample: SampleReport = {
+    id: sampleId,
+    report_no: reportNo,
+    sample_date: sheet.sheet_date,
+    time_check: `${entry.time_label.slice(0, 2)}:${entry.time_label.slice(2)}`,
+    lot_no: lotNo,
+    product_id: sheet.product_id,
+    product_name: sheet.product_name || "RBD Palm Oil",
+    feed_tank_code: sheet.feed_tank_name || "TK-101",
+    discharge_tank_code: sheet.discharge_tank_name || "TK-201",
+    sampling_point_name: "Deodorizer / Bleacher Outlet (SP-01)",
+    submitted_by_name: currentUser.name,
+    remarks: `PRIORITY RETEST (Sequence: R${retestSeq}) following rejection. Reason: ${retestReason || entry.qc_last_rejection_reason || "Off-spec parameters"}.`,
+    status: 'awaiting_results',
+    created_at: new Date().toISOString(),
+    results: defaultResults,
+    decision: null,
+    is_retest: true,
+    parent_report_no: parentReport?.report_no,
+    retest_sequence: retestSeq,
+  };
+
+  const updatedReports = [createdSample, ...existingReports];
+
+  const newEvent: SupervisorUpdateEvent = {
+    id: `evt-retest-${Date.now()}`,
+    timestamp: new Date().toISOString(),
+    source: 'Bleaching Log',
+    title: `RETEST DISPATCHED: Slot ${entry.time_label} Hrs (Sequence: R${retestSeq})`,
+    description: `Operator ${currentUser.name} dispatched retest sample ${reportNo} to QC Lab for chemical re-analysis following previous batch rejection (${entry.qc_last_rejection_reason || 'Off-spec parameters'}).`,
+    severity: 'warning',
+    author_name: currentUser.name,
+    author_role: currentUser.role,
+    shift: entry.shift,
+    slot_time: entry.time_label,
+    lot_no: lotNo,
+    requires_acknowledgment: true,
+    acknowledged: false,
+  };
+
+  return { updatedReports, newEvent, createdSample };
 }
 
 export interface PipelineProgressMetrics {

@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { UserProfile, SheetStatus, DashboardTab } from "@/types";
+import React, { useState, useRef, useEffect } from "react";
+import { UserProfile, SheetStatus, DashboardTab, PlantNotification } from "@/types";
 import { RealtimeClockState } from "@/lib/realtimeTimeline";
 import { 
   Building2, 
@@ -15,7 +15,17 @@ import {
   Printer,
   LogOut,
   RefreshCw,
-  Calendar
+  Calendar,
+  Volume2,
+  VolumeX,
+  Bell,
+  X,
+  CheckCheck,
+  ExternalLink,
+  FlaskConical,
+  AlertTriangle,
+  CheckCircle2,
+  Info
 } from "lucide-react";
 
 interface HeaderNavProps {
@@ -40,6 +50,11 @@ interface HeaderNavProps {
   selectedDate?: string;
   onDateChange?: (date: string) => void;
   isToday?: boolean;
+  isAudioEnabled?: boolean;
+  onToggleAudio?: () => void;
+  notifications?: PlantNotification[];
+  onClearNotifications?: () => void;
+  onNotificationClick?: (notification: PlantNotification) => void;
 }
 
 export const HeaderNav: React.FC<HeaderNavProps> = ({
@@ -60,7 +75,31 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   selectedDate,
   onDateChange,
   isToday = true,
+  isAudioEnabled = false,
+  onToggleAudio,
+  notifications = [],
+  onClearNotifications,
+  onNotificationClick,
 }) => {
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const notificationRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (notificationRef.current && !notificationRef.current.contains(e.target as Node)) {
+        setIsNotificationOpen(false);
+      }
+    };
+    if (isNotificationOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isNotificationOpen]);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
   const getStatusBadge = () => {
     switch (sheetStatus) {
       case "Draft":
@@ -305,6 +344,117 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
             <LogOut className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
             <span className="hidden sm:inline">Sign Out</span>
           </button>
+
+          {/* Notification Center Dropdown */}
+          <div className="relative" ref={notificationRef}>
+            <button
+              type="button"
+              onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+              className="btn-tactile btn-premium-glass p-2 rounded-xl text-zinc-600 dark:text-zinc-300 relative cursor-pointer group"
+              title="Plant Broadcast Notifications"
+              aria-label="Notifications"
+            >
+              <Bell className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 min-w-4 px-1 rounded-full bg-rose-500 text-white font-mono text-xs font-bold items-center justify-center shadow-xs animate-pulse">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </button>
+
+            {isNotificationOpen && (
+              <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl glass-panel bg-white/95 dark:bg-zinc-900/95 border border-zinc-200/80 dark:border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.25)] p-3.5 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-zinc-200/80 dark:border-white/10">
+                  <div className="flex items-center gap-2">
+                    <Bell className="w-4 h-4 text-amber-500" />
+                    <span className="font-bold text-xs text-zinc-900 dark:text-white font-display">
+                      Plant Broadcast Feed
+                    </span>
+                    <span className="px-1.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 font-mono">
+                      {notifications.length}
+                    </span>
+                  </div>
+                  {notifications.length > 0 && onClearNotifications && (
+                    <button
+                      type="button"
+                      onClick={() => onClearNotifications()}
+                      className="text-xs text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 font-semibold cursor-pointer"
+                    >
+                      Clear All
+                    </button>
+                  )}
+                </div>
+
+                <div className="max-h-72 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                  {notifications.length === 0 ? (
+                    <div className="py-6 text-center text-xs text-zinc-500">
+                      No notifications yet. Operating normally.
+                    </div>
+                  ) : (
+                    notifications.map((item) => (
+                      <div
+                        key={item.id}
+                        onClick={() => {
+                          if (onNotificationClick) onNotificationClick(item);
+                          setIsNotificationOpen(false);
+                        }}
+                        className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
+                          item.type === "alert"
+                            ? "bg-rose-500/10 border-rose-500/30 hover:bg-rose-500/15"
+                            : item.type === "warning"
+                            ? "bg-amber-500/10 border-amber-500/30 hover:bg-amber-500/15"
+                            : item.type === "success"
+                            ? "bg-emerald-500/10 border-emerald-500/30 hover:bg-emerald-500/15"
+                            : "bg-zinc-100/80 dark:bg-zinc-800/60 border-zinc-200/80 dark:border-white/10 hover:bg-zinc-200/60 dark:hover:bg-zinc-800"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <span className={`text-xs font-bold uppercase tracking-wider ${
+                            item.type === "alert" ? "text-rose-600 dark:text-rose-400" :
+                            item.type === "warning" ? "text-amber-600 dark:text-amber-400" :
+                            item.type === "success" ? "text-emerald-600 dark:text-emerald-400" :
+                            "text-sky-600 dark:text-sky-400"
+                          }`}>
+                            {item.source}
+                          </span>
+                          <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400">
+                            {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                          </span>
+                        </div>
+                        <h4 className="text-xs font-bold text-zinc-900 dark:text-zinc-100 leading-snug">
+                          {item.title}
+                        </h4>
+                        <p className="text-xs text-zinc-600 dark:text-zinc-300 mt-0.5 leading-relaxed">
+                          {item.message}
+                        </p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Industrial Audible Chime Toggle Button */}
+          {onToggleAudio && (
+            <button
+              type="button"
+              onClick={onToggleAudio}
+              className={`btn-tactile p-2 rounded-xl border transition-all cursor-pointer group ${
+                isAudioEnabled
+                  ? "bg-amber-500/15 border-amber-500/40 text-amber-600 dark:text-amber-400 shadow-2xs"
+                  : "btn-premium-glass text-zinc-500 dark:text-zinc-400"
+              }`}
+              title={isAudioEnabled ? "Audible Industrial Chime: Active (Click to Mute)" : "Audible Industrial Chime: Muted (Click to Enable)"}
+              aria-label="Toggle Industrial Chime"
+            >
+              {isAudioEnabled ? (
+                <Volume2 className="w-4 h-4 text-amber-500 transition-transform duration-200 group-hover:scale-110" />
+              ) : (
+                <VolumeX className="w-4 h-4 text-zinc-400 transition-transform duration-200 group-hover:scale-110" />
+              )}
+            </button>
+          )}
 
           {/* Dark / Light Toggle */}
           <button

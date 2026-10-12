@@ -10,7 +10,9 @@ import {
   Clock, 
   Lock, 
   Unlock,
-  Send
+  Send,
+  RefreshCw,
+  AlertCircle
 } from "lucide-react";
 import { evaluateSlotAccess } from "@/lib/realtimeTimeline";
 
@@ -25,6 +27,7 @@ interface HourlyTableGridProps {
   supervisorUnlockedSlots?: number[];
   userRole?: string;
   onDispatchToQc?: (slotIndex: number) => void;
+  onDispatchRetest?: (slotIndex: number) => void;
   showTimelineRail?: boolean;
   onToggleTimelineRail?: () => void;
 }
@@ -38,6 +41,7 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
   supervisorUnlockedSlots = [],
   userRole,
   onDispatchToQc,
+  onDispatchRetest,
   showTimelineRail,
   onToggleTimelineRail,
 }) => {
@@ -306,13 +310,42 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
                         )}
                       </td>
 
-                      {/* QC Sample Dispatch Button */}
+                      {/* QC Sample Dispatch & Retest Workflow Button */}
                       <td className="py-2 px-3 text-center">
                         {isSaved ? (
-                          entry.qc_sample_sent ? (
-                            <span className="text-emerald-600 dark:text-emerald-400 text-xs font-medium inline-flex items-center gap-1">
-                              <Check className="w-3 h-3 stroke-[2.5]" />
-                              <span>Sample Sent</span>
+                          entry.qc_status === 'rejected' ? (
+                            <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                              <span className="px-2 py-0.5 rounded-md text-xs font-bold bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30 flex items-center gap-1 shadow-2xs">
+                                <AlertCircle className="w-3 h-3" />
+                                <span>QC Rejected</span>
+                              </span>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (onDispatchRetest) onDispatchRetest(idx);
+                                }}
+                                title={`QC Rejected (${entry.qc_last_rejection_reason || 'Off-spec'}). Click to dispatch Retest sample R${(entry.qc_retest_count || 0) + 1}`}
+                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white shadow-xs cursor-pointer transition-all active:scale-95 animate-pulse"
+                              >
+                                <RefreshCw className="w-3 h-3" />
+                                <span>Dispatch Retest</span>
+                              </button>
+                            </div>
+                          ) : entry.qc_status === 'retest_pending' ? (
+                            <span className="px-2 py-0.5 rounded-md text-xs font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 inline-flex items-center gap-1 font-mono shadow-2xs">
+                              <RefreshCw className="w-3 h-3 animate-spin-slow text-amber-500" />
+                              <span>Retest Dispatched (R{entry.qc_retest_count || 1})</span>
+                            </span>
+                          ) : entry.qc_status === 'passed' ? (
+                            <span className="text-emerald-600 dark:text-emerald-400 text-xs font-bold inline-flex items-center gap-1 font-mono">
+                              <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                              <span>QC Certified</span>
+                            </span>
+                          ) : entry.qc_sample_sent ? (
+                            <span className="text-sky-600 dark:text-sky-400 text-xs font-semibold inline-flex items-center gap-1 font-mono">
+                              <Clock className="w-3 h-3" />
+                              <span>Awaiting QC</span>
                             </span>
                           ) : (
                             <button

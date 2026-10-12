@@ -15,13 +15,21 @@ import { getShiftForSlot } from "@/lib/utils";
 import { 
   getRealtimeClockState, 
   RealtimeClockState, 
-  evaluateSlotAccess,
-  getHourForSlotIndex
+  getHourForSlotIndex,
+  evaluateSlotAccess
 } from "@/lib/realtimeTimeline";
 import { 
   createOrUpdateQcSampleFromLogEntry, 
-  syncQcResultToLogEntries 
+  syncQcResultToLogEntries,
+  createRetestSampleFromLogEntry 
 } from "@/lib/workflowPipeline";
+import { 
+  playChime, 
+  isAudioEnabled, 
+  setAudioEnabled, 
+  playTestTone 
+} from "@/lib/audioService";
+import { PlantNotification } from "@/types";
 import { HeaderNav } from "@/components/HeaderNav";
 import { SheetHeaderParameters } from "@/components/SheetHeaderParameters";
 import { SlotRail } from "@/components/SlotRail";
@@ -203,6 +211,73 @@ export default function BleachingProcessLogApp() {
   const [isPdfOpen, setIsPdfOpen] = useState(false);
   const [showTimelineRail, setShowTimelineRail] = useState(false);
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
+
+  // Audible Industrial Chime state
+  const [isAudioActive, setIsAudioActive] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      return isAudioEnabled();
+    }
+    return false;
+  });
+
+  const handleToggleAudio = () => {
+    const next = !isAudioActive;
+    setIsAudioActive(next);
+    setAudioEnabled(next);
+    if (next) {
+      playTestTone();
+      showNotice("Audible Industrial Chime enabled.", "success");
+    } else {
+      showNotice("Audible Industrial Chime muted.", "info");
+    }
+  };
+
+  // Plant broadcast notifications feed
+  const [plantNotifications, setPlantNotifications] = useState<PlantNotification[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("nisshin_plant_notifications");
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return [];
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("nisshin_plant_notifications", JSON.stringify(plantNotifications.slice(0, 30)));
+    } catch {}
+  }, [plantNotifications]);
+
+  const addPlantNotification = (
+    type: 'success' | 'warning' | 'alert' | 'info',
+    title: string,
+    message: string,
+    source: 'QC Lab' | 'Bleaching Log' | 'Supervisor' | 'System',
+    targetTab?: DashboardTab,
+    slotIndex?: number,
+    reportNo?: string
+  ) => {
+    const newNotif: PlantNotification = {
+      id: `notif-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      timestamp: new Date().toISOString(),
+      title,
+      message,
+      type,
+      source,
+      read: false,
+      targetTab,
+      slotIndex,
+      reportNo,
+    };
+    setPlantNotifications(prev => [newNotif, ...prev]);
+
+    // Play acoustic chime
+    playChime(type === 'alert' ? 'alert' : type === 'warning' ? 'warning' : type === 'success' ? 'success' : 'info');
+
+    // Also show visual toast notification
+    showNotice(`${title}: ${message}`, type === 'alert' ? 'error' : type === 'success' ? 'success' : 'info');
+  };
 
   // 6. Dynamic Refinery Products Catalog (45 Standard Products, Persisted in LocalStorage)
   const [products, setProducts] = useState<Product[]>(() => {
@@ -696,6 +771,17 @@ export default function BleachingProcessLogApp() {
 
     setIsDrawerOpen(false);
     showNotice(`Slot ${updatedEntry.time_label} Hrs saved & synchronized. Click "Send to QC" to dispatch sample.`, 'success');
+
+    if (hasAlert) {
+      addPlantNotification(
+        'alert',
+        'Operating Deviation Alert',
+        `Slot ${updatedEntry.time_label} Hrs recorded off-spec readings (Temp: ${updatedEntry.he_temp_c ?? '-'}°C, Vac: ${updatedEntry.vacuum_mmhg ?? '-'} mmHg).`,
+        'Bleaching Log',
+        'bleaching',
+        updatedEntry.slot_index
+      );
+    }
   };
 
   // Handle Operator Explicit Dispatch Sample to QC Management
@@ -722,6 +808,7 @@ export default function BleachingProcessLogApp() {
       qc_sample_sent: true,
       qc_sample_sent_at: new Date().toISOString(),
       qc_sample_id: createdSample.id,
+      qc_status: 'pending',
     };
 
     const updatedEntries = sheet.entries.map((e, idx) =>
@@ -760,10 +847,77 @@ export default function BleachingProcessLogApp() {
     setSupervisorEvents(updatedEvents);
     syncSupervisorEventsToInsForge(updatedEvents, currentUser);
 
-    showNotice(`Sample for Slot ${entry.time_label} Hrs successfully dispatched to QC Management!`, 'success');
+    addPlantNotification(
+      'info',
+      'Sampling Dispatched to QC',
+      `Sample ${createdSample.report_no} for Slot ${entry.time_label} Hrs dispatched to QC Lab.`,
+      'Bleaching Log',
+      'qc',
+      slotIndex,
+      createdSample.report_no
+    );
   };
 
-  // QC Lab -> Bleaching Log & Reports Sync (STAGE 2)
+  // Handle Operator Retest Dispatch following QC Rejection (STAGE 4 RETEST WORKFLOW)
+  const handleDispatchRetest = (slotIndex: number) => {
+    if (!currentUser) return;
+    const entry = sheet.entries[slotIndex];
+    if (!entry) return;
+
+    const { updatedReports, newEvent: retestEvent, createdSample } = createRetestSampleFromLogEntry(
+      entry,
+      sheet,
+      currentUser,
+      qcReports
+    );
+    setQcReports(updatedReports);
+    try { localStorage.setItem("nisshin_qc_reports", JSON.stringify(updatedReports)); } catch {}
+
+    const retestSeq = (entry.qc_retest_count || 0) + 1;
+    const updatedEntry: LogEntry = {
+      ...entry,
+      qc_status: 'retest_pending',
+      qc_retest_count: retestSeq,
+      qc_sample_sent: true,
+      qc_sample_sent_at: new Date().toISOString(),
+      qc_sample_id: createdSample.id,
+    };
+
+    const updatedEntries = sheet.entries.map((e, idx) =>
+      idx === slotIndex ? updatedEntry : e
+    );
+
+    const updatedSheet: LogSheet = {
+      ...sheet,
+      entries: updatedEntries,
+      updated_at: new Date().toISOString(),
+    };
+    setSheet(updatedSheet);
+    try { localStorage.setItem("nisshin_process_sheet", JSON.stringify(updatedSheet)); } catch {}
+
+    const dispatchBatchId = updatedSheet.sheet_date ? `BP-${updatedSheet.sheet_date}` : "BP001";
+    syncSlotToInsForge(updatedEntry, dispatchBatchId, currentUser, updatedSheet);
+    syncQcSampleToInsForge(createdSample, currentUser, updatedReports);
+    saveStateSnapshotToInsForge("QC_REPORTS", updatedReports, currentUser);
+    saveStateSnapshotToInsForge("CURRENT_SHEET", updatedSheet, currentUser);
+
+    const updatedEvents = [retestEvent, ...supervisorEvents];
+    setSupervisorEvents(updatedEvents);
+    syncSupervisorEventsToInsForge(updatedEvents, currentUser);
+
+    playChime('retest');
+    addPlantNotification(
+      'warning',
+      'Priority Retest Dispatched',
+      `Retest sample (R${retestSeq}) for Slot ${entry.time_label} Hrs dispatched to QC Lab following previous rejection.`,
+      'Bleaching Log',
+      'qc',
+      slotIndex,
+      createdSample.report_no
+    );
+  };
+
+  // QC Lab -> Bleaching Log & Reports Sync (STAGE 2 & STAGE 4)
   const handleUpdateQcReport = (report: SampleReport) => {
     const updatedReports = qcReports.map(r => r.id === report.id ? report : r);
     setQcReports(updatedReports);
@@ -788,7 +942,44 @@ export default function BleachingProcessLogApp() {
       }
       syncQcSampleToInsForge(report, currentUser, updatedReports);
       saveStateSnapshotToInsForge("CURRENT_SHEET", updatedSheet, currentUser);
-      showNotice(`Analysis results for ${report.report_no} synchronized to Bleaching Log & Reports.`, 'success');
+
+      // Extract slot time label for plant broadcast
+      let timeLabel = "";
+      if (report.time_check) {
+        const raw = report.time_check.replace(":", "").trim();
+        if (raw.length === 2) timeLabel = `${raw}00`;
+        else if (raw.length === 4) timeLabel = raw;
+      }
+      if (!timeLabel && report.report_no) {
+        const match = report.report_no.match(/\d{4}/);
+        if (match) timeLabel = match[0];
+      }
+
+      if (report.decision?.decision === 'reject') {
+        addPlantNotification(
+          'alert',
+          'QC Disposition: REJECTED',
+          `Sample ${report.report_no} (Slot ${timeLabel || 'Process'} Hrs) REJECTED (${report.decision.reason_label || 'Off-spec'}). Retest sample required.`,
+          'QC Lab',
+          'bleaching',
+          undefined,
+          report.report_no
+        );
+      } else if (report.decision?.decision === 'accept' || report.decision?.decision === 'accept_concession') {
+        const rColor = report.results?.find(r => r.parameter_code === 'COLOUR_R')?.value_numeric;
+        const ffa = report.results?.find(r => r.parameter_code === 'FFA')?.value_numeric;
+        addPlantNotification(
+          'success',
+          'QC Disposition: CERTIFIED',
+          `Sample ${report.report_no} APPROVED (Colour: ${rColor ?? '-'}R, FFA: ${ffa ?? '-'}%). Bleaching Log synchronized.`,
+          'QC Lab',
+          'bleaching',
+          undefined,
+          report.report_no
+        );
+      } else {
+        showNotice(`Analysis results for ${report.report_no} synchronized to Bleaching Log & Reports.`, 'success');
+      }
     }
   };
 
@@ -1090,6 +1281,13 @@ export default function BleachingProcessLogApp() {
         selectedDate={selectedDate}
         onDateChange={handleDateChange}
         isToday={selectedDate === getTodayDateStr()}
+        isAudioEnabled={isAudioActive}
+        onToggleAudio={handleToggleAudio}
+        notifications={plantNotifications}
+        onClearNotifications={() => setPlantNotifications([])}
+        onNotificationClick={(notif) => {
+          if (notif.targetTab) setActiveTab(notif.targetTab);
+        }}
       />
 
       {/* Historical Archive Banner when viewing past dates */}
@@ -1196,6 +1394,7 @@ export default function BleachingProcessLogApp() {
                 supervisorUnlockedSlots={supervisorUnlockedSlots}
                 userRole={currentUser?.role}
                 onDispatchToQc={handleDispatchToQc}
+                onDispatchRetest={handleDispatchRetest}
                 showTimelineRail={showTimelineRail}
                 onToggleTimelineRail={() => setShowTimelineRail(prev => !prev)}
               />

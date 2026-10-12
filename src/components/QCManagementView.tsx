@@ -210,6 +210,27 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
     return res.value_numeric !== null && res.value_numeric !== undefined;
   };
 
+  // Helper to determine active quick preset dynamically from selected parameters
+  const getActivePresetType = (report: SampleReport | null): 'colour' | 'colour_ffa' | 'all' | 'none' | 'custom' => {
+    if (!report || !report.results || report.results.length === 0) return 'none';
+    const testedList = report.results.filter(r => isParamTested(r));
+    if (testedList.length === 0) return 'none';
+    if (testedList.length === report.results.length) return 'all';
+
+    const testedCodes = testedList.map(r => r.parameter_code.toUpperCase());
+    const isColourR = testedCodes.includes("COLOUR_R");
+    const isColourY = testedCodes.includes("COLOUR_Y");
+    const isFFA = testedCodes.includes("FFA");
+
+    if (testedList.length === 2 && isColourR && isColourY) {
+      return 'colour';
+    }
+    if (testedList.length === 3 && isColourR && isColourY && isFFA) {
+      return 'colour_ffa';
+    }
+    return 'custom';
+  };
+
   // Handle Save Edited Test Results
   const handleSaveResults = (updatedReport: SampleReport) => {
     // Sanitize results: untested parameters must have value_numeric: null and in_spec: null
@@ -365,14 +386,14 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
               </span>
               <div>
-                <h3 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                  <span>Antrian Sampel Dari Loji Bleaching (Menunggu Analisis Makmal)</span>
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2 font-display">
+                  <span>Dispatched Sampling Signals from Bleaching Plant (Awaiting Laboratory Analysis)</span>
                   <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-500 text-white font-mono">
-                    {reports.filter(r => !r.decision || r.status === "awaiting_results").length} Sampel
+                    {reports.filter(r => !r.decision || r.status === "awaiting_results").length} Samples
                   </span>
                 </h3>
                 <p className="text-xs text-zinc-600 dark:text-zinc-400">
-                  Isyarat pensampelan dihantar oleh operator loji. Klik &quot;Uji Sampel&quot; untuk memasukkan keputusan makmal (FFA, DOBI, Lovibond).
+                  Sampling signals dispatched by refinery operators. Click &quot;Analyze Sample&quot; to input certified laboratory results (Colour, FFA, M&amp;I).
                 </p>
               </div>
             </div>
@@ -389,18 +410,18 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                     <span className="font-mono text-xs font-bold text-amber-600 dark:text-amber-400">
                       {pendingItem.report_no}
                     </span>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20 font-mono">
+                    <span className="px-2 py-0.5 rounded text-xs font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20 font-mono">
                       {pendingItem.time_check || 'Live'} Hrs
                     </span>
                   </div>
                   <div className="font-bold text-xs text-zinc-900 dark:text-white truncate">
                     {pendingItem.product_name || "RBD Palm Oil"}
                   </div>
-                  <div className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400 truncate mt-0.5">
+                  <div className="text-xs font-mono text-zinc-500 dark:text-zinc-400 truncate mt-0.5">
                     {pendingItem.lot_no}
                   </div>
-                  <div className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 flex items-center gap-1">
-                    <span className="text-zinc-400">Dihantar oleh:</span>
+                  <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1.5 flex items-center gap-1.5">
+                    <span className="text-zinc-400 font-medium">Dispatched by:</span>
                     <span className="font-semibold text-zinc-700 dark:text-zinc-300">{pendingItem.submitted_by_name || "Operator"}</span>
                   </div>
                 </div>
@@ -414,7 +435,7 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                   className="w-full btn-premium-amber py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs cursor-pointer group"
                 >
                   <FlaskConical className="w-3.5 h-3.5 transition-transform duration-200 group-hover:rotate-12" />
-                  <span>Uji Sampel &amp; Masukkan Keputusan</span>
+                  <span>Analyze Sample &amp; Input Results</span>
                 </button>
               </div>
             ))}
@@ -752,81 +773,106 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                   </div>
 
                   {/* 1-Click Quick Presets */}
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mr-1">
-                      Presets:
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (!selectedReport.results) return;
-                        const updated = selectedReport.results.map(r => {
-                          const isColour = r.parameter_code === "COLOUR_R" || r.parameter_code === "COLOUR_Y" || r.parameter_name.toLowerCase().includes("colour") || r.parameter_name.toLowerCase().includes("color");
-                          return {
-                            ...r,
-                            is_tested: isColour,
-                            value_numeric: isColour ? (r.value_numeric ?? getDefaultParamValue(r.parameter_code)) : null,
-                          };
-                        });
-                        setSelectedReport({ ...selectedReport, results: updated });
-                      }}
-                      className="px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-800 dark:text-amber-300 border border-amber-500/40 transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-xs"
-                      title="Test Colour Red & Yellow only (Routine hourly bleaching plant check)"
-                    >
-                      Colour Only (Routine)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (!selectedReport.results) return;
-                        const updated = selectedReport.results.map(r => {
-                          const isMatch = r.parameter_code === "COLOUR_R" || r.parameter_code === "COLOUR_Y" || r.parameter_code === "FFA" || r.parameter_name.toLowerCase().includes("colour") || r.parameter_name.toLowerCase().includes("ffa");
-                          return {
-                            ...r,
-                            is_tested: isMatch,
-                            value_numeric: isMatch ? (r.value_numeric ?? getDefaultParamValue(r.parameter_code)) : null,
-                          };
-                        });
-                        setSelectedReport({ ...selectedReport, results: updated });
-                      }}
-                      className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-zinc-200/80 hover:bg-zinc-300 dark:bg-white/10 dark:hover:bg-white/15 text-zinc-800 dark:text-zinc-200 border border-zinc-300 dark:border-white/10 transition-all hover:scale-105 active:scale-95 cursor-pointer"
-                      title="Test Colour and FFA only"
-                    >
-                      Colour + FFA
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (!selectedReport.results) return;
-                        const updated = selectedReport.results.map(r => ({
-                          ...r,
-                          is_tested: true,
-                          value_numeric: r.value_numeric ?? getDefaultParamValue(r.parameter_code),
-                        }));
-                        setSelectedReport({ ...selectedReport, results: updated });
-                      }}
-                      className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-zinc-200/80 hover:bg-zinc-300 dark:bg-white/10 dark:hover:bg-white/15 text-zinc-800 dark:text-zinc-200 border border-zinc-300 dark:border-white/10 transition-all hover:scale-105 active:scale-95 cursor-pointer"
-                      title="Select all parameters for full analytical test"
-                    >
-                      All Parameters
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (!selectedReport.results) return;
-                        const updated = selectedReport.results.map(r => ({
-                          ...r,
-                          is_tested: false,
-                          value_numeric: null,
-                        }));
-                        setSelectedReport({ ...selectedReport, results: updated });
-                      }}
-                      className="px-2 py-1 rounded-lg text-xs font-semibold text-zinc-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-500/10 transition-all cursor-pointer"
-                      title="Deselect all parameters"
-                    >
-                      Clear All
-                    </button>
-                  </div>
+                  {(() => {
+                    const currentActivePreset = getActivePresetType(selectedReport);
+                    return (
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mr-1">
+                          Presets:
+                        </span>
+
+                        {/* Preset 1: Colour Only */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!selectedReport.results) return;
+                            const updated = selectedReport.results.map(r => {
+                              const isColour = r.parameter_code === "COLOUR_R" || r.parameter_code === "COLOUR_Y" || r.parameter_name.toLowerCase().includes("colour") || r.parameter_name.toLowerCase().includes("color");
+                              return {
+                                ...r,
+                                is_tested: isColour,
+                                value_numeric: isColour ? (r.value_numeric ?? getDefaultParamValue(r.parameter_code)) : null,
+                              };
+                            });
+                            setSelectedReport({ ...selectedReport, results: updated });
+                          }}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer shadow-xs ${
+                            currentActivePreset === 'colour'
+                              ? "bg-amber-500 text-white border border-amber-400 shadow-md shadow-amber-500/30 ring-2 ring-amber-400/40"
+                              : "bg-zinc-200/80 hover:bg-zinc-300 dark:bg-white/10 dark:hover:bg-white/15 text-zinc-700 dark:text-zinc-200 border border-zinc-300 dark:border-white/10"
+                          }`}
+                          title="Test Colour Red & Yellow only (Routine hourly bleaching plant check)"
+                        >
+                          Colour Only (Routine)
+                        </button>
+
+                        {/* Preset 2: Colour + FFA */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!selectedReport.results) return;
+                            const updated = selectedReport.results.map(r => {
+                              const isMatch = r.parameter_code === "COLOUR_R" || r.parameter_code === "COLOUR_Y" || r.parameter_code === "FFA" || r.parameter_name.toLowerCase().includes("colour") || r.parameter_name.toLowerCase().includes("ffa");
+                              return {
+                                ...r,
+                                is_tested: isMatch,
+                                value_numeric: isMatch ? (r.value_numeric ?? getDefaultParamValue(r.parameter_code)) : null,
+                              };
+                            });
+                            setSelectedReport({ ...selectedReport, results: updated });
+                          }}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer shadow-xs ${
+                            currentActivePreset === 'colour_ffa'
+                              ? "bg-amber-500 text-white border border-amber-400 shadow-md shadow-amber-500/30 ring-2 ring-amber-400/40"
+                              : "bg-zinc-200/80 hover:bg-zinc-300 dark:bg-white/10 dark:hover:bg-white/15 text-zinc-700 dark:text-zinc-200 border border-zinc-300 dark:border-white/10"
+                          }`}
+                          title="Test Colour and FFA only"
+                        >
+                          Colour + FFA
+                        </button>
+
+                        {/* Preset 3: All Parameters */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!selectedReport.results) return;
+                            const updated = selectedReport.results.map(r => ({
+                              ...r,
+                              is_tested: true,
+                              value_numeric: r.value_numeric ?? getDefaultParamValue(r.parameter_code),
+                            }));
+                            setSelectedReport({ ...selectedReport, results: updated });
+                          }}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer shadow-xs ${
+                            currentActivePreset === 'all'
+                              ? "bg-amber-500 text-white border border-amber-400 shadow-md shadow-amber-500/30 ring-2 ring-amber-400/40"
+                              : "bg-zinc-200/80 hover:bg-zinc-300 dark:bg-white/10 dark:hover:bg-white/15 text-zinc-700 dark:text-zinc-200 border border-zinc-300 dark:border-white/10"
+                          }`}
+                          title="Select all parameters for full analytical test"
+                        >
+                          All Parameters
+                        </button>
+
+                        {/* Preset 4: Clear All */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!selectedReport.results) return;
+                            const updated = selectedReport.results.map(r => ({
+                              ...r,
+                              is_tested: false,
+                              value_numeric: null,
+                            }));
+                            setSelectedReport({ ...selectedReport, results: updated });
+                          }}
+                          className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-zinc-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-500/10 transition-all cursor-pointer"
+                          title="Deselect all parameters"
+                        >
+                          Clear All
+                        </button>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
 

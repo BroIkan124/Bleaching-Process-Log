@@ -227,7 +227,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
               className="btn-premium-amber px-4 py-2 rounded-xl font-bold text-xs shadow-md flex items-center gap-1.5 cursor-pointer group"
             >
               <Printer className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
-              <span>Cetak / Simpan PDF (A4)</span>
+              <span>Print / Export PDF (A4)</span>
             </button>
 
             <button

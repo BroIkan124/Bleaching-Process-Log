@@ -37,3 +37,5 @@ next-env.d.ts
 # IDE & local tooling
 .vscode/
 .codex/
+temp_chrome_*
+scratch_chrome_*

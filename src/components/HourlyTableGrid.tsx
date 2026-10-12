@@ -321,7 +321,7 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
                                 e.stopPropagation();
                                 if (onDispatchToQc) onDispatchToQc(idx);
                               }}
-                              title="Hantar sampel slot ini ke QC Management"
+                              title="Dispatch this slot sample to QC Management"
                               className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white shadow-2xs cursor-pointer transition-all active:scale-95"
                             >
                               <Send className="w-3 h-3" />

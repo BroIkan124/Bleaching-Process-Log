@@ -239,6 +239,7 @@ export interface SampleReport {
   remarks?: string | null;
   status: ReportStatus;
   created_at: string;
+  updated_at?: string;
   results: SampleResult[];
   decision?: QCDecision | null;
 }

@@ -308,7 +308,7 @@ export function RadioSelect({
 
   const effectiveAlign =
     align === "right" ||
-    (triggerRect && triggerRect.left + 260 > (typeof window !== "undefined" ? window.innerWidth - 16 : 1000))
+    (triggerRect && triggerRect.left + 270 > (typeof window !== "undefined" ? window.innerWidth - 16 : 1000))
       ? "right"
       : "left";
 
@@ -365,8 +365,8 @@ export function RadioSelect({
             left: effectiveAlign === "right" ? "auto" : `${Math.max(8, triggerRect.left)}px`,
             right: effectiveAlign === "right" ? `${Math.max(8, window.innerWidth - triggerRect.right)}px` : "auto",
             transformOrigin: openUpward ? "bottom" : "top",
-            width: menuWidth || `${Math.max(triggerRect.width, 240)}px`,
-            minWidth: menuWidth ? undefined : `${Math.max(triggerRect.width, 240)}px`,
+            width: menuWidth || `${Math.max(triggerRect.width, 270)}px`,
+            minWidth: menuWidth ? undefined : `${Math.max(triggerRect.width, 270)}px`,
             zIndex: 99999,
           }}
           className={`radio-option-container max-h-72 flex flex-col overflow-hidden animate-scale-in shadow-2xl ${menuClassName}`}

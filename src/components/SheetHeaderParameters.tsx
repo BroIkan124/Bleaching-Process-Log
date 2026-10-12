@@ -174,7 +174,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                   options={plants.map((p) => ({ value: p.id, label: p.name }))}
                   searchable={true}
                   onAddCustom={onAddPlant && !isLocked ? () => setIsAddPlantModalOpen(true) : undefined}
-                  addCustomLabel="+ Register New Plant..."
+                  addCustomLabel="Register New Plant"
                 />
               </div>
 
@@ -214,7 +214,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                   }))}
                   searchable={true}
                   onAddCustom={onAddProduct && !isLocked ? () => setIsAddProductModalOpen(true) : undefined}
-                  addCustomLabel="+ Register New Product..."
+                  addCustomLabel="Register New Oil Product"
                 />
               </div>
 
@@ -249,7 +249,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                   options={feedTanks.map((t) => ({ value: t.id, label: t.name }))}
                   searchable={true}
                   onAddCustom={onAddTank && !isLocked ? () => setIsAddFeedTankModalOpen(true) : undefined}
-                  addCustomLabel="+ Register New Feed Tank..."
+                  addCustomLabel="Register New Feed Tank"
                 />
               </div>
 
@@ -284,7 +284,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                   options={dischargeTanks.map((t) => ({ value: t.id, label: t.name }))}
                   searchable={true}
                   onAddCustom={onAddTank && !isLocked ? () => setIsAddDischargeTankModalOpen(true) : undefined}
-                  addCustomLabel="+ Register New Discharge Tank..."
+                  addCustomLabel="Register New Discharge Tank"
                 />
               </div>
             </div>

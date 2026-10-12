@@ -1158,7 +1158,7 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                   }))}
                   searchable={true}
                   onAddCustom={onAddProduct ? () => setIsAddProdModalOpen(true) : undefined}
-                  addCustomLabel="+ Register New Product..."
+                  addCustomLabel="Register New Oil Product"
                 />
               </div>
 
@@ -1197,7 +1197,7 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                       setCustomTankKind('feed');
                       setIsAddTankModalOpen(true);
                     } : undefined}
-                    addCustomLabel="+ Register New Feed Tank..."
+                    addCustomLabel="Register New Feed Tank"
                   />
                 </div>
                 <div>
@@ -1234,7 +1234,7 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                       setCustomTankKind('discharge');
                       setIsAddTankModalOpen(true);
                     } : undefined}
-                    addCustomLabel="+ Register New Discharge Tank..."
+                    addCustomLabel="Register New Discharge Tank"
                   />
                 </div>
               </div>

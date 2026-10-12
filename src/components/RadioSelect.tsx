@@ -301,6 +301,17 @@ export function RadioSelect({
     ? normalizedOptions.filter((opt) => opt.label.toLowerCase().includes(searchQuery.toLowerCase().trim()))
     : normalizedOptions;
 
+  const cleanCustomLabel = (addCustomLabel || "Add New Item")
+    .replace(/^\+\s*/, "")
+    .replace(/\.\.\.$/, "")
+    .trim();
+
+  const effectiveAlign =
+    align === "right" ||
+    (triggerRect && triggerRect.left + 260 > (typeof window !== "undefined" ? window.innerWidth - 16 : 1000))
+      ? "right"
+      : "left";
+
   return (
     <div 
       ref={containerRef} 
@@ -351,10 +362,11 @@ export function RadioSelect({
             position: "fixed",
             top: openUpward ? `${triggerRect.top - 6}px` : `${triggerRect.bottom + 6}px`,
             transform: openUpward ? "translateY(-100%)" : "none",
-            left: align === "right" ? "auto" : `${triggerRect.left}px`,
-            right: align === "right" ? `${window.innerWidth - triggerRect.right}px` : "auto",
+            left: effectiveAlign === "right" ? "auto" : `${Math.max(8, triggerRect.left)}px`,
+            right: effectiveAlign === "right" ? `${Math.max(8, window.innerWidth - triggerRect.right)}px` : "auto",
             transformOrigin: openUpward ? "bottom" : "top",
-            width: menuWidth || `${triggerRect.width}px`,
+            width: menuWidth || `${Math.max(triggerRect.width, 240)}px`,
+            minWidth: menuWidth ? undefined : `${Math.max(triggerRect.width, 240)}px`,
             zIndex: 99999,
           }}
           className={`radio-option-container max-h-72 flex flex-col overflow-hidden animate-scale-in shadow-2xl ${menuClassName}`}
@@ -423,7 +435,7 @@ export function RadioSelect({
             )}
           </div>
 
-          {/* Quick Add Custom Product Action */}
+          {/* Quick Add Custom Action */}
           {onAddCustom && (
             <div className="p-2 border-t border-zinc-200/80 dark:border-white/10 bg-zinc-50/95 dark:bg-[#0A101D]/95 backdrop-blur-md">
               <button
@@ -432,10 +444,10 @@ export function RadioSelect({
                   setIsOpen(false);
                   onAddCustom();
                 }}
-                className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-98"
+                className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-98 whitespace-nowrap min-w-0"
               >
-                <Plus className="w-3.5 h-3.5" />
-                <span>{addCustomLabel || "+ Add New Product"}</span>
+                <Plus className="w-3.5 h-3.5 shrink-0 text-amber-500" />
+                <span className="truncate">{cleanCustomLabel}</span>
               </button>
             </div>
           )}

@@ -675,58 +675,76 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
           {/* BLEACHING PROCESS TELEMETRY & DYNAMIC TREND CURVES (HE TEMP & VACUUM)     */}
           {/* ========================================================================= */}
           <div className="glass-panel p-5 sm:p-6 rounded-3xl bg-white/90 dark:bg-[#0A0F1C]/90 border border-zinc-200/90 dark:border-white/10 shadow-xl space-y-5">
-            {/* Top Header with Title, Live Sync Badge & Controls */}
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-zinc-200 dark:border-white/10 pb-4">
-              <div>
-                <h2 className="text-base sm:text-lg font-bold font-display text-zinc-900 dark:text-white">
-                  Bleaching Process Telemetry &amp; Dynamic Trend Curves
-                </h2>
-                <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+            {/* Top Header & Interactive Controls Bar */}
+            <div className="space-y-4 border-b border-zinc-200 dark:border-white/10 pb-4">
+              {/* Row 1: Title, Subtitle, and Clean Metadata Info */}
+              <div className="flex flex-col gap-1.5">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <h2 className="text-lg sm:text-xl font-bold font-display text-zinc-900 dark:text-white tracking-tight">
+                    Bleaching Process Telemetry &amp; Dynamic Trend Curves
+                  </h2>
+
+                  {/* Clean Inline Metadata */}
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-500 dark:text-zinc-400 font-medium">
+                    <span>
+                      Line: <strong className="text-zinc-800 dark:text-zinc-200">{sheet?.plant_name || sheet?.plant_id || "Plant 1"}</strong>
+                    </span>
+                    <span className="text-zinc-300 dark:text-zinc-700 font-bold">·</span>
+                    <span>
+                      Product: <strong className="text-zinc-800 dark:text-zinc-200">{sheet?.product_name || "Refined Oil"}</strong>
+                    </span>
+                    <span className="text-zinc-300 dark:text-zinc-700 font-bold">·</span>
+                    <span>
+                      Shift Date: <strong className="text-zinc-800 dark:text-zinc-200">{sheet?.sheet_date || "Current Log"}</strong>
+                    </span>
+                  </div>
+                </div>
+
+                <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">
                   Live Heat Exchanger Temperature (HE Temp °C) and Bleacher Vacuum (mmHg) mapped dynamically from operator hourly log records.
                 </p>
-                <div className="flex flex-wrap items-center gap-2 mt-2 text-xs font-mono text-zinc-600 dark:text-zinc-400">
-                  <span className="px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-white/10">
-                    Line: {sheet?.plant_name || sheet?.plant_id || "Plant 1"}
-                  </span>
-                  <span className="px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-white/10">
-                    Product: {sheet?.product_name || "Refined Oil"}
-                  </span>
-                  <span className="px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-white/10">
-                    Shift Date: {sheet?.sheet_date || "Current Log"}
-                  </span>
-                </div>
               </div>
 
-              {/* Chart Series and Shift Controls */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2.5">
+              {/* Row 2: Dedicated Filter & Series Controls Toolbar */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-3 border-t border-zinc-200/60 dark:border-white/5">
                 {/* Series Selector */}
-                <GliderRadioGroup<ProcessChartTab>
-                  value={activeProcessTab}
-                  onChange={(val) => setActiveProcessTab(val)}
-                  themeColor="amber"
-                  size="sm"
-                  variant="rounded"
-                  options={[
-                    { value: "combined", label: "Dual Series", icon: <Layers className="w-3.5 h-3.5" /> },
-                    { value: "he_temp", label: "HE Temp (°C)", icon: <Thermometer className="w-3.5 h-3.5 text-amber-500" /> },
-                    { value: "vacuum", label: "Vacuum (mmHg)", icon: <Gauge className="w-3.5 h-3.5 text-sky-500" /> },
-                  ]}
-                />
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 shrink-0">
+                    Series:
+                  </span>
+                  <GliderRadioGroup<ProcessChartTab>
+                    value={activeProcessTab}
+                    onChange={(val) => setActiveProcessTab(val)}
+                    themeColor="amber"
+                    size="sm"
+                    variant="rounded"
+                    options={[
+                      { value: "combined", label: "Dual Series", icon: <Layers className="w-3.5 h-3.5" /> },
+                      { value: "he_temp", label: "HE Temp (°C)", icon: <Thermometer className="w-3.5 h-3.5 text-amber-500" /> },
+                      { value: "vacuum", label: "Vacuum (mmHg)", icon: <Gauge className="w-3.5 h-3.5 text-sky-500" /> },
+                    ]}
+                  />
+                </div>
 
                 {/* Shift Selector */}
-                <GliderRadioGroup<ProcessShiftFilter>
-                  value={selectedShiftFilter}
-                  onChange={(val) => setSelectedShiftFilter(val)}
-                  themeColor="zinc"
-                  size="sm"
-                  variant="rounded"
-                  options={[
-                    { value: "all", label: "All 24h" },
-                    { value: "1", label: "Shift 1" },
-                    { value: "2", label: "Shift 2" },
-                    { value: "3", label: "Shift 3" },
-                  ]}
-                />
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 shrink-0">
+                    Shift Range:
+                  </span>
+                  <GliderRadioGroup<ProcessShiftFilter>
+                    value={selectedShiftFilter}
+                    onChange={(val) => setSelectedShiftFilter(val)}
+                    themeColor="zinc"
+                    size="sm"
+                    variant="rounded"
+                    options={[
+                      { value: "all", label: "All 24h" },
+                      { value: "1", label: "Shift 1" },
+                      { value: "2", label: "Shift 2" },
+                      { value: "3", label: "Shift 3" },
+                    ]}
+                  />
+                </div>
               </div>
             </div>
 

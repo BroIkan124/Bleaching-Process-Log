@@ -37,7 +37,7 @@ import { SupervisorMonitoringView } from "@/components/SupervisorMonitoringView"
 import { ReportsView } from "@/components/ReportsView";
 import { MasterDataView } from "@/components/MasterDataView";
 import LoginView from "@/components/LoginView";
-import { AlertCircle, CheckCircle, Info } from "lucide-react";
+import { AlertCircle, CheckCircle, Info, Calendar } from "lucide-react";
 import {
   logActivityToInsForge,
   fetchUsersFromInsForge,
@@ -95,10 +95,16 @@ export default function BleachingProcessLogApp() {
     } catch {}
   }, [supervisorEvents]);
 
-  // 4. Core Bleaching Log State (Resets automatically every new calendar day)
-  const [sheet, setSheet] = useState<LogSheet>(() => {
+  // 4. Core Bleaching Log State (Resets automatically every new calendar day & supports historical calendar archive)
+  const getTodayDateStr = () => {
     const today = new Date();
-    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  };
+
+  const [selectedDate, setSelectedDate] = useState<string>(() => getTodayDateStr());
+
+  const [sheet, setSheet] = useState<LogSheet>(() => {
+    const todayStr = getTodayDateStr();
     if (typeof window !== "undefined") {
       try {
         const saved = localStorage.getItem("nisshin_process_sheet");
@@ -113,9 +119,59 @@ export default function BleachingProcessLogApp() {
     return createCleanSheet(todayStr);
   });
 
+  const handleDateChange = (newDate: string) => {
+    if (!newDate) return;
+    const todayStr = getTodayDateStr();
+    
+    // Save current sheet before switching
+    if (sheet.sheet_date === todayStr) {
+      try { localStorage.setItem("nisshin_process_sheet", JSON.stringify(sheet)); } catch {}
+    } else {
+      try { localStorage.setItem(`nisshin_archive_sheet_${sheet.sheet_date}`, JSON.stringify(sheet)); } catch {}
+    }
+
+    setSelectedDate(newDate);
+
+    if (newDate === todayStr) {
+      // Restore today's live working sheet
+      try {
+        const savedToday = localStorage.getItem("nisshin_process_sheet");
+        if (savedToday) {
+          const parsed = JSON.parse(savedToday);
+          if (parsed && parsed.sheet_date === todayStr) {
+            setSheet(parsed);
+            showNotice("Kembali ke Live Shift Hari Ini.", "success");
+            return;
+          }
+        }
+      } catch {}
+      setSheet(createCleanSheet(todayStr));
+      showNotice("Live shift hari ini dimuatkan.", "info");
+    } else {
+      // Load or create archived sheet for selected past date
+      try {
+        const savedArchive = localStorage.getItem(`nisshin_archive_sheet_${newDate}`);
+        if (savedArchive) {
+          setSheet(JSON.parse(savedArchive));
+          showNotice(`Log arkib bagi tarikh ${newDate} dimuatkan.`, "info");
+          return;
+        }
+      } catch {}
+      const archiveSheet = createCleanSheet(newDate);
+      archiveSheet.status = "Approved"; // Past dates are archived/approved
+      setSheet(archiveSheet);
+      showNotice(`Paparan arkib bagi tarikh ${newDate} sedia dilihat.`, "info");
+    }
+  };
+
   useEffect(() => {
     try {
-      localStorage.setItem("nisshin_process_sheet", JSON.stringify(sheet));
+      const todayStr = getTodayDateStr();
+      if (sheet.sheet_date === todayStr) {
+        localStorage.setItem("nisshin_process_sheet", JSON.stringify(sheet));
+      } else {
+        localStorage.setItem(`nisshin_archive_sheet_${sheet.sheet_date}`, JSON.stringify(sheet));
+      }
     } catch {}
   }, [sheet]);
 
@@ -1007,7 +1063,29 @@ export default function BleachingProcessLogApp() {
         clockState={clockState}
         isSyncing={isSyncing}
         onManualSync={() => loadCloudData(true)}
+        selectedDate={selectedDate}
+        onDateChange={handleDateChange}
+        isToday={selectedDate === getTodayDateStr()}
       />
+
+      {/* Historical Archive Banner when viewing past dates */}
+      {selectedDate !== getTodayDateStr() && (
+        <div className="bg-amber-500/15 border-b border-amber-500/30 text-amber-900 dark:text-amber-200 px-4 py-2 flex items-center justify-between text-xs font-semibold animate-in fade-in duration-200">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-amber-500 shrink-0" />
+            <span>
+              <strong>MOD ARKIB SEJARAH:</strong> Anda sedang melihat log proses bagi tarikh <strong>{selectedDate}</strong>. (Data shift hari ini kekal selamat di latar belakang).
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => handleDateChange(getTodayDateStr())}
+            className="px-2.5 py-1 rounded-lg bg-amber-500 text-white font-bold hover:bg-amber-600 transition-colors cursor-pointer text-xs shadow-xs"
+          >
+            Kembali ke Live Shift Hari Ini
+          </button>
+        </div>
+      )}
 
       {/* Notification Toast with 3D Depth */}
       {notification && (

@@ -82,7 +82,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
       label: 'User Management',
       icon: Users,
       badge: null,
-      show: isAdmin,
+      show: isSupervisorOrAdmin,
     },
   ];
 

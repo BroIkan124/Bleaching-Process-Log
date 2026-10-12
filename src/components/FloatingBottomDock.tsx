@@ -156,8 +156,8 @@ export const FloatingBottomDock: React.FC<FloatingBottomDockProps> = ({
           </button>
         )}
 
-        {/* Tab 5: Admin User Management */}
-        {isAdmin && (
+        {/* Tab 5: Admin / Supervisor User Management */}
+        {isSupervisorOrAdmin && (
           <button
             type="button"
             role="tab"

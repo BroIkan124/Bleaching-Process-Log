@@ -14,7 +14,8 @@ import {
   Send, 
   Printer,
   LogOut,
-  RefreshCw
+  RefreshCw,
+  Calendar
 } from "lucide-react";
 
 interface HeaderNavProps {
@@ -36,6 +37,9 @@ interface HeaderNavProps {
   clockState?: RealtimeClockState;
   isSyncing?: boolean;
   onManualSync?: () => void;
+  selectedDate?: string;
+  onDateChange?: (date: string) => void;
+  isToday?: boolean;
 }
 
 export const HeaderNav: React.FC<HeaderNavProps> = ({
@@ -53,6 +57,9 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   clockState,
   isSyncing = false,
   onManualSync,
+  selectedDate,
+  onDateChange,
+  isToday = true,
 }) => {
   const getStatusBadge = () => {
     switch (sheetStatus) {
@@ -161,6 +168,38 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
                 Shift {currentShift}
               </span>
             </div>
+          )}
+
+          {/* Interactive Date & Calendar Archive Picker */}
+          {selectedDate && (
+            <>
+              <div className="h-3 w-[1px] bg-zinc-300 dark:bg-zinc-700" />
+              <div className="flex items-center gap-1.5 font-medium">
+                <Calendar className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => onDateChange?.(e.target.value)}
+                  title="Pilih tarikh untuk melihat log arkib proses"
+                  aria-label="Tarikh Log Proses"
+                  className="bg-transparent font-semibold text-zinc-900 dark:text-zinc-100 text-xs focus:outline-none cursor-pointer border-none p-0"
+                />
+                {!isToday && onDateChange && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const today = new Date();
+                      const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                      onDateChange(todayStr);
+                    }}
+                    title="Kembali ke Live Shift Hari Ini"
+                    className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-700 dark:text-amber-400 hover:bg-amber-500/30 transition-colors cursor-pointer"
+                  >
+                    Live
+                  </button>
+                )}
+              </div>
+            </>
           )}
 
           {/* Cloud Synced UI hidden from frontend, background auto-sync active */}

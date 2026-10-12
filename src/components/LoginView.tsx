@@ -190,7 +190,8 @@ export default function LoginView({ onLogin, allUsers = MOCK_USERS }: LoginViewP
                 <Lock className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none drop-shadow-sm" />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
+                  id="toggle-password-btn"
+                  onClick={() => setShowPassword((prev) => !prev)}
                   className="btn-tactile absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 cursor-pointer rounded-lg hover:bg-zinc-200/60 dark:hover:bg-zinc-800/60 transition-colors shadow-sm"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >

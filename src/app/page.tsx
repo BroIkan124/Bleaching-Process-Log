@@ -1218,6 +1218,9 @@ export default function BleachingProcessLogApp() {
         sheet={sheet}
         isOpen={isPdfOpen}
         onClose={() => setIsPdfOpen(false)}
+        qcReports={qcReports}
+        currentUser={currentUser || undefined}
+        allUsers={allUsers}
       />
     </div>
   );

@@ -159,7 +159,7 @@ export function getRealtimeClockState(): RealtimeClockState {
   const slotIndex = getSlotIndexForHour(effectiveHour);
   const slotLabel = SLOT_HOURS[slotIndex];
   const shift = getShiftForSlot(slotIndex);
-  const shiftLabel = shift === 1 ? 'Shift 1 (0800-1500)' : shift === 2 ? 'Shift 2 (1600-2300)' : 'Shift 3 (2400-0700)';
+  const shiftLabel = shift === 1 ? 'Shift 1 (08:00–15:00)' : shift === 2 ? 'Shift 2 (16:00–23:00)' : 'Shift 3 (24:00–07:00)';
 
   const displayHours = effectiveHour % 12 || 12;
   const ampm = effectiveHour >= 12 ? 'PM' : 'AM';

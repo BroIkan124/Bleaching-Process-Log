@@ -138,32 +138,35 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
         </div>
 
         {/* Center: Shift, Realtime Clock & Active Slot Telemetry */}
-        <div className="hidden md:flex items-center gap-2.5 bg-zinc-100/80 dark:bg-zinc-800/60 px-3 py-1 rounded-lg border border-zinc-200/60 dark:border-zinc-700/60 text-xs">
+        <div className="hidden md:flex items-center gap-2.5 bg-zinc-100/90 dark:bg-zinc-800/80 px-3 py-1.5 rounded-xl border border-zinc-200/80 dark:border-zinc-700/80 text-xs shadow-2xs whitespace-nowrap select-none">
           {clockState ? (
             <>
               {/* Live Real-time Clock */}
-              <div className="flex items-center gap-1.5 font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                <span className="text-zinc-500 dark:text-zinc-400">Time:</span>
-                <span className="font-semibold text-zinc-900 dark:text-zinc-100 tabular-nums">
+              <div className="flex items-center gap-1.5 font-medium whitespace-nowrap">
+                <span className="relative flex h-2 w-2 shrink-0">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span className="text-zinc-500 dark:text-zinc-400 font-medium">Time:</span>
+                <span className="font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">
                   {clockState.formattedTime}
                 </span>
               </div>
 
-              <div className="h-3 w-[1px] bg-zinc-300 dark:bg-zinc-700" />
+              <div className="h-3.5 w-px bg-zinc-300 dark:bg-zinc-700 shrink-0" />
 
-              {/* Active Slot */}
-              <div className="flex items-center gap-1 font-medium text-zinc-700 dark:text-zinc-300">
-                <span>Slot <strong className="text-amber-600 dark:text-amber-400 font-semibold">{clockState.slotTimeLabel}</strong></span>
-                <span className="text-zinc-400 dark:text-zinc-500 hidden lg:inline">
-                  ({clockState.shiftLabel})
+              {/* Active Slot & Shift */}
+              <div className="flex items-center gap-1.5 font-medium text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
+                <span>Slot <strong className="text-amber-600 dark:text-amber-400 font-bold">{clockState.slotTimeLabel}</strong></span>
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-zinc-200/70 dark:bg-zinc-700/60 text-zinc-700 dark:text-zinc-300 text-xs font-semibold">
+                  Shift {clockState.shift} ({clockState.shift === 1 ? '08:00–15:00' : clockState.shift === 2 ? '16:00–23:00' : '24:00–07:00'})
                 </span>
               </div>
             </>
           ) : (
-            <div className="flex items-center gap-1.5 font-medium">
+            <div className="flex items-center gap-1.5 font-medium whitespace-nowrap">
               <Clock className="w-3.5 h-3.5 text-amber-500" />
-              <span className="text-zinc-500 dark:text-zinc-400">Shift:</span>
+              <span className="text-zinc-500 dark:text-zinc-400 font-medium">Shift:</span>
               <span className="font-semibold text-zinc-900 dark:text-zinc-100">
                 Shift {currentShift}
               </span>
@@ -173,16 +176,16 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
           {/* Interactive Date & Calendar Archive Picker */}
           {selectedDate && (
             <>
-              <div className="h-3 w-[1px] bg-zinc-300 dark:bg-zinc-700" />
-              <div className="flex items-center gap-1.5 font-medium">
-                <Calendar className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+              <div className="h-3.5 w-px bg-zinc-300 dark:bg-zinc-700 shrink-0" />
+              <div className="relative flex items-center gap-1.5 font-medium whitespace-nowrap group">
+                <Calendar className="w-3.5 h-3.5 text-amber-500 shrink-0 group-hover:text-amber-400 transition-colors pointer-events-none" />
                 <input
                   type="date"
                   value={selectedDate}
                   onChange={(e) => onDateChange?.(e.target.value)}
-                  title="Pilih tarikh untuk melihat log arkib proses"
-                  aria-label="Tarikh Log Proses"
-                  className="bg-transparent font-semibold text-zinc-900 dark:text-zinc-100 text-xs focus:outline-none cursor-pointer border-none p-0"
+                  title="Select date to view process log archive"
+                  aria-label="Process Log Date"
+                  className="bg-transparent font-bold text-zinc-900 dark:text-zinc-100 text-xs focus:outline-none cursor-pointer border-none p-0 tracking-tight [color-scheme:light_dark] [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full"
                 />
                 {!isToday && onDateChange && (
                   <button
@@ -192,8 +195,8 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
                       const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
                       onDateChange(todayStr);
                     }}
-                    title="Kembali ke Live Shift Hari Ini"
-                    className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-700 dark:text-amber-400 hover:bg-amber-500/30 transition-colors cursor-pointer"
+                    title="Return to today's live shift"
+                    className="px-2 py-0.5 rounded-md text-xs font-bold bg-amber-500 text-white hover:bg-amber-600 transition-colors cursor-pointer shadow-2xs"
                   >
                     Live
                   </button>

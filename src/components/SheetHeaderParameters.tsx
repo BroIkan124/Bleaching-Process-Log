@@ -17,7 +17,8 @@ import {
   CheckCircle2,
   Settings2,
   Plus,
-  X
+  X,
+  Database
 } from "lucide-react";
 import { RadioSelect } from "./RadioSelect";
 import { GliderRadioGroup } from "./GliderRadioGroup";
@@ -50,9 +51,10 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
   const [customProductName, setCustomProductName] = useState("");
   const [isAddPlantModalOpen, setIsAddPlantModalOpen] = useState(false);
   const [customPlantName, setCustomPlantName] = useState("");
-  const [isAddTankModalOpen, setIsAddTankModalOpen] = useState(false);
-  const [customTankName, setCustomTankName] = useState("");
-  const [customTankKind, setCustomTankKind] = useState<'feed' | 'discharge' | 'both'>('feed');
+  const [isAddFeedTankModalOpen, setIsAddFeedTankModalOpen] = useState(false);
+  const [customFeedTankName, setCustomFeedTankName] = useState("");
+  const [isAddDischargeTankModalOpen, setIsAddDischargeTankModalOpen] = useState(false);
+  const [customDischargeTankName, setCustomDischargeTankName] = useState("");
 
   const feedTanks = tanks.filter((t) => t.kind === "feed" || t.kind === "both");
   const dischargeTanks = tanks.filter((t) => t.kind === "discharge" || t.kind === "both");
@@ -225,12 +227,9 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                   {onAddTank && !isLocked && (
                     <button
                       type="button"
-                      onClick={() => {
-                        setCustomTankKind('feed');
-                        setIsAddTankModalOpen(true);
-                      }}
+                      onClick={() => setIsAddFeedTankModalOpen(true)}
                       className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:text-amber-500 flex items-center gap-1 cursor-pointer transition-colors"
-                      title="Register a new feed tank"
+                      title="Register a new crude feed tank"
                     >
                       <Plus className="w-3 h-3" />
                       <span>Add</span>
@@ -249,10 +248,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                   }}
                   options={feedTanks.map((t) => ({ value: t.id, label: t.name }))}
                   searchable={true}
-                  onAddCustom={onAddTank && !isLocked ? () => {
-                    setCustomTankKind('feed');
-                    setIsAddTankModalOpen(true);
-                  } : undefined}
+                  onAddCustom={onAddTank && !isLocked ? () => setIsAddFeedTankModalOpen(true) : undefined}
                   addCustomLabel="+ Register New Feed Tank..."
                 />
               </div>
@@ -266,12 +262,9 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                   {onAddTank && !isLocked && (
                     <button
                       type="button"
-                      onClick={() => {
-                        setCustomTankKind('discharge');
-                        setIsAddTankModalOpen(true);
-                      }}
+                      onClick={() => setIsAddDischargeTankModalOpen(true)}
                       className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:text-amber-500 flex items-center gap-1 cursor-pointer transition-colors"
-                      title="Register a new discharge tank"
+                      title="Register a new bleached oil discharge tank"
                     >
                       <Plus className="w-3 h-3" />
                       <span>Add</span>
@@ -290,10 +283,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                   }}
                   options={dischargeTanks.map((t) => ({ value: t.id, label: t.name }))}
                   searchable={true}
-                  onAddCustom={onAddTank && !isLocked ? () => {
-                    setCustomTankKind('discharge');
-                    setIsAddTankModalOpen(true);
-                  } : undefined}
+                  onAddCustom={onAddTank && !isLocked ? () => setIsAddDischargeTankModalOpen(true) : undefined}
                   addCustomLabel="+ Register New Discharge Tank..."
                 />
               </div>
@@ -712,90 +702,71 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
         document.body
       )}
 
-      {/* Modal: Add New Tank (Portalled to document.body for full viewport coverage) */}
-      {isAddTankModalOpen && onAddTank && typeof document !== "undefined" && createPortal(
+      {/* Modal: Add New Feed Tank (Portalled to document.body for full viewport coverage) */}
+      {isAddFeedTankModalOpen && onAddTank && typeof document !== "undefined" && createPortal(
         <div 
           className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
           onClick={(e) => {
-            if (e.target === e.currentTarget) setIsAddTankModalOpen(false);
+            if (e.target === e.currentTarget) setIsAddFeedTankModalOpen(false);
           }}
         >
           <div className="w-full max-w-md bg-white dark:bg-[#0E1626] rounded-2xl shadow-2xl border border-zinc-200 dark:border-white/10 p-5 space-y-4 animate-scale-in">
             <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/10 pb-3">
               <div className="flex items-center gap-2">
                 <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20">
-                  <Plus className="w-4 h-4" />
+                  <Database className="w-4 h-4" />
                 </div>
                 <div>
                   <h3 className="text-sm font-bold font-display text-zinc-900 dark:text-white">
-                    Register New Storage / Transfer Tank
+                    Register New Feed Tank (Crude Feed)
                   </h3>
                   <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                    Add new feed or discharge tank to refinery tank farm
+                    Add new crude feedstock tank to refinery feed inventory
                   </p>
                 </div>
               </div>
               <button
                 type="button"
-                onClick={() => setIsAddTankModalOpen(false)}
+                onClick={() => setIsAddFeedTankModalOpen(false)}
                 className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
-                  Tank Name &amp; Code
-                </label>
-                <input
-                  type="text"
-                  value={customTankName}
-                  onChange={(e) => setCustomTankName(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      if (customTankName.trim()) {
-                        onAddTank(customTankName.trim(), customTankKind);
-                        setCustomTankName("");
-                        setIsAddTankModalOpen(false);
-                      }
+            <div>
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+                Feed Tank Name &amp; Code
+              </label>
+              <input
+                type="text"
+                value={customFeedTankName}
+                onChange={(e) => setCustomFeedTankName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    if (customFeedTankName.trim()) {
+                      onAddTank(customFeedTankName.trim(), 'feed');
+                      setCustomFeedTankName("");
+                      setIsAddFeedTankModalOpen(false);
                     }
-                  }}
-                  placeholder="e.g. Feed Tank TK-104 (Crude Feed)"
-                  autoFocus
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-300 dark:border-white/15 bg-zinc-50 dark:bg-black/40 text-sm font-bold text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-500/40"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
-                  Tank Logistics Role
-                </label>
-                <GliderRadioGroup
-                  value={customTankKind}
-                  onChange={(val) => setCustomTankKind(val as 'feed' | 'discharge' | 'both')}
-                  themeColor="dynamic"
-                  size="sm"
-                  variant="rounded"
-                  equalWidth
-                  className="w-full"
-                  options={[
-                    { value: "feed", label: "Feed Tank", activeColor: "amber" },
-                    { value: "discharge", label: "Discharge", activeColor: "emerald" },
-                    { value: "both", label: "Dual Purpose", activeColor: "indigo" },
-                  ]}
-                />
-              </div>
+                  }
+                }}
+                placeholder="e.g. Feed Tank TK-104 (Crude Feed)"
+                autoFocus
+                className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-300 dark:border-white/15 bg-zinc-50 dark:bg-black/40 text-sm font-bold text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-500/40"
+              />
+              <p className="text-xs text-zinc-500 mt-1">
+                New feed tanks are immediately selected for crude feedstock input tracking.
+              </p>
             </div>
 
             <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-zinc-200 dark:border-white/10">
               <button
                 type="button"
                 onClick={() => {
-                  setCustomTankName("");
-                  setIsAddTankModalOpen(false);
+                  setCustomFeedTankName("");
+                  setIsAddFeedTankModalOpen(false);
                 }}
                 className="btn-tactile px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5 cursor-pointer"
               >
@@ -803,18 +774,109 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
               </button>
               <button
                 type="button"
-                disabled={!customTankName.trim()}
+                disabled={!customFeedTankName.trim()}
                 onClick={() => {
-                  if (customTankName.trim()) {
-                    onAddTank(customTankName.trim(), customTankKind);
-                    setCustomTankName("");
-                    setIsAddTankModalOpen(false);
+                  if (customFeedTankName.trim()) {
+                    onAddTank(customFeedTankName.trim(), 'feed');
+                    setCustomFeedTankName("");
+                    setIsAddFeedTankModalOpen(false);
                   }
                 }}
                 className="btn-premium-amber px-5 py-2 rounded-xl text-xs font-bold shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>Save Tank &amp; Select</span>
+                <span>Save Feed Tank &amp; Select</span>
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Modal: Add New Discharge Tank (Portalled to document.body for full viewport coverage) */}
+      {isAddDischargeTankModalOpen && onAddTank && typeof document !== "undefined" && createPortal(
+        <div 
+          className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsAddDischargeTankModalOpen(false);
+          }}
+        >
+          <div className="w-full max-w-md bg-white dark:bg-[#0E1626] rounded-2xl shadow-2xl border border-zinc-200 dark:border-white/10 p-5 space-y-4 animate-scale-in">
+            <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/10 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                  <Layers className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold font-display text-zinc-900 dark:text-white">
+                    Register New Discharge Tank (Bleached Oil)
+                  </h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    Add new bleached palm oil storage tank to discharge inventory
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAddDischargeTankModalOpen(false)}
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+                Discharge Tank Name &amp; Code
+              </label>
+              <input
+                type="text"
+                value={customDischargeTankName}
+                onChange={(e) => setCustomDischargeTankName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    if (customDischargeTankName.trim()) {
+                      onAddTank(customDischargeTankName.trim(), 'discharge');
+                      setCustomDischargeTankName("");
+                      setIsAddDischargeTankModalOpen(false);
+                    }
+                  }
+                }}
+                placeholder="e.g. Discharge Tank TK-204 (Bleached Oil)"
+                autoFocus
+                className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-300 dark:border-white/15 bg-zinc-50 dark:bg-black/40 text-sm font-bold text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+              />
+              <p className="text-xs text-zinc-500 mt-1">
+                New discharge tanks are immediately selected for bleached oil routing and QC sampling.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-zinc-200 dark:border-white/10">
+              <button
+                type="button"
+                onClick={() => {
+                  setCustomDischargeTankName("");
+                  setIsAddDischargeTankModalOpen(false);
+                }}
+                className="btn-tactile px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={!customDischargeTankName.trim()}
+                onClick={() => {
+                  if (customDischargeTankName.trim()) {
+                    onAddTank(customDischargeTankName.trim(), 'discharge');
+                    setCustomDischargeTankName("");
+                    setIsAddDischargeTankModalOpen(false);
+                  }
+                }}
+                className="btn-premium-amber px-5 py-2 rounded-xl text-xs font-bold shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Save Discharge Tank &amp; Select</span>
               </button>
             </div>
           </div>

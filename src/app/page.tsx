@@ -284,7 +284,21 @@ export default function BleachingProcessLogApp() {
         const saved = localStorage.getItem("nisshin_products");
         if (saved) {
           const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            // Ensure all 45 standard MOCK_PRODUCTS are preserved alongside any user custom products
+            const nameMap = new Map<string, Product>();
+            for (const p of parsed) {
+              nameMap.set(p.name.trim().toLowerCase(), p);
+            }
+            for (const def of MOCK_PRODUCTS) {
+              if (!nameMap.has(def.name.trim().toLowerCase())) {
+                nameMap.set(def.name.trim().toLowerCase(), def);
+              }
+            }
+            const merged = Array.from(nameMap.values());
+            try { localStorage.setItem("nisshin_products", JSON.stringify(merged)); } catch {}
+            return merged;
+          }
         }
       } catch {}
     }
@@ -399,7 +413,20 @@ export default function BleachingProcessLogApp() {
         const saved = localStorage.getItem("nisshin_tanks");
         if (saved) {
           const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const nameMap = new Map<string, Tank>();
+            for (const t of parsed) {
+              nameMap.set(t.name.trim().toLowerCase(), t);
+            }
+            for (const def of MOCK_TANKS) {
+              if (!nameMap.has(def.name.trim().toLowerCase())) {
+                nameMap.set(def.name.trim().toLowerCase(), def);
+              }
+            }
+            const merged = Array.from(nameMap.values());
+            try { localStorage.setItem("nisshin_tanks", JSON.stringify(merged)); } catch {}
+            return merged;
+          }
         }
       } catch {}
     }
@@ -557,8 +584,18 @@ export default function BleachingProcessLogApp() {
       const masterData = await fetchMasterDataFromInsForge();
       if (masterData) {
         if (masterData.products && masterData.products.length > 0) {
-          setProducts(masterData.products);
-          try { localStorage.setItem("nisshin_products", JSON.stringify(masterData.products)); } catch {}
+          const nameMap = new Map<string, Product>();
+          for (const p of masterData.products) {
+            nameMap.set(p.name.trim().toLowerCase(), p);
+          }
+          for (const def of MOCK_PRODUCTS) {
+            if (!nameMap.has(def.name.trim().toLowerCase())) {
+              nameMap.set(def.name.trim().toLowerCase(), def);
+            }
+          }
+          const mergedProducts = Array.from(nameMap.values());
+          setProducts(mergedProducts);
+          try { localStorage.setItem("nisshin_products", JSON.stringify(mergedProducts)); } catch {}
         }
         if (masterData.plants && masterData.plants.length > 0) {
           setPlants(masterData.plants);

@@ -200,10 +200,11 @@ export async function syncBatchParamsToInsForge(
   if (!isInsForgeConfigured || !insforge) return { success: true };
 
   try {
+    const effectiveBatchId = sheet.sheet_date ? `BP-${sheet.sheet_date}` : (sheet.id || "BP001");
     const { error } = await insforge.database.from("batch_processes").upsert([
       {
-        id: sheet.id || "BP001",
-        batch_no: `BATCH-${sheet.sheet_date || "2026-10-08"}-001`,
+        id: effectiveBatchId,
+        batch_no: `BATCH-${sheet.sheet_date || "2026-10-12"}-001`,
         plant_id: sheet.plant_id || "plt-1",
         product_name: sheet.product_name || "RBD Palm Oil",
         feed_tank: sheet.feed_tank_id || "tnk-f1",
@@ -239,22 +240,26 @@ export async function syncBatchParamsToInsForge(
 // ----------------------------------------------------
 export async function syncSlotToInsForge(
   entry: LogEntry,
-  batchId: string = "BP001",
-  currentUser: UserProfile | null,
+  batchId?: string,
+  currentUser?: UserProfile | null,
   currentSheet?: LogSheet
 ): Promise<{ success: boolean; error?: string }> {
   if (!isInsForgeConfigured || !insforge) return { success: true };
 
   try {
+    const effectiveBatchId = (batchId && batchId !== "BP001")
+      ? batchId
+      : (currentSheet?.sheet_date ? `BP-${currentSheet.sheet_date}` : (batchId || "BP001"));
+
     // 1. Check if record already exists for this slot_index and batch_id to avoid duplication
     const { data: existingRows } = await insforge.database
       .from("process_logs")
       .select("id")
-      .eq("batch_id", batchId)
+      .eq("batch_id", effectiveBatchId)
       .eq("slot_index", entry.slot_index);
 
     const payload = {
-      batch_id: batchId,
+      batch_id: effectiveBatchId,
       slot_index: entry.slot_index,
       time_label: entry.time_label,
       shift: entry.shift,
@@ -293,7 +298,8 @@ export async function syncSlotToInsForge(
     }
 
     // 2. Audit Activity Logging
-    await logActivityToInsForge(currentUser, "SAVE_HOURLY_SLOT", "PROCESS_LOG", `SLOT-${entry.time_label}`, {
+    await logActivityToInsForge(currentUser || null, "SAVE_HOURLY_SLOT", "PROCESS_LOG", `SLOT-${effectiveBatchId}-${entry.time_label}`, {
+      batch_id: effectiveBatchId,
       slot: entry.time_label,
       shift: entry.shift,
       vacuum_mmhg: entry.vacuum_mmhg,
@@ -304,7 +310,7 @@ export async function syncSlotToInsForge(
 
     // 3. If the entire updated sheet is supplied, update cloud state snapshot
     if (currentSheet) {
-      await saveStateSnapshotToInsForge("CURRENT_SHEET", currentSheet, currentUser);
+      await saveStateSnapshotToInsForge("CURRENT_SHEET", currentSheet, currentUser || null);
     }
 
     return { success: true };
@@ -317,32 +323,36 @@ export async function syncSlotToInsForge(
 // ----------------------------------------------------
 // 5. Fetch Full Live Sheet from InsForge (Cross-Device Read)
 // ----------------------------------------------------
-export async function fetchBatchSheetFromInsForge(): Promise<{ sheet: LogSheet; source: "cloud" | "fallback" } | null> {
+export async function fetchBatchSheetFromInsForge(
+  targetDate?: string
+): Promise<{ sheet: LogSheet; source: "cloud" | "fallback" } | null> {
   if (!isInsForgeConfigured || !insforge) return null;
 
   try {
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const activeDate = targetDate || todayStr;
+    const effectiveBatchId = `BP-${activeDate}`;
+
     // A. First check high-fidelity snapshot
     const snapshot = await fetchStateSnapshotFromInsForge<LogSheet>("CURRENT_SHEET");
 
-    // B. Query live relational batch_processes
+    let sheet: LogSheet;
+    if (snapshot?.data && snapshot.data.sheet_date === activeDate) {
+      sheet = { ...snapshot.data };
+    } else {
+      // Snapshot is either null or belongs to a previous day -> create fresh clean sheet for activeDate
+      sheet = createCleanSheet(activeDate, snapshot?.data);
+    }
+
+    // B. Query live relational batch_processes for this specific date batch
     const { data: bpData } = await insforge.database
       .from("batch_processes")
       .select("*")
-      .order("updated_at", { ascending: false })
+      .eq("id", effectiveBatchId)
       .limit(1);
 
     const bp = bpData?.[0];
-    const batchId = bp?.id || "BP001";
-
-    // C. Query live process_logs for hourly slots
-    const { data: plData } = await insforge.database
-      .from("process_logs")
-      .select("*")
-      .eq("batch_id", batchId)
-      .order("updated_at", { ascending: true });
-
-    // Start with snapshot if available, otherwise initialize clean sheet
-    let sheet: LogSheet = snapshot?.data ? { ...snapshot.data } : createCleanSheet();
 
     // Overlay relational batch_processes header
     if (bp) {
@@ -356,6 +366,13 @@ export async function fetchBatchSheetFromInsForge(): Promise<{ sheet: LogSheet; 
         sheet.updated_at = bp.updated_at;
       }
     }
+
+    // C. Query live process_logs strictly for this date's batch
+    const { data: plData } = await insforge.database
+      .from("process_logs")
+      .select("*")
+      .eq("batch_id", effectiveBatchId)
+      .order("updated_at", { ascending: true });
 
     // Overlay relational process_logs slots
     if (plData && plData.length > 0) {

@@ -112,6 +112,10 @@ export default function BleachingProcessLogApp() {
           const parsed = JSON.parse(saved);
           if (parsed && parsed.sheet_date === todayStr) {
             return parsed;
+          } else if (parsed && parsed.sheet_date) {
+            // Archive previous day's sheet and initialize fresh clean sheet for today
+            localStorage.setItem(`nisshin_archive_sheet_${parsed.sheet_date}`, JSON.stringify(parsed));
+            return createCleanSheet(todayStr, parsed);
           }
         }
       } catch {}
@@ -140,27 +144,27 @@ export default function BleachingProcessLogApp() {
           const parsed = JSON.parse(savedToday);
           if (parsed && parsed.sheet_date === todayStr) {
             setSheet(parsed);
-            showNotice("Kembali ke Live Shift Hari Ini.", "success");
+            showNotice("Returned to Today's Live Shift.", "success");
             return;
           }
         }
       } catch {}
       setSheet(createCleanSheet(todayStr));
-      showNotice("Live shift hari ini dimuatkan.", "info");
+      showNotice("Loaded today's live shift.", "info");
     } else {
       // Load or create archived sheet for selected past date
       try {
         const savedArchive = localStorage.getItem(`nisshin_archive_sheet_${newDate}`);
         if (savedArchive) {
           setSheet(JSON.parse(savedArchive));
-          showNotice(`Log arkib bagi tarikh ${newDate} dimuatkan.`, "info");
+          showNotice(`Loaded archived process log for ${newDate}.`, "info");
           return;
         }
       } catch {}
       const archiveSheet = createCleanSheet(newDate);
       archiveSheet.status = "Approved"; // Past dates are archived/approved
       setSheet(archiveSheet);
-      showNotice(`Paparan arkib bagi tarikh ${newDate} sedia dilihat.`, "info");
+      showNotice(`Viewing archived process log for ${newDate}.`, "info");
     }
   };
 
@@ -495,15 +499,16 @@ export default function BleachingProcessLogApp() {
 
       // 3. Fetch live process log sheet (protect current drawer edit if operator actively typing)
       if (!isDrawerOpenRef.current) {
-        const cloudSheetRes = await fetchBatchSheetFromInsForge();
         const today = new Date();
         const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        const cloudSheetRes = await fetchBatchSheetFromInsForge(todayStr);
         if (cloudSheetRes && cloudSheetRes.sheet) {
           if (cloudSheetRes.sheet.sheet_date === todayStr) {
             setSheet(cloudSheetRes.sheet);
             try { localStorage.setItem("nisshin_process_sheet", JSON.stringify(cloudSheetRes.sheet)); } catch {}
           } else {
-            // Cloud sheet belongs to a previous date -> Reset for today!
+            // Cloud sheet belongs to a previous date -> Archive and reset for today!
+            try { localStorage.setItem(`nisshin_archive_sheet_${cloudSheetRes.sheet.sheet_date}`, JSON.stringify(cloudSheetRes.sheet)); } catch {}
             const freshSheet = createCleanSheet(todayStr, cloudSheetRes.sheet);
             setSheet(freshSheet);
             try { localStorage.setItem("nisshin_process_sheet", JSON.stringify(freshSheet)); } catch {}
@@ -547,12 +552,12 @@ export default function BleachingProcessLogApp() {
     }
   };
 
-  // Pemuatan data awan serta-merta pada pembukaan app di mana-mana laptop
+  // Immediate cloud data fetch on application mount across all laptops
   useEffect(() => {
     loadCloudData(false);
   }, []);
 
-  // Sinkronisasi berkala pintar (Background Auto-Sync Polling setiap 1 saat & window focus)
+  // Smart periodic cloud synchronization (Background auto-sync polling every 1s & on window focus)
   useEffect(() => {
     const pollInterval = setInterval(async () => {
       if (isSyncing || isDrawerOpenRef.current) return;
@@ -575,21 +580,38 @@ export default function BleachingProcessLogApp() {
     };
   }, [lastRemoteTimestamp, isSyncing]);
 
-  // Semakan automatik pertukaran tarikh (Auto-reset bila hari baru / lepas 12 tengah malam)
+  // Automated day rollover detection (Auto-reset when entering a new calendar day)
   const lastActiveDateRef = React.useRef<string>("");
   useEffect(() => {
     const todayStr = clockState.dateString;
     if (!lastActiveDateRef.current) {
       lastActiveDateRef.current = todayStr;
+      if (sheet.sheet_date !== todayStr) {
+        try {
+          localStorage.setItem(`nisshin_archive_sheet_${sheet.sheet_date}`, JSON.stringify(sheet));
+        } catch {}
+        const freshSheet = createCleanSheet(todayStr, sheet);
+        setSheet(freshSheet);
+        try {
+          localStorage.setItem("nisshin_process_sheet", JSON.stringify(freshSheet));
+        } catch {}
+        saveStateSnapshotToInsForge("CURRENT_SHEET", freshSheet, currentUser);
+        showNotice(`New day rollover detected (${todayStr}). Bleaching Process Log has been reset for the new 24-hour cycle.`, "info");
+      }
       return;
     }
     if (lastActiveDateRef.current !== todayStr || sheet.sheet_date !== todayStr) {
       lastActiveDateRef.current = todayStr;
+      try {
+        localStorage.setItem(`nisshin_archive_sheet_${sheet.sheet_date}`, JSON.stringify(sheet));
+      } catch {}
       const freshSheet = createCleanSheet(todayStr, sheet);
       setSheet(freshSheet);
-      try { localStorage.setItem("nisshin_process_sheet", JSON.stringify(freshSheet)); } catch {}
+      try {
+        localStorage.setItem("nisshin_process_sheet", JSON.stringify(freshSheet));
+      } catch {}
       saveStateSnapshotToInsForge("CURRENT_SHEET", freshSheet, currentUser);
-      showNotice(`Pertukaran hari baru dikesan (${todayStr})! Bleaching Process Log telah direset bagi kitaran 24-jam hari baharu.`, "info");
+      showNotice(`New day rollover detected (${todayStr}). Bleaching Process Log has been reset for the new 24-hour cycle.`, "info");
     }
   }, [clockState.dateString, sheet, currentUser]);
 
@@ -641,7 +663,8 @@ export default function BleachingProcessLogApp() {
     setSheet(updatedSheet);
 
     // Real-time synchronization to InsForge PostgreSQL (PL001 + full sheet snapshot)
-    syncSlotToInsForge(updatedEntry, "BP001", currentUser, updatedSheet);
+    const effectiveBatchId = updatedSheet.sheet_date ? `BP-${updatedSheet.sheet_date}` : "BP001";
+    syncSlotToInsForge(updatedEntry, effectiveBatchId, currentUser, updatedSheet);
     saveStateSnapshotToInsForge("CURRENT_SHEET", updatedSheet, currentUser);
 
     // Check if reading is out of spec
@@ -680,7 +703,7 @@ export default function BleachingProcessLogApp() {
     if (!currentUser) return;
     const entry = sheet.entries[slotIndex];
     if (!entry || !entry.is_saved) {
-      showNotice(`Sila simpan data bagi Slot ${entry?.time_label ?? slotIndex} terlebih dahulu sebelum menghantar ke QC.`, 'warning');
+      showNotice(`Please save parameter telemetry for Slot ${entry?.time_label ?? slotIndex} before dispatching sample to QC.`, 'warning');
       return;
     }
 
@@ -714,7 +737,8 @@ export default function BleachingProcessLogApp() {
     try { localStorage.setItem("nisshin_process_sheet", JSON.stringify(updatedSheet)); } catch {}
 
     // Real-time synchronization to InsForge PostgreSQL & cloud snapshots
-    syncSlotToInsForge(updatedEntry, "BP001", currentUser, updatedSheet);
+    const dispatchBatchId = updatedSheet.sheet_date ? `BP-${updatedSheet.sheet_date}` : "BP001";
+    syncSlotToInsForge(updatedEntry, dispatchBatchId, currentUser, updatedSheet);
     syncQcSampleToInsForge(createdSample, currentUser, updatedReports);
     saveStateSnapshotToInsForge("QC_REPORTS", updatedReports, currentUser);
     saveStateSnapshotToInsForge("CURRENT_SHEET", updatedSheet, currentUser);
@@ -736,7 +760,7 @@ export default function BleachingProcessLogApp() {
     setSupervisorEvents(updatedEvents);
     syncSupervisorEventsToInsForge(updatedEvents, currentUser);
 
-    showNotice(`Sample bagi Slot ${entry.time_label} Hrs berjaya dihantar ke paparan QC Management!`, 'success');
+    showNotice(`Sample for Slot ${entry.time_label} Hrs successfully dispatched to QC Management!`, 'success');
   };
 
   // QC Lab -> Bleaching Log & Reports Sync (STAGE 2)
@@ -1074,7 +1098,7 @@ export default function BleachingProcessLogApp() {
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4 text-amber-500 shrink-0" />
             <span>
-              <strong>MOD ARKIB SEJARAH:</strong> Anda sedang melihat log proses bagi tarikh <strong>{selectedDate}</strong>. (Data shift hari ini kekal selamat di latar belakang).
+              <strong>HISTORICAL ARCHIVE MODE:</strong> Viewing process log record for <strong>{selectedDate}</strong>. (Today's live shift data remains safe in background).
             </span>
           </div>
           <button
@@ -1082,7 +1106,7 @@ export default function BleachingProcessLogApp() {
             onClick={() => handleDateChange(getTodayDateStr())}
             className="px-2.5 py-1 rounded-lg bg-amber-500 text-white font-bold hover:bg-amber-600 transition-colors cursor-pointer text-xs shadow-xs"
           >
-            Kembali ke Live Shift Hari Ini
+            Return to Today's Live Shift
           </button>
         </div>
       )}

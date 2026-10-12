@@ -206,6 +206,7 @@ export interface SampleResult {
   unit: string | null;
   value_numeric: number | null;
   in_spec: boolean | null;
+  is_tested?: boolean; // Form RF-FR-001: "Tick at parameter require for testing"
   entered_by_name?: string | null;
   entered_at?: string | null;
 }

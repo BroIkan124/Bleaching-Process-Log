@@ -703,7 +703,7 @@ export default function BleachingProcessLogApp() {
     if (!currentUser) return;
     const entry = sheet.entries[slotIndex];
     if (!entry || !entry.is_saved) {
-      showNotice(`Please save parameter telemetry for Slot ${entry?.time_label ?? slotIndex} before dispatching sample to QC.`, 'warning');
+      showNotice(`Please save parameter telemetry for Slot ${entry?.time_label ?? slotIndex} before dispatching sample to QC.`, 'info');
       return;
     }
 

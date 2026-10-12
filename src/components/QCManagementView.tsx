@@ -190,19 +190,63 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
   const rejectedCount = reports.filter(r => r.decision?.decision === "reject").length;
   const pendingCount = totalCount - acceptedCount - rejectedCount;
 
+  // Helper to get default numeric parameter values for Form RF-FR-001
+  const getDefaultParamValue = (code: string): number => {
+    switch (code.toUpperCase()) {
+      case "FFA": return 0.045;
+      case "H2O": return 0.030;
+      case "PV": return 0.20;
+      case "IV": return 52.5;
+      case "COLOUR_R": return 2.1;
+      case "COLOUR_Y": return 18.0;
+      case "DOBI": return 2.85;
+      default: return 0.0;
+    }
+  };
+
+  // Helper to determine if a parameter is actively selected for testing
+  const isParamTested = (res: SampleResult): boolean => {
+    if (res.is_tested !== undefined) return Boolean(res.is_tested);
+    return res.value_numeric !== null && res.value_numeric !== undefined;
+  };
+
   // Handle Save Edited Test Results
   const handleSaveResults = (updatedReport: SampleReport) => {
+    // Sanitize results: untested parameters must have value_numeric: null and in_spec: null
+    const processedResults = updatedReport.results?.map(res => {
+      const active = isParamTested(res);
+      if (!active) {
+        return {
+          ...res,
+          is_tested: false,
+          value_numeric: null,
+          in_spec: null,
+        };
+      }
+      return {
+        ...res,
+        is_tested: true,
+      };
+    });
+
+    const finalizedReport: SampleReport = {
+      ...updatedReport,
+      results: processedResults,
+      status: updatedReport.decision ? 'decided' : 'results_entered',
+      updated_at: new Date().toISOString(),
+    };
+
     if (onUpdateReport) {
-      onUpdateReport(updatedReport);
+      onUpdateReport(finalizedReport);
     }
-    setInternalReports(prev => prev.map(r => r.id === updatedReport.id ? updatedReport : r));
-    setSelectedReport(updatedReport);
+    setInternalReports(prev => prev.map(r => r.id === finalizedReport.id ? finalizedReport : r));
+    setSelectedReport(finalizedReport);
     handleCloseEditor();
-    syncQcSampleToInsForge(updatedReport, currentUser);
-    logActivityToInsForge(currentUser, "UPDATE_QC_TEST_RESULTS", "SAMPLE_REPORT", updatedReport.id, {
-      lot_no: updatedReport.lot_no,
-      report_no: updatedReport.report_no,
-      decision: updatedReport.decision?.decision,
+    syncQcSampleToInsForge(finalizedReport, currentUser);
+    logActivityToInsForge(currentUser, "UPDATE_QC_TEST_RESULTS", "SAMPLE_REPORT", finalizedReport.id, {
+      lot_no: finalizedReport.lot_no,
+      report_no: finalizedReport.report_no,
+      decision: finalizedReport.decision?.decision,
     });
   };
 
@@ -225,14 +269,15 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
       submitted_by_name: currentUser.name,
       status: "awaiting_results",
       created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
       remarks: newSample.remarks,
       results: [
-        { id: `res-ffa-${newId}`, report_id: newId, parameter_code: "FFA", parameter_name: "Free Fatty Acid (% Palmitic)", unit: "%", value_numeric: 0.045, in_spec: true },
-        { id: `res-h2o-${newId}`, report_id: newId, parameter_code: "H2O", parameter_name: "Moisture & Impurities", unit: "%", value_numeric: 0.030, in_spec: true },
-        { id: `res-pv-${newId}`, report_id: newId, parameter_code: "PV", parameter_name: "Peroxide Value", unit: "meq/kg", value_numeric: 0.20, in_spec: true },
-        { id: `res-iv-${newId}`, report_id: newId, parameter_code: "IV", parameter_name: "Iodine Value (Wijs)", unit: "g I2/100g", value_numeric: 52.5, in_spec: true },
-        { id: `res-cr-${newId}`, report_id: newId, parameter_code: "COLOUR_R", parameter_name: "Colour Lovibond Red (5¼\" cell)", unit: "R", value_numeric: 2.1, in_spec: true },
-        { id: `res-cy-${newId}`, report_id: newId, parameter_code: "COLOUR_Y", parameter_name: "Colour Lovibond Yellow", unit: "Y", value_numeric: 18.0, in_spec: true },
+        { id: `res-ffa-${newId}`, report_id: newId, parameter_code: "FFA", parameter_name: "Free Fatty Acid (% Palmitic)", unit: "%", value_numeric: 0.045, in_spec: true, is_tested: true },
+        { id: `res-h2o-${newId}`, report_id: newId, parameter_code: "H2O", parameter_name: "Moisture & Impurities", unit: "%", value_numeric: 0.030, in_spec: true, is_tested: false },
+        { id: `res-pv-${newId}`, report_id: newId, parameter_code: "PV", parameter_name: "Peroxide Value", unit: "meq/kg", value_numeric: 0.20, in_spec: true, is_tested: false },
+        { id: `res-iv-${newId}`, report_id: newId, parameter_code: "IV", parameter_name: "Iodine Value (Wijs)", unit: "g I2/100g", value_numeric: 52.5, in_spec: true, is_tested: false },
+        { id: `res-cr-${newId}`, report_id: newId, parameter_code: "COLOUR_R", parameter_name: "Colour Lovibond Red (5¼\" cell)", unit: "R", value_numeric: 2.1, in_spec: true, is_tested: true },
+        { id: `res-cy-${newId}`, report_id: newId, parameter_code: "COLOUR_Y", parameter_name: "Colour Lovibond Yellow", unit: "Y", value_numeric: 18.0, in_spec: true, is_tested: true },
       ],
       decision: {
         id: `dec-${newId}`,
@@ -260,11 +305,11 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
     });
   };
 
-  // Helper to extract param result value
+  // Helper to extract param result value (Form RF-FR-001 selective check)
   const getParamVal = (report: SampleReport, code: string): string => {
     if (!report.results) return "-";
     const res = report.results.find(r => r.parameter_code === code || r.parameter_name.toLowerCase().includes(code.toLowerCase()));
-    if (res && res.value_numeric !== null && res.value_numeric !== undefined) {
+    if (res && res.is_tested !== false && res.value_numeric !== null && res.value_numeric !== undefined) {
       return String(res.value_numeric);
     }
     return "-";
@@ -590,7 +635,12 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
 
                     {/* Colour R/Y */}
                     <td className="py-2.5 px-2 text-center font-mono tabular-nums text-zinc-900 dark:text-zinc-100 font-semibold">
-                      {getParamVal(report, "COLOUR_R")}R / {getParamVal(report, "COLOUR_Y")}Y
+                      {(() => {
+                        const cr = getParamVal(report, "COLOUR_R");
+                        const cy = getParamVal(report, "COLOUR_Y");
+                        if (cr === "-" && cy === "-") return <span className="text-zinc-400 font-normal">-</span>;
+                        return `${cr}R / ${cy}Y`;
+                      })()}
                     </td>
 
                     {/* Decision Badge */}
@@ -684,26 +734,173 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
             </div>
 
             <div className="p-6 overflow-y-auto space-y-4 text-xs">
-              {/* Parameters Inputs */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {selectedReport.results?.map((res, idx) => (
-                  <div key={res.id || idx} className="p-3 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50/60 dark:bg-white/5">
-                    <label className="block text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1 truncate" title={res.parameter_name}>
-                      {res.parameter_code} ({res.unit || "-"})
-                    </label>
-                    <input
-                      type="number"
-                      step="0.001"
-                      value={res.value_numeric ?? ""}
-                      onChange={(e) => {
-                        const val = parseFloat(e.target.value) || null;
-                        const updatedResults = selectedReport.results.map((r, i) => i === idx ? { ...r, value_numeric: val } : r);
-                        setSelectedReport({ ...selectedReport, results: updatedResults });
-                      }}
-                      className="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-black/40 border border-zinc-300 dark:border-white/10 font-mono text-sm font-bold text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
-                    />
+              {/* Form RF-FR-001 Parameter Testing Selection Banner */}
+              <div className="p-4 rounded-xl border border-amber-500/25 bg-amber-500/10 dark:bg-amber-500/5 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2.5">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-1.5 rounded-lg bg-amber-500/20 text-amber-600 dark:text-amber-400">
+                      <FlaskConical className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-zinc-900 dark:text-white font-display text-xs">
+                        Form RF-FR-001: Required Analysis Parameters
+                      </h4>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 italic">
+                        *(Tick at parameter require for testing)*
+                      </p>
+                    </div>
                   </div>
-                ))}
+
+                  {/* 1-Click Quick Presets */}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mr-1">
+                      Presets:
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!selectedReport.results) return;
+                        const updated = selectedReport.results.map(r => {
+                          const isColour = r.parameter_code === "COLOUR_R" || r.parameter_code === "COLOUR_Y" || r.parameter_name.toLowerCase().includes("colour") || r.parameter_name.toLowerCase().includes("color");
+                          return {
+                            ...r,
+                            is_tested: isColour,
+                            value_numeric: isColour ? (r.value_numeric ?? getDefaultParamValue(r.parameter_code)) : null,
+                          };
+                        });
+                        setSelectedReport({ ...selectedReport, results: updated });
+                      }}
+                      className="px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-800 dark:text-amber-300 border border-amber-500/40 transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-xs"
+                      title="Test Colour Red & Yellow only (Routine hourly bleaching plant check)"
+                    >
+                      Colour Only (Routine)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!selectedReport.results) return;
+                        const updated = selectedReport.results.map(r => {
+                          const isMatch = r.parameter_code === "COLOUR_R" || r.parameter_code === "COLOUR_Y" || r.parameter_code === "FFA" || r.parameter_name.toLowerCase().includes("colour") || r.parameter_name.toLowerCase().includes("ffa");
+                          return {
+                            ...r,
+                            is_tested: isMatch,
+                            value_numeric: isMatch ? (r.value_numeric ?? getDefaultParamValue(r.parameter_code)) : null,
+                          };
+                        });
+                        setSelectedReport({ ...selectedReport, results: updated });
+                      }}
+                      className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-zinc-200/80 hover:bg-zinc-300 dark:bg-white/10 dark:hover:bg-white/15 text-zinc-800 dark:text-zinc-200 border border-zinc-300 dark:border-white/10 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                      title="Test Colour and FFA only"
+                    >
+                      Colour + FFA
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!selectedReport.results) return;
+                        const updated = selectedReport.results.map(r => ({
+                          ...r,
+                          is_tested: true,
+                          value_numeric: r.value_numeric ?? getDefaultParamValue(r.parameter_code),
+                        }));
+                        setSelectedReport({ ...selectedReport, results: updated });
+                      }}
+                      className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-zinc-200/80 hover:bg-zinc-300 dark:bg-white/10 dark:hover:bg-white/15 text-zinc-800 dark:text-zinc-200 border border-zinc-300 dark:border-white/10 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                      title="Select all parameters for full analytical test"
+                    >
+                      All Parameters
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!selectedReport.results) return;
+                        const updated = selectedReport.results.map(r => ({
+                          ...r,
+                          is_tested: false,
+                          value_numeric: null,
+                        }));
+                        setSelectedReport({ ...selectedReport, results: updated });
+                      }}
+                      className="px-2 py-1 rounded-lg text-xs font-semibold text-zinc-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-500/10 transition-all cursor-pointer"
+                      title="Deselect all parameters"
+                    >
+                      Clear All
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Parameters Inputs Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                {selectedReport.results?.map((res, idx) => {
+                  const tested = isParamTested(res);
+                  return (
+                    <div 
+                      key={res.id || idx} 
+                      className={`p-3 rounded-xl border transition-all duration-200 ${
+                        tested 
+                          ? "border-amber-500/40 bg-white dark:bg-amber-500/5 shadow-xs ring-1 ring-amber-500/20" 
+                          : "border-zinc-200/80 dark:border-white/5 bg-zinc-100/60 dark:bg-white/[0.02] opacity-75"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-1 mb-1.5">
+                        <label className="flex items-center gap-2 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={tested}
+                            onChange={(e) => {
+                              const checked = e.target.checked;
+                              const updatedResults = selectedReport.results.map((r, i) => {
+                                if (i === idx) {
+                                  return {
+                                    ...r,
+                                    is_tested: checked,
+                                    value_numeric: checked ? (r.value_numeric ?? getDefaultParamValue(r.parameter_code)) : null,
+                                  };
+                                }
+                                return r;
+                              });
+                              setSelectedReport({ ...selectedReport, results: updatedResults });
+                            }}
+                            className="w-4 h-4 rounded text-amber-500 border-zinc-300 dark:border-zinc-600 focus:ring-amber-500 accent-amber-500 cursor-pointer"
+                          />
+                          <span className={`text-xs font-bold truncate ${tested ? 'text-zinc-900 dark:text-white' : 'text-zinc-400 dark:text-zinc-500 line-through'}`}>
+                            {res.parameter_code}
+                          </span>
+                        </label>
+                        <span className="text-xs font-semibold text-zinc-400">
+                          {res.unit ? `(${res.unit})` : "-"}
+                        </span>
+                      </div>
+
+                      <p className={`text-xs truncate mb-2 ${tested ? 'text-zinc-500 dark:text-zinc-400 font-medium' : 'text-zinc-400 dark:text-zinc-600 italic'}`} title={res.parameter_name}>
+                        {res.parameter_name}
+                      </p>
+
+                      {tested ? (
+                        <input
+                          type="number"
+                          step="0.001"
+                          placeholder="Enter result..."
+                          value={res.value_numeric ?? ""}
+                          onChange={(e) => {
+                            const raw = e.target.value;
+                            const val = raw === "" ? null : parseFloat(raw);
+                            const updatedResults = selectedReport.results.map((r, i) => 
+                              i === idx ? { ...r, value_numeric: isNaN(val as number) ? null : val } : r
+                            );
+                            setSelectedReport({ ...selectedReport, results: updatedResults });
+                          }}
+                          className="w-full px-2.5 py-1.5 rounded-lg bg-zinc-50 dark:bg-black/40 border border-zinc-300 dark:border-white/10 font-mono text-sm font-bold text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                        />
+                      ) : (
+                        <div className="w-full px-2.5 py-1.5 rounded-lg bg-zinc-200/50 dark:bg-white/5 border border-dashed border-zinc-300 dark:border-white/10 text-center font-mono text-xs text-zinc-400 dark:text-zinc-500 select-none">
+                          Not Tested (N/A)
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
 
               {/* Disposition Action Selector */}
@@ -1375,10 +1572,11 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                   <div><strong>Sampling Location:</strong> {selectedReport.sampling_point_name}</div>
                 </div>
 
-                {/* Results Table */}
+                {/* Results Table (Form RF-FR-001) */}
                 <table className="w-full border-collapse border border-black text-xs text-center my-3">
                   <thead>
                     <tr className="bg-gray-100 border-b border-black font-bold">
+                      <th className="border border-black py-1.5 px-2 w-16 text-center">Req (✓)</th>
                       <th className="border border-black py-1.5 px-3 text-left">Test Parameter</th>
                       <th className="border border-black py-1.5 px-2">Unit</th>
                       <th className="border border-black py-1.5 px-2 text-right">Result</th>
@@ -1386,14 +1584,30 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                     </tr>
                   </thead>
                   <tbody>
-                    {selectedReport.results?.map((res, i) => (
-                      <tr key={i} className="border-b border-gray-300">
-                        <td className="border border-black py-1 px-3 text-left font-medium">{res.parameter_name}</td>
-                        <td className="border border-black py-1 px-2 font-mono">{res.unit || "-"}</td>
-                        <td className="border border-black py-1 px-2 text-right font-mono font-bold">{res.value_numeric ?? "-"}</td>
-                        <td className="border border-black py-1 px-2 font-bold text-emerald-800">PASS (IN SPEC)</td>
-                      </tr>
-                    ))}
+                    {selectedReport.results?.map((res, i) => {
+                      const tested = isParamTested(res);
+                      return (
+                        <tr key={i} className={`border-b border-gray-300 ${!tested ? "bg-gray-50/70 text-gray-400" : ""}`}>
+                          <td className="border border-black py-1 px-2 font-mono font-bold text-center">
+                            {tested ? "✓" : "—"}
+                          </td>
+                          <td className="border border-black py-1 px-3 text-left font-medium">
+                            {res.parameter_name}
+                          </td>
+                          <td className="border border-black py-1 px-2 font-mono">{res.unit || "-"}</td>
+                          <td className="border border-black py-1 px-2 text-right font-mono font-bold">
+                            {tested && res.value_numeric !== null ? res.value_numeric : "—"}
+                          </td>
+                          <td className="border border-black py-1 px-2 font-bold">
+                            {tested ? (
+                              <span className="text-emerald-800">PASS (IN SPEC)</span>
+                            ) : (
+                              <span className="text-gray-500 font-normal">NOT TESTED (N/A)</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
 

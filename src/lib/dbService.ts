@@ -632,8 +632,9 @@ export async function syncQcSampleToInsForge(
       if (Array.isArray(sample.results)) {
         const item = sample.results.find(
           (r: any) =>
-            r.parameter_code === code ||
-            (r.parameter_name && r.parameter_name.toLowerCase().includes(code.toLowerCase()))
+            (r.parameter_code === code ||
+              (r.parameter_name && r.parameter_name.toLowerCase().includes(code.toLowerCase()))) &&
+            r.is_tested !== false
         );
         if (item && item.value_numeric !== null && item.value_numeric !== undefined) {
           return Number(item.value_numeric);

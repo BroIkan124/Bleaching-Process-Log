@@ -26,13 +26,26 @@ export function createOrUpdateQcSampleFromLogEntry(
 
   const sampleResults: SampleResult[] = [
     {
-      id: `res-color-${sampleId}`,
+      id: `res-color-r-${sampleId}`,
       report_id: sampleId,
       parameter_code: "COLOUR_R",
       parameter_name: "Lovibond Colour (Red)",
       unit: "R",
       value_numeric: entry.colour_r ?? null,
       in_spec: typeof entry.colour_r === 'number' ? entry.colour_r <= 2.5 : null,
+      is_tested: true,
+      entered_by_name: currentUser.name,
+      entered_at: new Date().toISOString(),
+    },
+    {
+      id: `res-color-y-${sampleId}`,
+      report_id: sampleId,
+      parameter_code: "COLOUR_Y",
+      parameter_name: "Lovibond Colour (Yellow)",
+      unit: "Y",
+      value_numeric: entry.colour_y ?? null,
+      in_spec: typeof entry.colour_y === 'number' ? entry.colour_y <= 25.0 : null,
+      is_tested: true,
       entered_by_name: currentUser.name,
       entered_at: new Date().toISOString(),
     },
@@ -44,6 +57,7 @@ export function createOrUpdateQcSampleFromLogEntry(
       unit: "%",
       value_numeric: entry.ffa_pct ?? null,
       in_spec: typeof entry.ffa_pct === 'number' ? entry.ffa_pct <= 0.05 : null,
+      is_tested: entry.ffa_pct !== null && entry.ffa_pct !== undefined,
       entered_by_name: currentUser.name,
       entered_at: new Date().toISOString(),
     },
@@ -55,6 +69,31 @@ export function createOrUpdateQcSampleFromLogEntry(
       unit: "%",
       value_numeric: null,
       in_spec: null,
+      is_tested: false,
+      entered_by_name: null,
+      entered_at: null,
+    },
+    {
+      id: `res-pv-${sampleId}`,
+      report_id: sampleId,
+      parameter_code: "PV",
+      parameter_name: "Peroxide Value (PV)",
+      unit: "meq/kg",
+      value_numeric: null,
+      in_spec: null,
+      is_tested: false,
+      entered_by_name: null,
+      entered_at: null,
+    },
+    {
+      id: `res-iv-${sampleId}`,
+      report_id: sampleId,
+      parameter_code: "IV",
+      parameter_name: "Iodine Value (Wijs)",
+      unit: "g I2/100g",
+      value_numeric: null,
+      in_spec: null,
+      is_tested: false,
       entered_by_name: null,
       entered_at: null,
     },
@@ -66,6 +105,7 @@ export function createOrUpdateQcSampleFromLogEntry(
       unit: "",
       value_numeric: null,
       in_spec: null,
+      is_tested: false,
       entered_by_name: null,
       entered_at: null,
     },
@@ -167,17 +207,20 @@ export function syncQcResultToLogEntries(
     return { updatedEntries: currentEntries, newEvent: null };
   }
 
-  // Extract analytical values
-  const colorRes = qcReport.results?.find((r) => r.parameter_code === "COLOUR_R" || r.parameter_name?.toLowerCase().includes("red"));
-  const ffaRes = qcReport.results?.find((r) => r.parameter_code === "FFA" || r.parameter_name?.toLowerCase().includes("ffa"));
+  // Extract analytical values (only if parameter was selected/tested)
+  const colorRes = qcReport.results?.find((r) => (r.parameter_code === "COLOUR_R" || r.parameter_name?.toLowerCase().includes("red")) && r.is_tested !== false);
+  const colorYRes = qcReport.results?.find((r) => (r.parameter_code === "COLOUR_Y" || r.parameter_name?.toLowerCase().includes("yellow")) && r.is_tested !== false);
+  const ffaRes = qcReport.results?.find((r) => (r.parameter_code === "FFA" || r.parameter_name?.toLowerCase().includes("ffa")) && r.is_tested !== false);
 
   const colorVal = colorRes?.value_numeric ?? null;
+  const colorYVal = colorYRes?.value_numeric ?? null;
   const ffaVal = ffaRes?.value_numeric ?? null;
 
   const targetEntry = currentEntries[slotIndex];
   const updatedEntry: LogEntry = {
     ...targetEntry,
     colour_r: colorVal !== null ? colorVal : targetEntry.colour_r,
+    colour_y: colorYVal !== null ? colorYVal : targetEntry.colour_y,
     ffa_pct: ffaVal !== null ? ffaVal : targetEntry.ffa_pct,
     remarks: targetEntry.remarks 
       ? targetEntry.remarks 

@@ -28,8 +28,6 @@ interface HourlyTableGridProps {
   userRole?: string;
   onDispatchToQc?: (slotIndex: number) => void;
   onDispatchRetest?: (slotIndex: number) => void;
-  showTimelineRail?: boolean;
-  onToggleTimelineRail?: () => void;
 }
 
 export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
@@ -42,8 +40,6 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
   userRole,
   onDispatchToQc,
   onDispatchRetest,
-  showTimelineRail,
-  onToggleTimelineRail,
 }) => {
   return (
     <div className="glass-panel rounded-2xl overflow-hidden mb-8 shadow-sm border border-zinc-200/80 dark:border-white/10">
@@ -64,22 +60,6 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
         </div>
 
         <div className="flex items-center gap-3 text-xs font-medium text-zinc-500 flex-wrap">
-          {/* 24h Timeline Rail Toggle */}
-          {onToggleTimelineRail && (
-            <button
-              type="button"
-              onClick={onToggleTimelineRail}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer flex items-center gap-1.5 ${
-                showTimelineRail
-                  ? "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30 shadow-xs"
-                  : "bg-white dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700/80"
-              }`}
-              title="Toggle visual 24-Hour Timeline Slot Rail"
-            >
-              <Clock className="w-3.5 h-3.5 text-amber-500" />
-              <span>{showTimelineRail ? "Hide Timeline Rail" : "Show 24h Timeline Rail"}</span>
-            </button>
-          )}
 
           <span className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-amber-500" />

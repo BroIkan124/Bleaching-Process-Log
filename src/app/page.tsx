@@ -32,7 +32,6 @@ import {
 import { PlantNotification } from "@/types";
 import { HeaderNav } from "@/components/HeaderNav";
 import { SheetHeaderParameters } from "@/components/SheetHeaderParameters";
-import { SlotRail } from "@/components/SlotRail";
 import { HourlyTableGrid } from "@/components/HourlyTableGrid";
 import { SlotEntryDrawer } from "@/components/SlotEntryDrawer";
 import { RealtimeTimelineBanner } from "@/components/RealtimeTimelineBanner";
@@ -209,7 +208,6 @@ export default function BleachingProcessLogApp() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [isPdfOpen, setIsPdfOpen] = useState(false);
-  const [showTimelineRail, setShowTimelineRail] = useState(false);
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
 
   // Audible Industrial Chime state
@@ -1368,20 +1366,6 @@ export default function BleachingProcessLogApp() {
                 onUpdateHeader={handleUpdateHeader}
               />
 
-              {/* Optional 24-Hour Timeline Slot Rail (Togglable for clean, uncluttered interface) */}
-              {showTimelineRail && (
-                <div className="animate-in fade-in duration-200">
-                  <SlotRail
-                    entries={sheet.entries}
-                    selectedSlotIndex={selectedSlotIndex}
-                    onSelectSlot={handleSelectSlot}
-                    activeCurrentHourIndex={currentSlotIndex}
-                    supervisorUnlockedSlots={supervisorUnlockedSlots}
-                    userRole={currentUser?.role}
-                  />
-                </div>
-              )}
-
               {/* Full 24-Slot Paper-Like Grid */}
               <HourlyTableGrid
                 entries={sheet.entries}
@@ -1395,8 +1379,6 @@ export default function BleachingProcessLogApp() {
                 userRole={currentUser?.role}
                 onDispatchToQc={handleDispatchToQc}
                 onDispatchRetest={handleDispatchRetest}
-                showTimelineRail={showTimelineRail}
-                onToggleTimelineRail={() => setShowTimelineRail(prev => !prev)}
               />
             </>
           )}

@@ -366,9 +366,9 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
               onChange={(val) => setShiftFilter(val)}
               options={[
                 { value: "ALL", label: "All Shifts" },
-                { value: "1", label: "Shift 1 (0800-1500)" },
-                { value: "2", label: "Shift 2 (1600-2300)" },
-                { value: "3", label: "Shift 3 (2400-0700)" },
+                { value: "1", label: "Shift 1 (Morning)" },
+                { value: "2", label: "Shift 2 (Afternoon)" },
+                { value: "3", label: "Shift 3 (Night)" },
               ]}
               size="sm"
             />
@@ -587,9 +587,9 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
                     equalWidth
                     className="w-full"
                     options={[
-                      { value: "1", label: "Shift 1" },
-                      { value: "2", label: "Shift 2" },
-                      { value: "3", label: "Shift 3" },
+                      { value: "1", label: "Shift 1 (Morning)" },
+                      { value: "2", label: "Shift 2 (Afternoon)" },
+                      { value: "3", label: "Shift 3 (Night)" },
                       { value: "ALL", label: "All Shifts" },
                     ]}
                   />

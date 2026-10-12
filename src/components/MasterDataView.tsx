@@ -739,9 +739,9 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
                     variant="rounded"
                     options={[
                       { value: "all", label: "All 24h" },
-                      { value: "1", label: "Shift 1" },
-                      { value: "2", label: "Shift 2" },
-                      { value: "3", label: "Shift 3" },
+                      { value: "1", label: "Shift 1 (Morning)" },
+                      { value: "2", label: "Shift 2 (Afternoon)" },
+                      { value: "3", label: "Shift 3 (Night)" },
                     ]}
                   />
                 </div>

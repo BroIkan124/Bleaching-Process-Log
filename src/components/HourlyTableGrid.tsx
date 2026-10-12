@@ -128,23 +128,23 @@ export const HourlyTableGrid: React.FC<HourlyTableGridProps> = ({
                 <React.Fragment key={entry.id}>
                   {/* Subtle Shift Divider Lines */}
                   {isShift1Start && (
-                    <tr className="bg-zinc-100/60 dark:bg-zinc-800/40 text-zinc-500 dark:text-zinc-400 border-y border-zinc-200/80 dark:border-zinc-800/80 select-none">
-                      <td colSpan={15} className="py-1 px-3 text-[11px] font-semibold">
-                        Shift 1 (08:00 - 15:00)
+                    <tr className="bg-zinc-100/70 dark:bg-zinc-800/50 text-zinc-600 dark:text-zinc-300 border-y border-zinc-200/80 dark:border-zinc-800/80 select-none">
+                      <td colSpan={15} className="py-1 px-3 text-xs font-bold tracking-wide">
+                        Shift 1 (Morning) — 08:00 to 15:00
                       </td>
                     </tr>
                   )}
                   {isShift2Start && (
-                    <tr className="bg-zinc-100/60 dark:bg-zinc-800/40 text-zinc-500 dark:text-zinc-400 border-y border-zinc-200/80 dark:border-zinc-800/80 select-none">
-                      <td colSpan={15} className="py-1 px-3 text-[11px] font-semibold">
-                        Shift 2 (16:00 - 23:00)
+                    <tr className="bg-zinc-100/70 dark:bg-zinc-800/50 text-zinc-600 dark:text-zinc-300 border-y border-zinc-200/80 dark:border-zinc-800/80 select-none">
+                      <td colSpan={15} className="py-1 px-3 text-xs font-bold tracking-wide">
+                        Shift 2 (Afternoon) — 16:00 to 23:00
                       </td>
                     </tr>
                   )}
                   {isShift3Start && (
-                    <tr className="bg-zinc-100/60 dark:bg-zinc-800/40 text-zinc-500 dark:text-zinc-400 border-y border-zinc-200/80 dark:border-zinc-800/80 select-none">
-                      <td colSpan={15} className="py-1 px-3 text-[11px] font-semibold">
-                        Shift 3 (24:00 - 07:00)
+                    <tr className="bg-zinc-100/70 dark:bg-zinc-800/50 text-zinc-600 dark:text-zinc-300 border-y border-zinc-200/80 dark:border-zinc-800/80 select-none">
+                      <td colSpan={15} className="py-1 px-3 text-xs font-bold tracking-wide">
+                        Shift 3 (Night) — 24:00 to 07:00
                       </td>
                     </tr>
                   )}

@@ -29,6 +29,15 @@ export function getShiftForSlot(slotIndex: number): 1 | 2 | 3 {
 }
 
 /**
+ * Returns canonical shift label for Option 1: Shift 1 (Morning), Shift 2 (Afternoon), Shift 3 (Night)
+ */
+export function getShiftName(shift: 1 | 2 | 3 | number): string {
+  if (shift === 1) return 'Shift 1 (Morning)';
+  if (shift === 2) return 'Shift 2 (Afternoon)';
+  return 'Shift 3 (Night)';
+}
+
+/**
  * Validates hourly reading values against PRD process specifications.
  * Failing values are NOT rejected, but flagged in out_of_spec.
  */

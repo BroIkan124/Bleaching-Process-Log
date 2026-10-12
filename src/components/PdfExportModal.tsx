@@ -343,15 +343,15 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
               {/* Row 2: Shift Duty Technicians & Lifecycle Status */}
               <div className="grid grid-cols-12 divide-x divide-black bg-zinc-50/60 print:bg-transparent">
                 <div className="col-span-3 px-1.5 py-0.5">
-                  <span className="font-bold text-[7.5px] text-zinc-700">1st Shift (0800 - 1500): </span>
+                  <span className="font-bold text-[7.5px] text-zinc-700">Shift 1 (Morning · 0800-1500): </span>
                   <span className="font-semibold">{sheet.tech_s1_name || "Ahmad Razif"}</span>
                 </div>
                 <div className="col-span-3 px-1.5 py-0.5">
-                  <span className="font-bold text-[7.5px] text-zinc-700">2nd Shift (1600 - 2300): </span>
+                  <span className="font-bold text-[7.5px] text-zinc-700">Shift 2 (Afternoon · 1600-2300): </span>
                   <span className="font-semibold">{sheet.tech_s2_name || "Mohd Danial"}</span>
                 </div>
                 <div className="col-span-3 px-1.5 py-0.5">
-                  <span className="font-bold text-[7.5px] text-zinc-700">3rd Shift (2400 - 0700): </span>
+                  <span className="font-bold text-[7.5px] text-zinc-700">Shift 3 (Night · 2400-0700): </span>
                   <span className="font-semibold">{sheet.tech_s3_name || "K. Subramaniam"}</span>
                 </div>
                 <div className="col-span-3 px-1.5 py-0.5 flex items-center justify-between">
@@ -464,36 +464,36 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
                   {/* --- SHIFT 1 HEADER BANNER --- */}
                   <tr className="bg-zinc-100 print:bg-zinc-50 border-y border-black font-bold text-[7.5px]">
                     <td colSpan={14} className="py-0.5 px-2 text-left uppercase tracking-wide bg-zinc-100">
-                      ★ 1ST SHIFT (0800 - 1500) &nbsp;|&nbsp; DUTY TECHNICIAN:{" "}
+                      ★ SHIFT 1 (MORNING | 0800 - 1500) &nbsp;|&nbsp; DUTY TECHNICIAN:{" "}
                       <span className="font-mono">{sheet.tech_s1_name || "Ahmad Razif"}</span>
                     </td>
                   </tr>
                   {shift1Entries.map((entry) => renderTableRow(entry, highlightOutOfSpec))}
                   {/* --- SHIFT 1 SUBTOTAL ROW --- */}
-                  {renderSubtotalRow("SHIFT 1 SUBTOTAL / AVERAGE", statsS1)}
+                  {renderSubtotalRow("SHIFT 1 (MORNING) SUBTOTAL / AVERAGE", statsS1)}
 
                   {/* --- SHIFT 2 HEADER BANNER --- */}
                   <tr className="bg-zinc-100 print:bg-zinc-50 border-y border-black font-bold text-[7.5px]">
                     <td colSpan={14} className="py-0.5 px-2 text-left uppercase tracking-wide bg-zinc-100">
-                      ★ 2ND SHIFT (1600 - 2300) &nbsp;|&nbsp; DUTY TECHNICIAN:{" "}
+                      ★ SHIFT 2 (AFTERNOON | 1600 - 2300) &nbsp;|&nbsp; DUTY TECHNICIAN:{" "}
                       <span className="font-mono">{sheet.tech_s2_name || "Mohd Danial"}</span>
                     </td>
                   </tr>
                   {shift2Entries.map((entry) => renderTableRow(entry, highlightOutOfSpec))}
                   {/* --- SHIFT 2 SUBTOTAL ROW --- */}
-                  {renderSubtotalRow("SHIFT 2 SUBTOTAL / AVERAGE", statsS2)}
+                  {renderSubtotalRow("SHIFT 2 (AFTERNOON) SUBTOTAL / AVERAGE", statsS2)}
 
                   {/* --- SHIFT 3 HEADER BANNER --- */}
                   <tr className="bg-zinc-100 print:bg-zinc-50 border-y border-black font-bold text-[7.5px]">
                     <td colSpan={14} className="py-0.5 px-2 text-left uppercase tracking-wide bg-zinc-100">
-                      ★ 3RD SHIFT (2400 - 0700) &nbsp;|&nbsp; DUTY TECHNICIAN:{" "}
+                      ★ SHIFT 3 (NIGHT | 2400 - 0700) &nbsp;|&nbsp; DUTY TECHNICIAN:{" "}
                       <span className="font-mono">{sheet.tech_s3_name || "K. Subramaniam"}</span>
                       {nextDayStr && <span className="ml-2 font-normal text-zinc-600">[{nextDayStr}]</span>}
                     </td>
                   </tr>
                   {shift3Entries.map((entry) => renderTableRow(entry, highlightOutOfSpec, true))}
                   {/* --- SHIFT 3 SUBTOTAL ROW --- */}
-                  {renderSubtotalRow("SHIFT 3 SUBTOTAL / AVERAGE", statsS3)}
+                  {renderSubtotalRow("SHIFT 3 (NIGHT) SUBTOTAL / AVERAGE", statsS3)}
 
                   {/* --- GRAND 24-HOUR PERFORMANCE SUMMARY ROW --- */}
                   <tr className="bg-zinc-200/90 print:bg-zinc-150 border-t-2 border-b border-black font-extrabold text-[8px]">
@@ -618,7 +618,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
                 <div className="p-1.5 flex flex-col justify-between">
                   <div>
                     <div className="font-extrabold text-[7.5px] uppercase border-b border-zinc-300 pb-0.5 mb-1 flex justify-between">
-                      <span>1ST SHIFT HANDOVER</span>
+                      <span>SHIFT 1 (MORNING) HANDOVER</span>
                       <span className="font-mono">15:00 HRS</span>
                     </div>
                     <div className="text-[7.5px] leading-tight">
@@ -636,7 +636,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
                 <div className="p-1.5 flex flex-col justify-between">
                   <div>
                     <div className="font-extrabold text-[7.5px] uppercase border-b border-zinc-300 pb-0.5 mb-1 flex justify-between">
-                      <span>2ND SHIFT HANDOVER</span>
+                      <span>SHIFT 2 (AFTERNOON) HANDOVER</span>
                       <span className="font-mono">23:00 HRS</span>
                     </div>
                     <div className="text-[7.5px] leading-tight">
@@ -654,7 +654,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
                 <div className="p-1.5 flex flex-col justify-between">
                   <div>
                     <div className="font-extrabold text-[7.5px] uppercase border-b border-zinc-300 pb-0.5 mb-1 flex justify-between">
-                      <span>3RD SHIFT HANDOVER</span>
+                      <span>SHIFT 3 (NIGHT) HANDOVER</span>
                       <span className="font-mono">07:00 HRS</span>
                     </div>
                     <div className="text-[7.5px] leading-tight">

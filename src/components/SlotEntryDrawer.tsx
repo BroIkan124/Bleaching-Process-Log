@@ -180,7 +180,7 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                   Slot Hourly Entry: {formData.time_label} Hrs
                 </h3>
                 <span className="text-xs text-zinc-500 font-medium">
-                  · Shift {formData.shift}
+                  · {formData.shift === 1 ? 'Shift 1 (Morning)' : formData.shift === 2 ? 'Shift 2 (Afternoon)' : 'Shift 3 (Night)'}
                 </span>
               </div>
               <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">

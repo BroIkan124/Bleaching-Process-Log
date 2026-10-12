@@ -35,7 +35,7 @@ export const NIAGARA_FILTERS = ['N60-1', 'N60-2', 'N60-3', 'N60-4'] as const;
 export const BLEACHER_LEVELS = ['L', 'H'] as const;
 
 export const SHIFTS = [
-  { id: 1, name: '1st Shift', hours: '0800 - 1500', slots: [0, 1, 2, 3, 4, 5, 6, 7], tech_field: 'tech_s1' },
-  { id: 2, name: '2nd Shift', hours: '1600 - 2300', slots: [8, 9, 10, 11, 12, 13, 14, 15], tech_field: 'tech_s2' },
-  { id: 3, name: '3rd Shift', hours: '2400 - 0700', slots: [16, 17, 18, 19, 20, 21, 22, 23], tech_field: 'tech_s3' },
+  { id: 1, name: 'Shift 1 (Morning)', hours: '0800 - 1500', slots: [0, 1, 2, 3, 4, 5, 6, 7], tech_field: 'tech_s1' },
+  { id: 2, name: 'Shift 2 (Afternoon)', hours: '1600 - 2300', slots: [8, 9, 10, 11, 12, 13, 14, 15], tech_field: 'tech_s2' },
+  { id: 3, name: 'Shift 3 (Night)', hours: '2400 - 0700', slots: [16, 17, 18, 19, 20, 21, 22, 23], tech_field: 'tech_s3' },
 ] as const;

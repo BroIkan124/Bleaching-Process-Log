@@ -198,7 +198,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
               <div className="flex items-center gap-1.5 font-medium text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
                 <span>Slot <strong className="text-amber-600 dark:text-amber-400 font-bold">{clockState.slotTimeLabel}</strong></span>
                 <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-zinc-200/70 dark:bg-zinc-700/60 text-zinc-700 dark:text-zinc-300 text-xs font-semibold">
-                  Shift {clockState.shift} ({clockState.shift === 1 ? '08:00–15:00' : clockState.shift === 2 ? '16:00–23:00' : '24:00–07:00'})
+                  Shift {clockState.shift} ({clockState.shift === 1 ? 'Morning' : clockState.shift === 2 ? 'Afternoon' : 'Night'})
                 </span>
               </div>
             </>
@@ -207,7 +207,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
               <Clock className="w-3.5 h-3.5 text-amber-500" />
               <span className="text-zinc-500 dark:text-zinc-400 font-medium">Shift:</span>
               <span className="font-semibold text-zinc-900 dark:text-zinc-100">
-                Shift {currentShift}
+                {currentShift === 1 ? 'Shift 1 (Morning)' : currentShift === 2 ? 'Shift 2 (Afternoon)' : 'Shift 3 (Night)'}
               </span>
             </div>
           )}

@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { UserProfile, UserRole } from "@/types";
 import { 
   Users, 
@@ -63,6 +64,22 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
   const [isClosingResetModal, setIsClosingResetModal] = useState(false);
   const [deleteConfirmUser, setDeleteConfirmUser] = useState<UserProfile | null>(null);
   const [isClosingDeleteModal, setIsClosingDeleteModal] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (isAddModalOpen || resetPasswordUser || deleteConfirmUser) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isAddModalOpen, resetPasswordUser, deleteConfirmUser]);
 
   const handleCloseModal = () => {
     setIsClosingModal(true);
@@ -760,9 +777,9 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
       </div>
 
       {/* Add / Edit User Modal */}
-      {isAddModalOpen && (
+      {isAddModalOpen && mounted && createPortal(
         <div 
-          className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md modal-backdrop-animate ${
+          className={`fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md modal-backdrop-animate ${
             isClosingModal ? "is-closing" : ""
           }`}
           role="dialog"
@@ -933,13 +950,14 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Reset Password Modal */}
-      {resetPasswordUser && (
+      {resetPasswordUser && mounted && createPortal(
         <div 
-          className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md modal-backdrop-animate ${
+          className={`fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md modal-backdrop-animate ${
             isClosingResetModal ? "is-closing" : ""
           }`}
           role="dialog"
@@ -1072,13 +1090,14 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Delete User Confirmation Modal */}
-      {deleteConfirmUser && (
+      {deleteConfirmUser && mounted && createPortal(
         <div 
-          className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md modal-backdrop-animate ${
+          className={`fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md modal-backdrop-animate ${
             isClosingDeleteModal ? "is-closing" : ""
           }`}
           role="dialog"
@@ -1161,7 +1180,8 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

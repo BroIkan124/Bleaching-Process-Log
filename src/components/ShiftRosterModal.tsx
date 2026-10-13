@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { LogSheet, UserProfile } from "@/types";
 import { 
   UserCheck, 
@@ -37,6 +38,22 @@ export const ShiftRosterModal: React.FC<ShiftRosterModalProps> = ({
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [customName, setCustomName] = useState<string>("");
   const [isClosing, setIsClosing] = useState<boolean>(false);
+  const [mounted, setMounted] = useState<boolean>(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
 
   const currentInfo: ShiftDutyTechnicianInfo = getShiftDutyTechnician(sheet, shiftNum);
 
@@ -55,6 +72,9 @@ export const ShiftRosterModal: React.FC<ShiftRosterModalProps> = ({
   useEffect(() => {
     if (!isOpen) return;
 
+    const shiftDefault = technicians.find(t => t.shift === shiftNum);
+    const defaultUserId = shiftDefault ? shiftDefault.id : technicians[0]?.id || "";
+
     if (currentInfo.source === "manual") {
       const matchedUser = allUsers.find(
         u => u.id === currentInfo.id || u.name.toLowerCase() === (currentInfo.name || "").toLowerCase()
@@ -66,26 +86,20 @@ export const ShiftRosterModal: React.FC<ShiftRosterModalProps> = ({
       } else {
         setAssignmentMode("custom");
         setCustomName(currentInfo.name || "");
-        setSelectedUserId("");
+        setSelectedUserId(defaultUserId);
       }
-    } else if (currentInfo.source === "auto") {
+    } else {
+      // Auto-detect or pending check-in
       setAssignmentMode("auto");
       const matchedUser = allUsers.find(
         u => u.name.toLowerCase() === (currentInfo.name || "").toLowerCase()
       );
-      setSelectedUserId(matchedUser ? matchedUser.id : "");
-      setCustomName("");
-    } else {
-      // Pending
-      setAssignmentMode("registered");
-      // Default to default shift technician if available
-      const shiftDefault = technicians.find(t => t.shift === shiftNum);
-      setSelectedUserId(shiftDefault ? shiftDefault.id : technicians[0]?.id || "");
+      setSelectedUserId(matchedUser ? matchedUser.id : defaultUserId);
       setCustomName("");
     }
   }, [isOpen, shiftNum, sheet]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   const handleSmoothClose = () => {
     setIsClosing(true);
@@ -101,8 +115,10 @@ export const ShiftRosterModal: React.FC<ShiftRosterModalProps> = ({
     const fieldManual = shiftNum === 1 ? "tech_s1_manual" : shiftNum === 2 ? "tech_s2_manual" : "tech_s3_manual";
 
     if (assignmentMode === "auto") {
-      // Clear manual override flag so the system dynamically detects from active slot entries
+      // Clear manual override flag and explicit names so dynamic detection takes over
       onSaveRoster({
+        [fieldId]: null,
+        [fieldName]: null,
         [fieldManual]: false,
       });
       handleSmoothClose();
@@ -149,9 +165,9 @@ export const ShiftRosterModal: React.FC<ShiftRosterModalProps> = ({
     handleSmoothClose();
   };
 
-  return (
+  return createPortal(
     <div 
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-200 ${
+      className={`fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md transition-opacity duration-200 ${
         isClosing ? "opacity-0" : "opacity-100"
       }`}
       onClick={(e) => {
@@ -398,7 +414,8 @@ export const ShiftRosterModal: React.FC<ShiftRosterModalProps> = ({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

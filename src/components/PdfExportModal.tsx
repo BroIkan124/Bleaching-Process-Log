@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { LogSheet, LogEntry, SampleReport, UserProfile } from "@/types";
 import { FORM_META } from "@/lib/constants";
 import { Printer, X, CheckCircle2, ShieldCheck, FileText, FlaskConical, AlertTriangle, Layers } from "lucide-react";
@@ -26,13 +27,29 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
 }) => {
   const [isClosing, setIsClosing] = useState(false);
   const [highlightOutOfSpec, setHighlightOutOfSpec] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
 
   // Shift duty technicians (Option 3: Smart Hybrid)
   const techS1 = getShiftDutyTechnician(sheet, 1);
   const techS2 = getShiftDutyTechnician(sheet, 2);
   const techS3 = getShiftDutyTechnician(sheet, 3);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   const handleSmoothClose = () => {
     setIsClosing(true);
@@ -141,9 +158,9 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
     (r) => !r.sample_date || r.sample_date === sheet.sheet_date || sheet.entries.some((e) => e.qc_sample_id === r.id)
   );
 
-  return (
+  return createPortal(
     <div
-      className={`modal-backdrop-animate fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-md transition-opacity duration-200 overflow-y-auto ${
+      className={`modal-backdrop-animate fixed inset-0 z-[99999] flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-md transition-opacity duration-200 overflow-y-auto ${
         isClosing ? "opacity-0 pointer-events-none" : "opacity-100"
       }`}
       onClick={(e) => {
@@ -724,7 +741,8 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

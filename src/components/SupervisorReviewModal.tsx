@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { LogSheet, UserProfile } from "@/types";
 import { 
   ShieldCheck, 
@@ -34,8 +35,24 @@ export const SupervisorReviewModal: React.FC<SupervisorReviewModalProps> = ({
   const [reviewNote, setReviewNote] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isClosing, setIsClosing] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  if (!isOpen || !mounted) return null;
 
   const handleSmoothClose = () => {
     setIsClosing(true);
@@ -65,9 +82,9 @@ export const SupervisorReviewModal: React.FC<SupervisorReviewModalProps> = ({
     handleSmoothClose();
   };
 
-  return (
+  return createPortal(
     <div 
-      className={`modal-backdrop-animate fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md transition-opacity duration-200 ${
+      className={`modal-backdrop-animate fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md transition-opacity duration-200 ${
         isClosing ? "opacity-0 pointer-events-none" : "opacity-100"
       }`}
       onClick={(e) => {
@@ -200,6 +217,7 @@ export const SupervisorReviewModal: React.FC<SupervisorReviewModalProps> = ({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

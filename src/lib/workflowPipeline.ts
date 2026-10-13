@@ -479,7 +479,7 @@ export function getShiftDutyTechnician(
     shiftNum === 1 ? sheet.tech_s1 : shiftNum === 2 ? sheet.tech_s2 : sheet.tech_s3
   )?.trim() || null;
 
-  // 1. Explicit manual roster assignment takes priority if flagged
+  // 1. Explicit manual roster assignment takes priority ONLY if flagged manual
   if (isManual && sheetTechName) {
     return {
       shift: shiftNum,
@@ -511,21 +511,7 @@ export function getShiftDutyTechnician(
     };
   }
 
-  // 3. Fallback to pre-assigned sheet technician name if present
-  if (sheetTechName) {
-    return {
-      shift: shiftNum,
-      name: sheetTechName,
-      id: sheetTechId,
-      source: 'manual',
-      displayText: sheetTechName,
-      badgeLabel: 'Assigned Roster',
-      isPending: false,
-      loggedSlotsCount,
-    };
-  }
-
-  // 4. Untouched / awaiting check-in shift
+  // 3. Untouched / awaiting check-in shift (when in auto mode and no entries saved yet)
   return {
     shift: shiftNum,
     name: null,

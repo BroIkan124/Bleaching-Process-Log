@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { LogEntry, UserProfile, OutOfSpecFlag } from "@/types";
 import { NIAGARA_FILTERS, BLEACHER_LEVELS } from "@/lib/constants";
 import { validateReadingSpecs } from "@/lib/utils";
@@ -61,8 +62,12 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
   const [isClosing, setIsClosing] = useState(false);
 
   useEffect(() => {
+    document.body.style.overflow = "hidden";
     const raf = requestAnimationFrame(() => setIsMounted(true));
-    return () => cancelAnimationFrame(raf);
+    return () => {
+      document.body.style.overflow = "";
+      cancelAnimationFrame(raf);
+    };
   }, []);
 
   const handleSmoothClose = () => {
@@ -128,9 +133,11 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
   );
   const isEditable = canEdit && access.isEditable;
 
-  return (
+  if (!isMounted) return null;
+
+  return createPortal(
     <div 
-      className={`fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/80 backdrop-blur-md transition-opacity duration-240 ${
+      className={`fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-5 bg-black/80 backdrop-blur-md transition-opacity duration-240 ${
         isMounted && !isClosing ? "opacity-100" : "opacity-0 pointer-events-none"
       }`}
       onClick={(e) => {
@@ -703,6 +710,7 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

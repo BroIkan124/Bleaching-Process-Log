@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { UserProfile } from "@/types";
 import { X, LogOut, CheckCircle2 } from "lucide-react";
 import HelpSupportModal from "./HelpSupportModal";
@@ -28,8 +29,24 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  if (!isOpen || !mounted) return null;
 
   const handleManualLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,9 +98,9 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     }, 350);
   };
 
-  return (
+  return createPortal(
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
       role="dialog"
       aria-modal="true"
       aria-labelledby="login-modal-title"
@@ -269,6 +286,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           currentUser={currentUser}
         />
       )}
-    </div>
+    </div>,
+    document.body
   );
 };

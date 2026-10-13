@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { 
   HelpCircle, 
   X, 
@@ -28,8 +29,24 @@ interface HelpSupportModalProps {
 export default function HelpSupportModal({ isOpen, onClose, currentUser }: HelpSupportModalProps) {
   const [activeTab, setActiveTab] = useState<'sop' | 'specs' | 'directory' | 'diagnostics'>('sop');
   const [isClosing, setIsClosing] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  if (!isOpen || !mounted) return null;
 
   const handleSmoothClose = () => {
     setIsClosing(true);
@@ -39,9 +56,9 @@ export default function HelpSupportModal({ isOpen, onClose, currentUser }: HelpS
     }, 200);
   };
 
-  return (
+  return createPortal(
     <div 
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md modal-backdrop-animate ${
+      className={`fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md modal-backdrop-animate ${
         isClosing ? "is-closing" : ""
       }`}
       role="dialog"
@@ -410,6 +427,7 @@ export default function HelpSupportModal({ isOpen, onClose, currentUser }: HelpS
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

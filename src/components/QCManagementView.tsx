@@ -108,6 +108,17 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
   const [isClosingEditor, setIsClosingEditor] = useState(false);
   const [isClosingCertificate, setIsClosingCertificate] = useState(false);
 
+  useEffect(() => {
+    if (isEditorOpen || isNewSampleOpen || isAddProdModalOpen || isAddTankModalOpen || isCertificateOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isEditorOpen, isNewSampleOpen, isAddProdModalOpen, isAddTankModalOpen, isCertificateOpen]);
+
   const handleCloseNewSample = () => {
     setIsClosingNewSample(true);
     setTimeout(() => {
@@ -721,9 +732,9 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
       </div>
 
       {/* 4. Modal: Edit Test Results & Submit Decision */}
-      {isEditorOpen && selectedReport && (
+      {isEditorOpen && selectedReport && isClient && createPortal(
         <div 
-          className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md modal-backdrop-animate ${
+          className={`fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md modal-backdrop-animate ${
             isClosingEditor ? "is-closing" : ""
           }`}
           onClick={(e) => {
@@ -1126,13 +1137,14 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* 5. Modal: Register New QC Sample (RF-FR-001) */}
-      {isNewSampleOpen && (
+      {isNewSampleOpen && isClient && createPortal(
         <div 
-          className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md modal-backdrop-animate ${
+          className={`fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md modal-backdrop-animate ${
             isClosingNewSample ? "is-closing" : ""
           }`}
           onClick={(e) => {
@@ -1333,7 +1345,8 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Modal: Add Custom Product in QC Management (Portalled to document.body for full viewport coverage) */}

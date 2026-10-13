@@ -81,6 +81,7 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
   // Search & Filter state
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all"); // 'all' | 'accept' | 'reject' | 'pending'
+  const [filterTodayOnly, setFilterTodayOnly] = useState<boolean>(false);
   const [selectedReport, setSelectedReport] = useState<SampleReport | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [isCertificateOpen, setIsCertificateOpen] = useState(false);
@@ -170,9 +171,26 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
     }
   }, [activeProductName]);
 
+  // Today date string (YYYY-MM-DD)
+  const todayDateStr = useMemo(() => {
+    const today = new Date();
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  }, []);
+
+  // Count of samples recorded for today
+  const todayCount = useMemo(() => {
+    return reports.filter(r => r.sample_date === todayDateStr || (r.created_at && r.created_at.startsWith(todayDateStr))).length;
+  }, [reports, todayDateStr]);
+
+  // Base reports considering Today Only filter toggle
+  const dateScopedReports = useMemo(() => {
+    if (!filterTodayOnly) return reports;
+    return reports.filter(r => r.sample_date === todayDateStr || (r.created_at && r.created_at.startsWith(todayDateStr)));
+  }, [reports, filterTodayOnly, todayDateStr]);
+
   // Filtered reports (sorted newest first)
   const filteredReports = useMemo(() => {
-    const list = reports.filter((r) => {
+    const list = dateScopedReports.filter((r) => {
       const q = searchQuery.toLowerCase();
       const matchesSearch = 
         r.lot_no.toLowerCase().includes(q) ||
@@ -196,12 +214,12 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
       const timeB = new Date(b.created_at || `${b.sample_date}T${b.time_check || '00:00'}:00`).getTime() || 0;
       return timeB - timeA;
     });
-  }, [reports, searchQuery, statusFilter]);
+  }, [dateScopedReports, searchQuery, statusFilter]);
 
-  // Statistics
-  const totalCount = reports.length;
-  const acceptedCount = reports.filter(r => r.decision?.decision === "accept" || r.decision?.decision === "accept_concession").length;
-  const rejectedCount = reports.filter(r => r.decision?.decision === "reject").length;
+  // Statistics (respects active date scope)
+  const totalCount = dateScopedReports.length;
+  const acceptedCount = dateScopedReports.filter(r => r.decision?.decision === "accept" || r.decision?.decision === "accept_concession").length;
+  const rejectedCount = dateScopedReports.filter(r => r.decision?.decision === "reject").length;
   const pendingCount = totalCount - acceptedCount - rejectedCount;
 
   // Helper to get default numeric parameter values for Form RF-FR-001
@@ -403,11 +421,23 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
         {/* Total Samples */}
         <div className="telemetry-card p-4 rounded-2xl flex items-center justify-between">
           <div>
-            <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 block">
-              Total Lab Samples
-            </span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                {filterTodayOnly ? "Today's Lab Samples" : "Total Lab Samples"}
+              </span>
+              {filterTodayOnly && (
+                <span className="text-[10px] font-mono font-bold text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
+                  Today Only
+                </span>
+              )}
+            </div>
             <div className="text-2xl font-bold text-zinc-900 dark:text-white mt-1 tabular-nums">
               {totalCount}
+              {filterTodayOnly && reports.length !== totalCount && (
+                <span className="text-xs font-normal text-zinc-400 ml-2 font-mono">
+                  / {reports.length} all-time
+                </span>
+              )}
             </div>
           </div>
           <div className="p-3 rounded-xl bg-zinc-100 dark:bg-white/5 text-zinc-700 dark:text-zinc-300 border border-zinc-200/80 dark:border-white/10 shadow-xs">
@@ -496,6 +526,28 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
 
         {/* Filters and New Sample Action */}
         <div className="flex items-center gap-2.5 flex-wrap">
+          {/* Quick Date Filter: Today's Samples Toggle Button */}
+          <button
+            type="button"
+            onClick={() => setFilterTodayOnly(!filterTodayOnly)}
+            title={filterTodayOnly ? `Showing today's samples (${todayDateStr}) only. Click to view all historical dates.` : "Filter to today's samples only"}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold font-mono transition-all cursor-pointer border shadow-2xs active:scale-95 ${
+              filterTodayOnly
+                ? "bg-amber-500 text-black border-amber-500 font-bold shadow-amber-500/20 ring-2 ring-amber-400/40"
+                : "bg-zinc-100 dark:bg-white/5 text-zinc-700 dark:text-zinc-300 border-zinc-200/90 dark:border-white/10 hover:bg-zinc-200/70 dark:hover:bg-white/10 hover:text-zinc-900 dark:hover:text-white"
+            }`}
+          >
+            <Calendar className={`w-3.5 h-3.5 ${filterTodayOnly ? "text-black" : "text-amber-500"}`} />
+            <span>Today's Samples</span>
+            <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold ${
+              filterTodayOnly 
+                ? "bg-black/20 text-black" 
+                : "bg-zinc-200 dark:bg-white/10 text-zinc-700 dark:text-zinc-300"
+            }`}>
+              {todayCount}
+            </span>
+          </button>
+
           <GliderRadioGroup
             value={statusFilter}
             onChange={(val) => setStatusFilter(val as any)}
@@ -523,13 +575,27 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
       {/* 3. Main Samples Table (RF-FR-001) */}
       <div className="glass-panel rounded-2xl overflow-hidden shadow-sm">
         <div className="px-5 py-3.5 bg-zinc-50/80 dark:bg-black/25 border-b border-zinc-200/90 dark:border-white/10 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="font-display font-bold text-sm text-zinc-900 dark:text-white uppercase tracking-wider">
               QC Lab Sample Analysis Reports (Form RF-FR-001)
             </span>
             <span className="text-xs text-zinc-500 font-mono">
               [Showing {filteredReports.length} of {totalCount} Records]
             </span>
+            {filterTodayOnly && (
+              <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 flex items-center gap-1.5 shadow-2xs animate-in fade-in duration-200">
+                <Calendar className="w-3 h-3 text-amber-500" />
+                <span>Today Only: {todayDateStr}</span>
+                <button
+                  type="button"
+                  onClick={() => setFilterTodayOnly(false)}
+                  className="hover:text-amber-800 dark:hover:text-amber-200 cursor-pointer ml-0.5"
+                  title="Clear Today filter"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
           </div>
           <span className="text-xs text-zinc-500 dark:text-zinc-400 hidden sm:inline font-mono">
             Lam Soon Edible Oils / Nisshin Process Standard
@@ -722,7 +788,19 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                 <tr>
                   <td colSpan={8} className="py-12 text-center text-zinc-400 dark:text-zinc-500 font-mono text-xs">
                     <FlaskConical className="w-8 h-8 mx-auto mb-2 opacity-40 text-amber-500" />
-                    No QC sample analysis reports match your filter criteria.
+                    <div>No QC sample analysis reports match your filter criteria.</div>
+                    {filterTodayOnly && (
+                      <div className="mt-3">
+                        <button
+                          type="button"
+                          onClick={() => setFilterTodayOnly(false)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-xs font-sans hover:bg-amber-500/20 transition-colors cursor-pointer"
+                        >
+                          <RefreshCw className="w-3 h-3" />
+                          <span>Show all dates ({reports.length} records)</span>
+                        </button>
+                      </div>
+                    )}
                   </td>
                 </tr>
               )}

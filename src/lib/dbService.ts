@@ -190,6 +190,20 @@ export async function syncUserToInsForge(user: UserProfile): Promise<{ success: 
   }
 }
 
+export async function deleteUserFromInsForge(userId: string): Promise<{ success: boolean; error?: string }> {
+  if (!isInsForgeConfigured || !insforge) return { success: true };
+
+  try {
+    const { error } = await insforge.database.from("users").delete().eq("id", userId);
+    if (error) throw error;
+    return { success: true };
+  } catch (err: any) {
+    console.error("Failed to delete user from InsForge:", err);
+    return { success: false, error: err.message };
+  }
+}
+
+
 // ----------------------------------------------------
 // 3. Batch Processes & Operating Parameters (BP001)
 // ----------------------------------------------------

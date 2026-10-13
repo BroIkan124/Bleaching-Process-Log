@@ -391,209 +391,275 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Shift 1 Card */}
-          <div className="telemetry-card p-4 rounded-xl space-y-2.5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wide font-display">
-                Shift 1 (Morning) · 0800-1500
-              </span>
-              {s1Saved.length > 0 ? (
-                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-mono">
-                  Active ({s1Saved.length}/8 Hrs)
-                </span>
-              ) : techS1.source === "manual" ? (
-                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 font-mono">
-                  Assigned (0/8 Hrs)
-                </span>
-              ) : (
-                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-zinc-200/80 dark:bg-white/10 text-zinc-500 font-mono">
-                  Awaiting Check-in
-                </span>
-              )}
-            </div>
-
-            <div className="flex items-center justify-between text-xs pt-0.5">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-zinc-500">Technician:</span>
-                {techS1.isPending ? (
-                  <span className="inline-flex items-center gap-1 text-zinc-400 italic font-mono text-[11px]">
-                    <Clock className="w-3 h-3 text-zinc-400" /> Awaiting Check-in
+          <div className="telemetry-card p-4 sm:p-4.5 rounded-2xl flex flex-col justify-between space-y-3.5 border border-zinc-200/80 dark:border-white/5 bg-zinc-50/50 dark:bg-white/[0.02] shadow-sm hover:border-zinc-300 dark:hover:border-white/10 transition-all">
+            {/* Header: Title & Status */}
+            <div className="space-y-1">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-sm shrink-0" />
+                  <h3 className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wide font-display truncate">
+                    Shift 1 (Morning)
+                  </h3>
+                </div>
+                {s1Saved.length > 0 ? (
+                  <span className="shrink-0 px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-mono">
+                    Active ({s1Saved.length}/8h)
+                  </span>
+                ) : techS1.source === "manual" ? (
+                  <span className="shrink-0 px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-purple-500/10 text-purple-600 dark:text-purple-300 border border-purple-500/20 font-mono">
+                    Roster Set
                   </span>
                 ) : (
-                  <strong className="text-zinc-800 dark:text-zinc-200">{techS1.name}</strong>
-                )}
-                {techS1.source === "auto" && (
-                  <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 font-mono">
-                    Auto
+                  <span className="shrink-0 px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-zinc-200/80 dark:bg-white/10 text-zinc-500 font-mono">
+                    Standby
                   </span>
                 )}
-                {techS1.source === "manual" && (
-                  <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 font-mono">
-                    Roster
+              </div>
+              <div className="flex items-center justify-between text-[11px] font-mono text-zinc-400 dark:text-zinc-500 pl-4.5">
+                <span>0800 – 1500 Hrs</span>
+                <span>{s1Saved.length} of 8 hrs logged</span>
+              </div>
+            </div>
+
+            {/* Duty Technician Mini Block */}
+            <div className="p-2.5 rounded-xl bg-zinc-100/70 dark:bg-white/[0.03] border border-zinc-200/70 dark:border-white/5 flex items-center justify-between gap-2.5 shadow-xs">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/10 dark:bg-amber-400/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/20">
+                  <UserCheck className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-[9.5px] font-bold uppercase tracking-wider text-zinc-400 font-display block leading-none mb-1">
+                    Duty Technician
                   </span>
-                )}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {techS1.isPending ? (
+                      <span className="text-xs text-zinc-400 italic font-mono">Awaiting Check-in</span>
+                    ) : (
+                      <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate">
+                        {techS1.name}
+                      </span>
+                    )}
+                    {techS1.source === "auto" && (
+                      <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 font-mono">
+                        Auto
+                      </span>
+                    )}
+                    {techS1.source === "manual" && (
+                      <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-purple-500/10 text-purple-600 dark:text-purple-300 border border-purple-500/20 font-mono">
+                        Assigned
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
               <button
                 type="button"
                 onClick={() => setRosterModalShift(1)}
-                className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors cursor-pointer"
+                className="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold text-amber-700 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 hover:border-amber-500/30 transition-all cursor-pointer shrink-0 active:scale-95"
                 title="Assign or change Shift 1 roster technician"
               >
-                <UserCheck className="w-3.5 h-3.5" />
-                <span>Roster</span>
+                <span>Assign</span>
               </button>
             </div>
 
-            <div className="pt-2 border-t border-zinc-200/80 dark:border-white/10 flex justify-between text-xs font-mono">
-              <span className="text-zinc-500 font-sans">{s1Saved.length > 0 ? "Logged Volume:" : "Target Volume:"}</span>
-              <span className="font-bold">{s1Saved.length > 0 ? s1MT.toFixed(1) : "360.0"} MT</span>
-            </div>
-            <div className="flex justify-between text-xs font-mono">
-              <span className="text-zinc-500 font-sans">{s1Saved.length > 0 ? "Avg Rate:" : "Target Flow:"}</span>
-              <span className="font-bold">{s1Saved.length > 0 ? (s1MT / s1Saved.length).toFixed(1) : "45.0"} MT/HR</span>
-            </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-zinc-500">Status:</span>
-              <span className={s1Saved.length > 0 ? "text-emerald-500 font-bold font-mono" : "text-zinc-400 font-bold"}>
-                {s1Saved.length > 0 ? "In-Spec Completed" : "Not Started"}
-              </span>
+            {/* Operating Metrics */}
+            <div className="pt-2 border-t border-zinc-200/80 dark:border-white/5 space-y-1.5 text-xs font-mono">
+              <div className="flex items-center justify-between">
+                <span className="text-zinc-400 font-sans text-[11px]">{s1Saved.length > 0 ? "Logged Volume" : "Target Volume"}</span>
+                <span className="font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">{s1Saved.length > 0 ? s1MT.toFixed(1) : "360.0"} MT</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-zinc-400 font-sans text-[11px]">{s1Saved.length > 0 ? "Average Rate" : "Target Flow"}</span>
+                <span className="font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">{s1Saved.length > 0 ? (s1MT / s1Saved.length).toFixed(1) : "45.0"} MT/HR</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-zinc-400 font-sans text-[11px]">Shift Status</span>
+                <span className={`text-[11px] font-bold font-sans ${s1Saved.length > 0 ? "text-emerald-500" : "text-zinc-400"}`}>
+                  {s1Saved.length > 0 ? "In-Spec Completed" : "Not Started"}
+                </span>
+              </div>
             </div>
           </div>
 
           {/* Shift 2 Card */}
-          <div className="telemetry-card p-4 rounded-xl space-y-2.5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wide font-display">
-                Shift 2 (Afternoon) · 1600-2300
-              </span>
-              {s2Saved.length > 0 ? (
-                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-mono">
-                  Active ({s2Saved.length}/8 Hrs)
-                </span>
-              ) : techS2.source === "manual" ? (
-                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 font-mono">
-                  Assigned (0/8 Hrs)
-                </span>
-              ) : (
-                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-zinc-200/80 dark:bg-white/10 text-zinc-500 font-mono">
-                  Awaiting Check-in
-                </span>
-              )}
-            </div>
-
-            <div className="flex items-center justify-between text-xs pt-0.5">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-zinc-500">Technician:</span>
-                {techS2.isPending ? (
-                  <span className="inline-flex items-center gap-1 text-zinc-400 italic font-mono text-[11px]">
-                    <Clock className="w-3 h-3 text-zinc-400" /> Awaiting Check-in
+          <div className="telemetry-card p-4 sm:p-4.5 rounded-2xl flex flex-col justify-between space-y-3.5 border border-zinc-200/80 dark:border-white/5 bg-zinc-50/50 dark:bg-white/[0.02] shadow-sm hover:border-zinc-300 dark:hover:border-white/10 transition-all">
+            {/* Header: Title & Status */}
+            <div className="space-y-1">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="w-2.5 h-2.5 rounded-full bg-sky-500 shadow-sm shrink-0" />
+                  <h3 className="text-xs font-bold text-sky-600 dark:text-sky-400 uppercase tracking-wide font-display truncate">
+                    Shift 2 (Afternoon)
+                  </h3>
+                </div>
+                {s2Saved.length > 0 ? (
+                  <span className="shrink-0 px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-mono">
+                    Active ({s2Saved.length}/8h)
+                  </span>
+                ) : techS2.source === "manual" ? (
+                  <span className="shrink-0 px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-purple-500/10 text-purple-600 dark:text-purple-300 border border-purple-500/20 font-mono">
+                    Roster Set
                   </span>
                 ) : (
-                  <strong className="text-zinc-800 dark:text-zinc-200">{techS2.name}</strong>
-                )}
-                {techS2.source === "auto" && (
-                  <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 font-mono">
-                    Auto
+                  <span className="shrink-0 px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-zinc-200/80 dark:bg-white/10 text-zinc-500 font-mono">
+                    Standby
                   </span>
                 )}
-                {techS2.source === "manual" && (
-                  <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 font-mono">
-                    Roster
+              </div>
+              <div className="flex items-center justify-between text-[11px] font-mono text-zinc-400 dark:text-zinc-500 pl-4.5">
+                <span>1600 – 2300 Hrs</span>
+                <span>{s2Saved.length} of 8 hrs logged</span>
+              </div>
+            </div>
+
+            {/* Duty Technician Mini Block */}
+            <div className="p-2.5 rounded-xl bg-zinc-100/70 dark:bg-white/[0.03] border border-zinc-200/70 dark:border-white/5 flex items-center justify-between gap-2.5 shadow-xs">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-lg bg-sky-500/10 dark:bg-sky-400/10 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0 border border-sky-500/20">
+                  <UserCheck className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-[9.5px] font-bold uppercase tracking-wider text-zinc-400 font-display block leading-none mb-1">
+                    Duty Technician
                   </span>
-                )}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {techS2.isPending ? (
+                      <span className="text-xs text-zinc-400 italic font-mono">Awaiting Check-in</span>
+                    ) : (
+                      <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate">
+                        {techS2.name}
+                      </span>
+                    )}
+                    {techS2.source === "auto" && (
+                      <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 font-mono">
+                        Auto
+                      </span>
+                    )}
+                    {techS2.source === "manual" && (
+                      <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-purple-500/10 text-purple-600 dark:text-purple-300 border border-purple-500/20 font-mono">
+                        Assigned
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
               <button
                 type="button"
                 onClick={() => setRosterModalShift(2)}
-                className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors cursor-pointer"
+                className="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold text-sky-700 dark:text-sky-400 bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/20 hover:border-sky-500/30 transition-all cursor-pointer shrink-0 active:scale-95"
                 title="Assign or change Shift 2 roster technician"
               >
-                <UserCheck className="w-3.5 h-3.5" />
-                <span>Roster</span>
+                <span>Assign</span>
               </button>
             </div>
 
-            <div className="pt-2 border-t border-zinc-200/80 dark:border-white/10 flex justify-between text-xs font-mono">
-              <span className="text-zinc-500 font-sans">{s2Saved.length > 0 ? "Logged Volume:" : "Target Volume:"}</span>
-              <span className="font-bold">{s2Saved.length > 0 ? s2MT.toFixed(1) : "360.0"} MT</span>
-            </div>
-            <div className="flex justify-between text-xs font-mono">
-              <span className="text-zinc-500 font-sans">{s2Saved.length > 0 ? "Avg Rate:" : "Target Flow:"}</span>
-              <span className="font-bold">{s2Saved.length > 0 ? (s2MT / s2Saved.length).toFixed(1) : "45.0"} MT/HR</span>
-            </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-zinc-500">Status:</span>
-              <span className={s2Saved.length > 0 ? "text-emerald-500 font-bold font-mono" : "text-zinc-400 font-bold"}>
-                {s2Saved.length > 0 ? "Active Logging" : "Not Started"}
-              </span>
+            {/* Operating Metrics */}
+            <div className="pt-2 border-t border-zinc-200/80 dark:border-white/5 space-y-1.5 text-xs font-mono">
+              <div className="flex items-center justify-between">
+                <span className="text-zinc-400 font-sans text-[11px]">{s2Saved.length > 0 ? "Logged Volume" : "Target Volume"}</span>
+                <span className="font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">{s2Saved.length > 0 ? s2MT.toFixed(1) : "360.0"} MT</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-zinc-400 font-sans text-[11px]">{s2Saved.length > 0 ? "Average Rate" : "Target Flow"}</span>
+                <span className="font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">{s2Saved.length > 0 ? (s2MT / s2Saved.length).toFixed(1) : "45.0"} MT/HR</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-zinc-400 font-sans text-[11px]">Shift Status</span>
+                <span className={`text-[11px] font-bold font-sans ${s2Saved.length > 0 ? "text-emerald-500" : "text-zinc-400"}`}>
+                  {s2Saved.length > 0 ? "Active Logging" : "Not Started"}
+                </span>
+              </div>
             </div>
           </div>
 
           {/* Shift 3 Card */}
-          <div className="telemetry-card p-4 rounded-xl space-y-2.5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wide font-display">
-                Shift 3 (Night) · 2400-0700
-              </span>
-              {s3Saved.length > 0 ? (
-                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-mono">
-                  Active ({s3Saved.length}/8 Hrs)
-                </span>
-              ) : techS3.source === "manual" ? (
-                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 font-mono">
-                  Assigned (0/8 Hrs)
-                </span>
-              ) : (
-                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-zinc-200/80 dark:bg-white/10 text-zinc-500 font-mono">
-                  Awaiting Check-in
-                </span>
-              )}
-            </div>
-
-            <div className="flex items-center justify-between text-xs pt-0.5">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-zinc-500">Technician:</span>
-                {techS3.isPending ? (
-                  <span className="inline-flex items-center gap-1 text-zinc-400 italic font-mono text-[11px]">
-                    <Clock className="w-3 h-3 text-zinc-400" /> Awaiting Check-in
+          <div className="telemetry-card p-4 sm:p-4.5 rounded-2xl flex flex-col justify-between space-y-3.5 border border-zinc-200/80 dark:border-white/5 bg-zinc-50/50 dark:bg-white/[0.02] shadow-sm hover:border-zinc-300 dark:hover:border-white/10 transition-all">
+            {/* Header: Title & Status */}
+            <div className="space-y-1">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 shadow-sm shrink-0" />
+                  <h3 className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide font-display truncate">
+                    Shift 3 (Night)
+                  </h3>
+                </div>
+                {s3Saved.length > 0 ? (
+                  <span className="shrink-0 px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-mono">
+                    Active ({s3Saved.length}/8h)
+                  </span>
+                ) : techS3.source === "manual" ? (
+                  <span className="shrink-0 px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-purple-500/10 text-purple-600 dark:text-purple-300 border border-purple-500/20 font-mono">
+                    Roster Set
                   </span>
                 ) : (
-                  <strong className="text-zinc-800 dark:text-zinc-200">{techS3.name}</strong>
-                )}
-                {techS3.source === "auto" && (
-                  <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 font-mono">
-                    Auto
+                  <span className="shrink-0 px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-zinc-200/80 dark:bg-white/10 text-zinc-500 font-mono">
+                    Standby
                   </span>
                 )}
-                {techS3.source === "manual" && (
-                  <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 font-mono">
-                    Roster
+              </div>
+              <div className="flex items-center justify-between text-[11px] font-mono text-zinc-400 dark:text-zinc-500 pl-4.5">
+                <span>2400 – 0700 Hrs</span>
+                <span>{s3Saved.length} of 8 hrs logged</span>
+              </div>
+            </div>
+
+            {/* Duty Technician Mini Block */}
+            <div className="p-2.5 rounded-xl bg-zinc-100/70 dark:bg-white/[0.03] border border-zinc-200/70 dark:border-white/5 flex items-center justify-between gap-2.5 shadow-xs">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-lg bg-indigo-500/10 dark:bg-indigo-400/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-500/20">
+                  <UserCheck className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-[9.5px] font-bold uppercase tracking-wider text-zinc-400 font-display block leading-none mb-1">
+                    Duty Technician
                   </span>
-                )}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {techS3.isPending ? (
+                      <span className="text-xs text-zinc-400 italic font-mono">Awaiting Check-in</span>
+                    ) : (
+                      <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate">
+                        {techS3.name}
+                      </span>
+                    )}
+                    {techS3.source === "auto" && (
+                      <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 font-mono">
+                        Auto
+                      </span>
+                    )}
+                    {techS3.source === "manual" && (
+                      <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-purple-500/10 text-purple-600 dark:text-purple-300 border border-purple-500/20 font-mono">
+                        Assigned
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
               <button
                 type="button"
                 onClick={() => setRosterModalShift(3)}
-                className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors cursor-pointer"
+                className="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold text-indigo-700 dark:text-indigo-400 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 hover:border-indigo-500/30 transition-all cursor-pointer shrink-0 active:scale-95"
                 title="Assign or change Shift 3 roster technician"
               >
-                <UserCheck className="w-3.5 h-3.5" />
-                <span>Roster</span>
+                <span>Assign</span>
               </button>
             </div>
 
-            <div className="pt-2 border-t border-zinc-200/80 dark:border-white/10 flex justify-between text-xs font-mono">
-              <span className="text-zinc-500 font-sans">{s3Saved.length > 0 ? "Logged Volume:" : "Target Volume:"}</span>
-              <span className="font-bold">{s3Saved.length > 0 ? s3MT.toFixed(1) : "360.0"} MT</span>
-            </div>
-            <div className="flex justify-between text-xs font-mono">
-              <span className="text-zinc-500 font-sans">{s3Saved.length > 0 ? "Avg Rate:" : "Target Flow:"}</span>
-              <span className="font-bold">{s3Saved.length > 0 ? (s3MT / s3Saved.length).toFixed(1) : "45.0"} MT/HR</span>
-            </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-zinc-500">Status:</span>
-              <span className={s3Saved.length > 0 ? "text-emerald-500 font-bold font-mono" : "text-zinc-400 font-bold"}>
-                {s3Saved.length > 0 ? "Active Logging" : "Not Started"}
-              </span>
+            {/* Operating Metrics */}
+            <div className="pt-2 border-t border-zinc-200/80 dark:border-white/5 space-y-1.5 text-xs font-mono">
+              <div className="flex items-center justify-between">
+                <span className="text-zinc-400 font-sans text-[11px]">{s3Saved.length > 0 ? "Logged Volume" : "Target Volume"}</span>
+                <span className="font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">{s3Saved.length > 0 ? s3MT.toFixed(1) : "360.0"} MT</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-zinc-400 font-sans text-[11px]">{s3Saved.length > 0 ? "Average Rate" : "Target Flow"}</span>
+                <span className="font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">{s3Saved.length > 0 ? (s3MT / s3Saved.length).toFixed(1) : "45.0"} MT/HR</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-zinc-400 font-sans text-[11px]">Shift Status</span>
+                <span className={`text-[11px] font-bold font-sans ${s3Saved.length > 0 ? "text-emerald-500" : "text-zinc-400"}`}>
+                  {s3Saved.length > 0 ? "Active Logging" : "Not Started"}
+                </span>
+              </div>
             </div>
           </div>
         </div>

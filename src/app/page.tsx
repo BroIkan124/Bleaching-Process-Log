@@ -1401,7 +1401,7 @@ export default function BleachingProcessLogApp() {
         />
 
         {/* Main Workspace Body */}
-        <main className="flex-1 min-w-0 p-3 sm:p-4 md:p-5 pb-12 overflow-x-auto">
+        <main className="flex-1 min-w-0 p-3 sm:p-4 md:p-5 pb-12 overflow-x-hidden md:overflow-x-visible">
           <div key={activeTab} className="fade-in-tactile">
           {/* Tab 1: Bleaching Process Log (RF-FR-003) */}
           {activeTab === 'bleaching' && (

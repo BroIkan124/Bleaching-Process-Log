@@ -164,18 +164,32 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   return (
     <header className="sticky top-0 z-30 w-full border-b border-zinc-200/80 dark:border-white/[0.08] bg-white/95 dark:bg-[#080C14]/95 backdrop-blur-xl">
       <div className="max-w-[1680px] mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3">
-        {/* Left: Brand Identity & Active Section */}
-        <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-xl bg-amber-500 flex items-center justify-center text-white font-bold shrink-0 shadow-2xs">
-            <Building2 className="w-4 h-4" />
+        {/* Left: Brand Identity with Official Lam Soon Badge Logo */}
+        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+          <div className="relative shrink-0 flex items-center justify-center">
+            <img
+              src="/lam-soon-badge.png"
+              alt="Lam Soon Edible Oils"
+              className="h-8 w-8 sm:h-9 sm:w-9 object-contain shrink-0 drop-shadow-sm rounded-lg"
+            />
           </div>
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-bold text-xs sm:text-sm tracking-tight text-zinc-900 dark:text-white">
+          <div className="flex flex-col justify-center min-w-0">
+            <div className="flex items-center gap-2 flex-nowrap">
+              <span className="font-extrabold text-xs sm:text-sm tracking-tight text-zinc-900 dark:text-white whitespace-nowrap">
                 Lam Soon Edible Oils
               </span>
               <span className="text-zinc-300 dark:text-zinc-700 hidden sm:inline">|</span>
-              <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400 hidden md:inline">
+              <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 hidden sm:inline whitespace-nowrap">
+                {getSectionTitle()}
+              </span>
+              {activeTab === "bleaching" && (
+                <div className="hidden sm:inline-flex shrink-0">
+                  {getStatusBadge()}
+                </div>
+              )}
+            </div>
+            <div className="flex sm:hidden items-center gap-1.5 mt-0.5">
+              <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">
                 {getSectionTitle()}
               </span>
               {activeTab === "bleaching" && getStatusBadge()}

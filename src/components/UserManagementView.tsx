@@ -45,7 +45,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("ALL");
-  const [shiftFilter, setShiftFilter] = useState<string>("ALL");
+  const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isClosingModal, setIsClosingModal] = useState(false);
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
@@ -64,7 +64,6 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
     role: UserRole;
     email: string;
     department: string;
-    shift: 1 | 2 | 3 | 'ALL';
     phone: string;
     password: string;
     active: boolean;
@@ -73,7 +72,6 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
     role: "technician",
     email: "",
     department: "Refinery Operations",
-    shift: 1,
     phone: "+60 ",
     password: "password123",
     active: true,
@@ -83,14 +81,20 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
 
   // Filtered users
   const filteredUsers = users.filter((u) => {
+    const q = searchQuery.toLowerCase().trim();
     const matchesSearch = 
-      u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (u.phone && u.phone.includes(searchQuery)) ||
-      u.department.toLowerCase().includes(searchQuery.toLowerCase());
+      !q ||
+      u.name.toLowerCase().includes(q) ||
+      u.email.toLowerCase().includes(q) ||
+      (u.phone && u.phone.includes(q)) ||
+      u.department.toLowerCase().includes(q) ||
+      u.id.toLowerCase().includes(q);
     const matchesRole = roleFilter === "ALL" || u.role === roleFilter;
-    const matchesShift = shiftFilter === "ALL" || String(u.shift) === shiftFilter;
-    return matchesSearch && matchesRole && matchesShift;
+    const matchesStatus = 
+      statusFilter === "ALL" || 
+      (statusFilter === "ACTIVE" && u.active) || 
+      (statusFilter === "INACTIVE" && !u.active);
+    return matchesSearch && matchesRole && matchesStatus;
   });
 
   // Role Badges
@@ -98,32 +102,37 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
     switch (role) {
       case "admin":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300">
-            <Shield className="w-3.5 h-3.5" /> System Administrator
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20 shadow-2xs">
+            <Shield className="w-3.5 h-3.5 text-purple-500 shrink-0" />
+            <span>System Administrator</span>
           </span>
         );
       case "supervisor":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
-            <ShieldCheck className="w-3.5 h-3.5" /> Plant Supervisor
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 shadow-2xs">
+            <ShieldCheck className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+            <span>Plant Supervisor</span>
           </span>
         );
       case "manager_qa":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
-            <ShieldCheck className="w-3.5 h-3.5" /> QA Manager
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 shadow-2xs">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+            <span>QA Manager</span>
           </span>
         );
       case "chemist":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300">
-            <FlaskConical className="w-3.5 h-3.5" /> QC Chemist
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/20 shadow-2xs">
+            <FlaskConical className="w-3.5 h-3.5 text-sky-500 shrink-0" />
+            <span>QC Chemist</span>
           </span>
         );
       case "technician":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-            <Wrench className="w-3.5 h-3.5" /> Operations Technician
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-zinc-100 dark:bg-white/5 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-white/10 shadow-2xs">
+            <Wrench className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+            <span>Operations Technician</span>
           </span>
         );
     }
@@ -154,7 +163,6 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
       role: "technician",
       email: "",
       department: "Refinery Operations",
-      shift: 1,
       phone: "+60 1",
       password: "password123",
       active: true,
@@ -169,7 +177,6 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
       role: user.role,
       email: user.email,
       department: user.department,
-      shift: user.shift || 1,
       phone: user.phone || "",
       password: user.password || "password123",
       active: user.active,
@@ -184,7 +191,13 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
       // Update
       const updatedUser: UserProfile = {
         ...editingUser,
-        ...formData,
+        name: formData.name.trim(),
+        role: formData.role,
+        email: formData.email.trim(),
+        department: formData.department.trim(),
+        phone: formData.phone.trim(),
+        password: formData.password,
+        active: formData.active,
       };
       const updated = users.map((u) => 
         u.id === editingUser.id ? updatedUser : u
@@ -212,7 +225,13 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
 
       const newUser: UserProfile = {
         id: formattedId,
-        ...formData,
+        name: formData.name.trim(),
+        role: formData.role,
+        email: formData.email.trim(),
+        department: formData.department.trim(),
+        phone: formData.phone.trim(),
+        password: formData.password,
+        active: formData.active,
         last_login: "Never logged in",
       };
       onUpdateUsers([...users, newUser]);
@@ -238,7 +257,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
         </h2>
         <p className="text-sm text-zinc-600 dark:text-zinc-400 max-w-md mx-auto">
           You are currently signed in as <strong className="text-amber-500 font-bold">{currentUser.name} ({currentUser.role})</strong>.
-          This module is restricted to System Administrators to manage staff accounts, permissions, and shift schedules.
+          This module is restricted to System Administrators to manage staff accounts, credentials, and access roles.
         </p>
         <div className="pt-2">
           <button
@@ -301,7 +320,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
           <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider block font-display">Operations Technicians</span>
           <div className="flex items-baseline gap-2 mt-1">
             <span className="text-2xl font-bold font-display text-amber-500 font-mono tabular-nums">{techCount}</span>
-            <span className="text-xs text-zinc-500 font-mono">Shift 1-3</span>
+            <span className="text-xs text-zinc-500 font-mono">Field Ops</span>
           </div>
         </div>
 
@@ -331,20 +350,30 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
       </div>
 
       {/* 3. Search and Filters */}
-      <div className="p-4 rounded-xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+      <div className="p-4 rounded-2xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-white/10 shadow-xs flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by name, email, phone or department..."
-            className="w-full pl-9 pr-4 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500"
+            placeholder="Search staff name, ID, email, phone, department..."
+            className="w-full pl-10 pr-9 py-2.5 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50/70 dark:bg-black/30 text-xs sm:text-sm font-medium text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500/50 transition-all"
           />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          <div className="w-52">
+        <div className="flex items-center gap-2.5 flex-wrap">
+          {/* Role Filter */}
+          <div className="w-48 sm:w-52">
             <RadioSelect
               value={roleFilter}
               onChange={(val) => setRoleFilter(val)}
@@ -361,140 +390,161 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
             />
           </div>
 
-          <div className="w-52">
+          {/* Status Filter */}
+          <div className="w-36 sm:w-40">
             <RadioSelect
-              value={shiftFilter}
-              onChange={(val) => setShiftFilter(val)}
+              value={statusFilter}
+              onChange={(val) => setStatusFilter(val)}
               options={[
-                { value: "ALL", label: "All Shifts" },
-                { value: "1", label: "Shift 1 (Morning)" },
-                { value: "2", label: "Shift 2 (Afternoon)" },
-                { value: "3", label: "Shift 3 (Night)" },
+                { value: "ALL", label: "All Status" },
+                { value: "ACTIVE", label: "Active Only" },
+                { value: "INACTIVE", label: "Suspended" },
               ]}
+              icon={<Shield className="w-3.5 h-3.5 text-zinc-400" />}
               size="sm"
             />
           </div>
+
+          {/* Staff Counter Badge */}
+          <span className="px-3 py-2 rounded-xl text-xs font-bold font-mono bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 whitespace-nowrap">
+            {filteredUsers.length} {filteredUsers.length === 1 ? "Staff" : "Staff"}
+          </span>
         </div>
       </div>
 
       {/* 4. Staff Table */}
-      <div className="rounded-2xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 shadow-sm overflow-hidden">
+      <div className="rounded-2xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-white/10 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse table-fixed">
             <thead>
-              <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-[#131416] text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
-                <th className="py-3 px-4">Staff Name &amp; Contact</th>
-                <th className="py-3 px-4">Role (RBAC)</th>
-                <th className="py-3 px-4">Department</th>
-                <th className="py-3 px-4">Assigned Shift</th>
-                <th className="py-3 px-4">Last Login</th>
-                <th className="py-3 px-4 text-center">Status</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+              <tr className="border-b border-zinc-200 dark:border-white/10 bg-zinc-50/80 dark:bg-[#131416] text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 font-display">
+                <th className="py-3 px-3.5 w-[28%]">Staff Member &amp; ID</th>
+                <th className="py-3 px-3 w-[18%]">Role (RBAC)</th>
+                <th className="py-3 px-3 w-[20%]">Department</th>
+                <th className="py-3 px-3 w-[15%]">Last Login</th>
+                <th className="py-3 px-2 w-[11%] text-center">Status</th>
+                <th className="py-3 px-3 w-[8%] text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800 text-xs">
+            <tbody className="divide-y divide-zinc-200 dark:divide-white/5 text-xs">
               {filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-zinc-400">
-                    No users found matching this search.
+                  <td colSpan={6} className="py-12 px-4 text-center text-zinc-400">
+                    <div className="flex flex-col items-center gap-2 max-w-sm mx-auto">
+                      <Users className="w-8 h-8 text-zinc-400/60" />
+                      <span className="font-bold text-zinc-900 dark:text-white text-sm">
+                        No staff members found
+                      </span>
+                      <p className="text-xs text-zinc-500">
+                        {searchQuery || roleFilter !== "ALL" || statusFilter !== "ALL"
+                          ? "Try clearing filters or search query to view all staff accounts."
+                          : "No users registered in the system yet."}
+                      </p>
+                      {(searchQuery || roleFilter !== "ALL" || statusFilter !== "ALL") && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSearchQuery("");
+                            setRoleFilter("ALL");
+                            setStatusFilter("ALL");
+                          }}
+                          className="mt-2 px-3 py-1.5 rounded-xl border border-zinc-300 dark:border-white/10 text-xs font-bold hover:bg-zinc-100 dark:hover:bg-white/5 cursor-pointer"
+                        >
+                          Reset Filters
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ) : (
                 filteredUsers.map((user) => (
                   <tr 
                     key={user.id}
-                    className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
+                    className="hover:bg-zinc-50/70 dark:hover:bg-white/[0.02] transition-colors"
                   >
                     {/* User Info */}
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-xl bg-amber-600/15 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center justify-center font-bold text-xs uppercase shrink-0">
+                    <td className="py-3 px-3.5">
+                      <div className="flex items-center gap-2.5">
+                        <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-amber-500/20 to-amber-600/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center justify-center font-bold text-xs uppercase shrink-0 shadow-2xs font-display">
                           {user.name.slice(0, 2)}
                         </div>
-                        <div>
-                          <div className="font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                            <span>{user.name}</span>
+                        <div className="min-w-0 flex-1">
+                          <div className="font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5 flex-wrap">
+                            <span className="truncate">{user.name}</span>
+                            <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-zinc-100 dark:bg-white/5 text-zinc-600 dark:text-zinc-400 border border-zinc-200/60 dark:border-white/5">
+                              {user.id}
+                            </span>
                             {user.id === currentUser.id && (
-                              <span className="text-xs font-mono px-1.5 py-0.2 bg-amber-500 text-white rounded font-bold">
+                              <span className="text-[9px] font-mono px-1 py-0.2 bg-amber-500 text-white rounded font-extrabold tracking-wider shadow-xs">
                                 YOU
                               </span>
                             )}
                           </div>
-                          <div className="text-xs text-zinc-500 flex items-center gap-2 mt-0.5">
-                            <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> {user.email}</span>
-                            {user.phone && (
-                              <span className="flex items-center gap-1 font-mono"><Phone className="w-3 h-3" /> {user.phone}</span>
-                            )}
+                          <div className="text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5 mt-0.5">
+                            <Mail className="w-3 h-3 text-zinc-400 shrink-0" />
+                            <span className="truncate">{user.email}</span>
                           </div>
                         </div>
                       </div>
                     </td>
 
                     {/* Role */}
-                    <td className="py-3 px-4 whitespace-nowrap">
+                    <td className="py-3 px-3">
                       {renderRoleBadge(user.role)}
                     </td>
 
                     {/* Department */}
-                    <td className="py-3 px-4 font-medium text-zinc-700 dark:text-zinc-300">
-                      {user.department}
-                    </td>
-
-                    {/* Shift */}
-                    <td className="py-3 px-4 whitespace-nowrap">
-                      {user.shift === "ALL" ? (
-                        <span className="px-2 py-0.5 rounded text-xs font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
-                          All Shifts
-                        </span>
-                      ) : (
-                        <span className="px-2 py-0.5 rounded text-xs font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 font-mono">
-                          Shift {user.shift}
-                        </span>
-                      )}
+                    <td className="py-3 px-3">
+                      <div className="flex items-center gap-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                        <Building className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                        <span className="truncate">{user.department}</span>
+                      </div>
                     </td>
 
                     {/* Last Login */}
-                    <td className="py-3 px-4 text-zinc-500 font-mono text-xs whitespace-nowrap">
-                      {user.last_login || "No login"}
+                    <td className="py-3 px-3">
+                      <div className="flex items-center gap-1.5 font-mono text-xs text-zinc-500 dark:text-zinc-400">
+                        <Clock className="w-3 h-3 text-zinc-400 shrink-0" />
+                        <span className="truncate">{user.last_login ? user.last_login.split(",")[0] : "Never logged in"}</span>
+                      </div>
                     </td>
 
                     {/* Status Toggle */}
-                    <td className="py-3 px-4 text-center whitespace-nowrap">
+                    <td className="py-3 px-2 text-center">
                       <button
                         type="button"
                         onClick={() => handleToggleStatus(user.id)}
-                        className={`btn-tactile inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold cursor-pointer ${
+                        className={`btn-tactile inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
                           user.active
-                            ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800"
-                            : "bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300 border border-rose-300 dark:border-rose-800"
+                            ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/20"
+                            : "bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-500/30 hover:bg-rose-500/20"
                         }`}
+                        title={user.active ? "Click to suspend staff account" : "Click to activate staff account"}
                       >
                         {user.active ? (
                           <>
-                            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                             <span>Active</span>
                           </>
                         ) : (
                           <>
-                            <XCircle className="w-3 h-3 text-rose-600" />
-                            <span>Inactive</span>
+                            <XCircle className="w-3.5 h-3.5 text-rose-500" />
+                            <span>Suspended</span>
                           </>
                         )}
                       </button>
                     </td>
 
                     {/* Actions */}
-                    <td className="py-3 px-4 text-right whitespace-nowrap">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => handleOpenEditModal(user)}
-                          className="btn-tactile p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 cursor-pointer group"
-                          title="Edit User"
-                        >
-                          <Edit3 className="w-3.5 h-3.5 transition-transform duration-200 group-hover:scale-110" />
-                        </button>
-                      </div>
+                    <td className="py-3 px-3 text-right">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEditModal(user)}
+                        className="btn-tactile p-2 rounded-xl border border-zinc-200 dark:border-white/10 hover:border-amber-500/40 bg-zinc-50 dark:bg-white/5 hover:bg-amber-500/10 text-zinc-600 dark:text-zinc-300 hover:text-amber-600 dark:hover:text-amber-400 cursor-pointer group transition-all"
+                        title="Edit Staff Profile"
+                      >
+                        <Edit3 className="w-3.5 h-3.5 transition-transform duration-200 group-hover:scale-110" />
+                      </button>
                     </td>
                   </tr>
                 ))
@@ -507,7 +557,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
       {/* Add / Edit User Modal */}
       {isAddModalOpen && (
         <div 
-          className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md modal-backdrop-animate ${
+          className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md modal-backdrop-animate ${
             isClosingModal ? "is-closing" : ""
           }`}
           role="dialog"
@@ -516,45 +566,52 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
             if (e.target === e.currentTarget) handleCloseModal();
           }}
         >
-          <div className={`relative w-full max-w-lg bg-white/95 dark:bg-[#18181B]/95 backdrop-blur-2xl rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden text-zinc-900 dark:text-zinc-100 modal-card-animate ${
+          <div className={`relative w-full max-w-lg bg-white dark:bg-[#151922] rounded-2xl shadow-2xl border border-zinc-200 dark:border-white/10 overflow-hidden text-zinc-900 dark:text-zinc-100 modal-card-animate ${
             isClosingModal ? "is-closing" : ""
           }`}>
-            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-[#131416]">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-white/10 bg-zinc-50/80 dark:bg-black/30">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20">
                   <UserPlus className="w-5 h-5" />
                 </div>
-                <h3 className="font-bold text-base font-display">
-                  {editingUser ? "Edit Staff Profile" : "Register New Staff"}
-                </h3>
+                <div>
+                  <h3 className="font-bold text-base font-display text-zinc-900 dark:text-white">
+                    {editingUser ? "Edit Staff Profile" : "Register New Staff"}
+                  </h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                    {editingUser ? `Updating credentials for ${editingUser.name}` : "Configure profile and role-based permissions."}
+                  </p>
+                </div>
               </div>
               <button
                 type="button"
                 onClick={handleCloseModal}
-                className="btn-tactile p-1.5 rounded-lg text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 cursor-pointer group"
+                className="btn-tactile p-2 rounded-xl text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/5 cursor-pointer group"
               >
-                <X className="w-5 h-5 transition-transform duration-200 group-hover:rotate-90" />
+                <X className="w-4 h-4 transition-transform duration-200 group-hover:rotate-90" />
               </button>
             </div>
 
             <form onSubmit={handleSaveUser} className="p-6 space-y-4">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1">
-                  Full Staff Name
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g. Muhammad Haziq"
-                  className="w-full px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
+              {/* Full Name & Role */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1.5 font-display">
+                    Full Staff Name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="e.g. Muhammad Haziq"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50/70 dark:bg-black/30 text-xs sm:text-sm font-medium text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500/50"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1.5 font-display">
                     Role (RBAC)
                   </label>
                   <RadioSelect
@@ -569,51 +626,42 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
                     ]}
                   />
                 </div>
+              </div>
+
+              {/* Email & Phone */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1.5 font-display">
+                    Official Email
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    placeholder="e.g. haziq@lamsoon.com.my"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50/70 dark:bg-black/30 text-xs sm:text-sm font-medium text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500/50"
+                  />
+                </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1">
-                    Shift
+                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1.5 font-display">
+                    Phone Contact
                   </label>
-                  <GliderRadioGroup
-                    value={String(formData.shift)}
-                    onChange={(val) => {
-                      setFormData({ 
-                        ...formData, 
-                        shift: val === "ALL" ? "ALL" : (Number(val) as 1 | 2 | 3) 
-                      });
-                    }}
-                    themeColor="amber"
-                    size="xs"
-                    variant="rounded"
-                    equalWidth
-                    className="w-full"
-                    options={[
-                      { value: "1", label: "Shift 1 (Morning)" },
-                      { value: "2", label: "Shift 2 (Afternoon)" },
-                      { value: "3", label: "Shift 3 (Night)" },
-                      { value: "ALL", label: "All Shifts" },
-                    ]}
+                  <input
+                    type="text"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    placeholder="+60 1x-xxx xxxx"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50/70 dark:bg-black/30 text-xs font-mono font-medium text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500/50"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1">
-                  Official Email
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="e.g. haziq@lamsoon.com.my"
-                  className="w-full px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
+              {/* Department & Password */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1.5 font-display">
                     Department
                   </label>
                   <input
@@ -622,38 +670,27 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
                     value={formData.department}
                     onChange={(e) => setFormData({ ...formData, department: e.target.value })}
                     placeholder="Refinery Operations"
-                    className="w-full px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50/70 dark:bg-black/30 text-xs font-medium text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500/50"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1">
-                    Phone Number
+                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1.5 font-display">
+                    Password / Access Key
                   </label>
                   <input
-                    type="text"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    placeholder="+60 1x-xxx xxxx"
-                    className="w-full px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-xs font-mono font-medium focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    type="password"
+                    required
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    placeholder="••••••••"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50/70 dark:bg-black/30 text-xs font-mono text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500/50"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  required
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-amber-500"
-                />
-              </div>
-
-              <div className="pt-2">
+              {/* Active Account Toggle */}
+              <div className="p-3.5 rounded-xl bg-zinc-50/70 dark:bg-black/20 border border-zinc-200/80 dark:border-white/5">
                 <AnimatedCheckbox
                   id="active-checkbox"
                   checked={formData.active}
@@ -661,26 +698,32 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
                   color="amber"
                   size="sm"
                   label={
-                    <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
-                      Active Account &amp; Can Sign In
-                    </span>
+                    <div className="ml-1">
+                      <span className="text-xs font-bold text-zinc-900 dark:text-white block">
+                        Account Active &amp; Authorized to Sign In
+                      </span>
+                      <span className="text-[11px] text-zinc-500 dark:text-zinc-400 block mt-0.5">
+                        Staff member can authenticate into Nisshin Process Log based on their assigned role.
+                      </span>
+                    </div>
                   }
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+              {/* Modal Footer */}
+              <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-zinc-200 dark:border-white/10">
                 <button
                   type="button"
                   onClick={handleCloseModal}
-                  className="btn-tactile btn-premium-glass px-4 py-2 rounded-xl text-xs font-bold cursor-pointer"
+                  className="btn-tactile px-4 py-2.5 rounded-xl text-xs font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="btn-premium-amber px-5 py-2 rounded-xl text-xs font-bold text-white shadow-md cursor-pointer group"
+                  className="btn-premium-amber px-5 py-2.5 rounded-xl text-xs font-bold text-white shadow-md cursor-pointer group"
                 >
-                  {editingUser ? "Save Changes" : "Register Staff"}
+                  {editingUser ? "Save Profile Changes" : "Register Staff Profile"}
                 </button>
               </div>
             </form>

@@ -764,8 +764,27 @@ export default function BleachingProcessLogApp() {
     const hasSavedAny = updatedEntries.some(e => e.is_saved);
     const newStatus = sheet.status === 'Draft' && hasSavedAny ? 'InProgress' : sheet.status;
 
+    // Shift technician auto-detection (Option 3: Smart Hybrid)
+    // If duty technician for this shift is not manually pinned, auto-assign from the active operator
+    const shift = updatedEntry.shift;
+    const operatorName = updatedEntry.entered_by_name || currentUser.name;
+    const operatorId = updatedEntry.entered_by || currentUser.id;
+
+    const shiftUpdates: Partial<LogSheet> = {};
+    if (shift === 1 && !sheet.tech_s1_manual) {
+      shiftUpdates.tech_s1 = operatorId;
+      shiftUpdates.tech_s1_name = operatorName;
+    } else if (shift === 2 && !sheet.tech_s2_manual) {
+      shiftUpdates.tech_s2 = operatorId;
+      shiftUpdates.tech_s2_name = operatorName;
+    } else if (shift === 3 && !sheet.tech_s3_manual) {
+      shiftUpdates.tech_s3 = operatorId;
+      shiftUpdates.tech_s3_name = operatorName;
+    }
+
     const updatedSheet: LogSheet = {
       ...sheet,
+      ...shiftUpdates,
       entries: updatedEntries,
       status: newStatus,
       updated_at: new Date().toISOString(),
@@ -1445,6 +1464,8 @@ export default function BleachingProcessLogApp() {
               sheet={sheet}
               currentUser={currentUser}
               qcReports={qcReports}
+              allUsers={allUsers}
+              onUpdateShiftTechnician={handleUpdateHeader}
             />
           )}
 
@@ -1478,6 +1499,8 @@ export default function BleachingProcessLogApp() {
               onUnlockSlot={handleToggleSupervisorOverride}
               supervisorUnlockedSlots={supervisorUnlockedSlots}
               activeCurrentHourIndex={currentSlotIndex}
+              allUsers={allUsers}
+              onUpdateShiftTechnician={handleUpdateHeader}
             />
           )}
 

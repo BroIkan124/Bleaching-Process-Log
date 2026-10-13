@@ -6,6 +6,7 @@ import { FORM_META } from "@/lib/constants";
 import { Printer, X, CheckCircle2, ShieldCheck, FileText, FlaskConical, AlertTriangle, Layers } from "lucide-react";
 import { recordDocumentExport } from "@/lib/dbService";
 import { AnimatedCheckbox } from "./AnimatedCheckbox";
+import { getShiftDutyTechnician } from "@/lib/workflowPipeline";
 
 interface PdfExportModalProps {
   sheet: LogSheet;
@@ -25,6 +26,11 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
 }) => {
   const [isClosing, setIsClosing] = useState(false);
   const [highlightOutOfSpec, setHighlightOutOfSpec] = useState(true);
+
+  // Shift duty technicians (Option 3: Smart Hybrid)
+  const techS1 = getShiftDutyTechnician(sheet, 1);
+  const techS2 = getShiftDutyTechnician(sheet, 2);
+  const techS3 = getShiftDutyTechnician(sheet, 3);
 
   if (!isOpen) return null;
 
@@ -347,15 +353,15 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
               <div className="grid grid-cols-12 divide-x divide-black bg-zinc-50/60 print:bg-transparent">
                 <div className="col-span-3 px-1.5 py-0.5">
                   <span className="font-bold text-[7.5px] text-zinc-700">Shift 1 (Morning · 0800-1500): </span>
-                  <span className="font-semibold">{sheet.tech_s1_name || "Ahmad Razif"}</span>
+                  <span className="font-semibold">{techS1.name || "Pending Check-in"}</span>
                 </div>
                 <div className="col-span-3 px-1.5 py-0.5">
                   <span className="font-bold text-[7.5px] text-zinc-700">Shift 2 (Afternoon · 1600-2300): </span>
-                  <span className="font-semibold">{sheet.tech_s2_name || "Mohd Danial"}</span>
+                  <span className="font-semibold">{techS2.name || "Pending Check-in"}</span>
                 </div>
                 <div className="col-span-3 px-1.5 py-0.5">
                   <span className="font-bold text-[7.5px] text-zinc-700">Shift 3 (Night · 2400-0700): </span>
-                  <span className="font-semibold">{sheet.tech_s3_name || "K. Subramaniam"}</span>
+                  <span className="font-semibold">{techS3.name || "Pending Check-in"}</span>
                 </div>
                 <div className="col-span-3 px-1.5 py-0.5 flex items-center justify-between">
                   <span className="font-bold text-[7.5px] text-zinc-700">SHEET STATUS:</span>
@@ -468,7 +474,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
                   <tr className="bg-zinc-100 print:bg-zinc-50 border-y border-black font-bold text-[7.5px]">
                     <td colSpan={14} className="py-0.5 px-2 text-left uppercase tracking-wide bg-zinc-100">
                       ★ SHIFT 1 (MORNING | 0800 - 1500) &nbsp;|&nbsp; DUTY TECHNICIAN:{" "}
-                      <span className="font-mono">{sheet.tech_s1_name || "Ahmad Razif"}</span>
+                      <span className="font-mono">{techS1.name || "Pending Check-in"}</span>
                     </td>
                   </tr>
                   {shift1Entries.map((entry) => renderTableRow(entry, highlightOutOfSpec))}
@@ -479,7 +485,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
                   <tr className="bg-zinc-100 print:bg-zinc-50 border-y border-black font-bold text-[7.5px]">
                     <td colSpan={14} className="py-0.5 px-2 text-left uppercase tracking-wide bg-zinc-100">
                       ★ SHIFT 2 (AFTERNOON | 1600 - 2300) &nbsp;|&nbsp; DUTY TECHNICIAN:{" "}
-                      <span className="font-mono">{sheet.tech_s2_name || "Mohd Danial"}</span>
+                      <span className="font-mono">{techS2.name || "Pending Check-in"}</span>
                     </td>
                   </tr>
                   {shift2Entries.map((entry) => renderTableRow(entry, highlightOutOfSpec))}
@@ -490,7 +496,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
                   <tr className="bg-zinc-100 print:bg-zinc-50 border-y border-black font-bold text-[7.5px]">
                     <td colSpan={14} className="py-0.5 px-2 text-left uppercase tracking-wide bg-zinc-100">
                       ★ SHIFT 3 (NIGHT | 2400 - 0700) &nbsp;|&nbsp; DUTY TECHNICIAN:{" "}
-                      <span className="font-mono">{sheet.tech_s3_name || "K. Subramaniam"}</span>
+                      <span className="font-mono">{techS3.name || "Pending Check-in"}</span>
                       {nextDayStr && <span className="ml-2 font-normal text-zinc-600">[{nextDayStr}]</span>}
                     </td>
                   </tr>
@@ -625,8 +631,8 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
                       <span className="font-mono">15:00 HRS</span>
                     </div>
                     <div className="text-[7.5px] leading-tight">
-                      <div>Technician: <strong className="font-mono">{sheet.tech_s1_name || "Ahmad Razif"}</strong></div>
-                      <div>Handover To: <span className="font-mono">{sheet.tech_s2_name || "Mohd Danial"}</span></div>
+                      <div>Technician: <strong className="font-mono">{techS1.name || "Unassigned"}</strong></div>
+                      <div>Handover To: <span className="font-mono">{techS2.name || "Pending Incoming Shift"}</span></div>
                     </div>
                   </div>
                   <div className="mt-2 pt-1 border-t border-dashed border-zinc-400 flex items-center justify-between text-[7px]">
@@ -643,8 +649,8 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
                       <span className="font-mono">23:00 HRS</span>
                     </div>
                     <div className="text-[7.5px] leading-tight">
-                      <div>Technician: <strong className="font-mono">{sheet.tech_s2_name || "Mohd Danial"}</strong></div>
-                      <div>Handover To: <span className="font-mono">{sheet.tech_s3_name || "K. Subramaniam"}</span></div>
+                      <div>Technician: <strong className="font-mono">{techS2.name || "Unassigned"}</strong></div>
+                      <div>Handover To: <span className="font-mono">{techS3.name || "Pending Incoming Shift"}</span></div>
                     </div>
                   </div>
                   <div className="mt-2 pt-1 border-t border-dashed border-zinc-400 flex items-center justify-between text-[7px]">
@@ -661,8 +667,8 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
                       <span className="font-mono">07:00 HRS</span>
                     </div>
                     <div className="text-[7.5px] leading-tight">
-                      <div>Technician: <strong className="font-mono">{sheet.tech_s3_name || "K. Subramaniam"}</strong></div>
-                      <div>Handover To: <span className="font-mono">{sheet.tech_s1_name || "Incoming Shift"}</span></div>
+                      <div>Technician: <strong className="font-mono">{techS3.name || "Unassigned"}</strong></div>
+                      <div>Handover To: <span className="font-mono">{techS1.name || "Pending Incoming Shift"}</span></div>
                     </div>
                   </div>
                   <div className="mt-2 pt-1 border-t border-dashed border-zinc-400 flex items-center justify-between text-[7px]">

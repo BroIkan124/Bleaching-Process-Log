@@ -25,11 +25,13 @@ import {
   Unlock,
   Sparkles,
   BarChart3,
-  Activity
+  Activity,
+  UserCheck
 } from "lucide-react";
 import { RadioSelect } from "./RadioSelect";
-import { calculatePipelineMetrics } from "@/lib/workflowPipeline";
+import { calculatePipelineMetrics, getShiftDutyTechnician } from "@/lib/workflowPipeline";
 import { evaluateSlotAccess, getSlotTimeLabel } from "@/lib/realtimeTimeline";
+import { ShiftRosterModal } from "./ShiftRosterModal";
 
 interface SupervisorMonitoringViewProps {
   currentUser: UserProfile;
@@ -42,6 +44,8 @@ interface SupervisorMonitoringViewProps {
   onUnlockSlot?: (slotIndex: number) => void;
   supervisorUnlockedSlots?: number[];
   activeCurrentHourIndex?: number;
+  allUsers?: UserProfile[];
+  onUpdateShiftTechnician?: (updates: Partial<LogSheet>) => void;
 }
 
 export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> = ({
@@ -55,10 +59,13 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
   onUnlockSlot,
   supervisorUnlockedSlots = [],
   activeCurrentHourIndex = 1,
+  allUsers = [],
+  onUpdateShiftTechnician,
 }) => {
   const [filterSeverity, setFilterSeverity] = useState<string>("ALL");
   const [filterSource, setFilterSource] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [rosterModalShift, setRosterModalShift] = useState<1 | 2 | 3 | null>(null);
 
   const pipelineMetrics = calculatePipelineMetrics(sheet, qcReports);
 
@@ -70,6 +77,11 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
   const s1Completed = s1Slots.filter((e) => e.is_saved).length;
   const s2Completed = s2Slots.filter((e) => e.is_saved).length;
   const s3Completed = s3Slots.filter((e) => e.is_saved).length;
+
+  // Shift duty technicians (Option 3: Smart Hybrid)
+  const techS1 = getShiftDutyTechnician(sheet, 1);
+  const techS2 = getShiftDutyTechnician(sheet, 2);
+  const techS3 = getShiftDutyTechnician(sheet, 3);
 
   const pendingAlertCount = events.filter((e) => e.requires_acknowledgment && !e.acknowledged).length;
 
@@ -193,7 +205,35 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
           </div>
 
           <div className="flex items-center justify-between text-xs text-zinc-500 pt-1">
-            <span>Technician: <strong className="text-zinc-800 dark:text-zinc-200">Ahmad Razif</strong></span>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span>Technician:</span>
+              {techS1.isPending ? (
+                <span className="inline-flex items-center gap-1 text-zinc-400 italic font-mono text-[11px]">
+                  <Clock className="w-3 h-3 text-zinc-400" /> Awaiting Check-in
+                </span>
+              ) : (
+                <strong className="text-zinc-800 dark:text-zinc-200">{techS1.name}</strong>
+              )}
+              {techS1.source === "auto" && (
+                <span className="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 font-mono">
+                  Auto
+                </span>
+              )}
+              {techS1.source === "manual" && (
+                <span className="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 font-mono">
+                  Roster
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={() => setRosterModalShift(1)}
+                className="ml-1 inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors cursor-pointer"
+                title="Assign or change Shift 1 roster technician"
+              >
+                <UserCheck className="w-3 h-3" />
+                <span>Assign</span>
+              </button>
+            </div>
             <span className="font-mono font-bold">{s1Completed} / 8 Hours Logged</span>
           </div>
         </div>
@@ -202,7 +242,7 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
         <div className="telemetry-card p-4 sm:p-5 rounded-2xl space-y-3.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-zinc-400" />
+              <span className={`w-2.5 h-2.5 rounded-full ${s2Completed > 0 ? "bg-emerald-500" : "bg-zinc-400"}`} />
               <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900 dark:text-zinc-100 font-display">
                 Shift 2 (Afternoon) · 1600-2300
               </h2>
@@ -220,7 +260,35 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
           </div>
 
           <div className="flex items-center justify-between text-xs text-zinc-500 pt-1">
-            <span>Technician: <strong className="text-zinc-800 dark:text-zinc-200">Mohd Danial</strong></span>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span>Technician:</span>
+              {techS2.isPending ? (
+                <span className="inline-flex items-center gap-1 text-zinc-400 italic font-mono text-[11px]">
+                  <Clock className="w-3 h-3 text-zinc-400" /> Awaiting Check-in
+                </span>
+              ) : (
+                <strong className="text-zinc-800 dark:text-zinc-200">{techS2.name}</strong>
+              )}
+              {techS2.source === "auto" && (
+                <span className="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 font-mono">
+                  Auto
+                </span>
+              )}
+              {techS2.source === "manual" && (
+                <span className="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 font-mono">
+                  Roster
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={() => setRosterModalShift(2)}
+                className="ml-1 inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors cursor-pointer"
+                title="Assign or change Shift 2 roster technician"
+              >
+                <UserCheck className="w-3 h-3" />
+                <span>Assign</span>
+              </button>
+            </div>
             <span className="font-mono font-bold">{s2Completed} / 8 Hours Logged</span>
           </div>
         </div>
@@ -229,7 +297,7 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
         <div className="telemetry-card p-4 sm:p-5 rounded-2xl space-y-3.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-zinc-400" />
+              <span className={`w-2.5 h-2.5 rounded-full ${s3Completed > 0 ? "bg-emerald-500" : "bg-zinc-400"}`} />
               <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900 dark:text-zinc-100 font-display">
                 Shift 3 (Night) · 2400-0700
               </h2>
@@ -247,7 +315,35 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
           </div>
 
           <div className="flex items-center justify-between text-xs text-zinc-500 pt-1">
-            <span>Technician: <strong className="text-zinc-800 dark:text-zinc-200">K. Subramaniam</strong></span>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span>Technician:</span>
+              {techS3.isPending ? (
+                <span className="inline-flex items-center gap-1 text-zinc-400 italic font-mono text-[11px]">
+                  <Clock className="w-3 h-3 text-zinc-400" /> Awaiting Check-in
+                </span>
+              ) : (
+                <strong className="text-zinc-800 dark:text-zinc-200">{techS3.name}</strong>
+              )}
+              {techS3.source === "auto" && (
+                <span className="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 font-mono">
+                  Auto
+                </span>
+              )}
+              {techS3.source === "manual" && (
+                <span className="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 font-mono">
+                  Roster
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={() => setRosterModalShift(3)}
+                className="ml-1 inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors cursor-pointer"
+                title="Assign or change Shift 3 roster technician"
+              >
+                <UserCheck className="w-3 h-3" />
+                <span>Assign</span>
+              </button>
+            </div>
             <span className="font-mono font-bold">{s3Completed} / 8 Hours Logged</span>
           </div>
         </div>
@@ -411,6 +507,21 @@ export const SupervisorMonitoringView: React.FC<SupervisorMonitoringViewProps> =
           )}
         </div>
       </div>
+      {/* Shift Roster Assignment Modal (Option 3: Smart Hybrid) */}
+      {rosterModalShift !== null && (
+        <ShiftRosterModal
+          isOpen={true}
+          onClose={() => setRosterModalShift(null)}
+          shiftNum={rosterModalShift}
+          sheet={sheet}
+          allUsers={allUsers}
+          onSaveRoster={(updates) => {
+            if (onUpdateShiftTechnician) {
+              onUpdateShiftTechnician(updates);
+            }
+          }}
+        />
+      )}
     </div>
   );
 };

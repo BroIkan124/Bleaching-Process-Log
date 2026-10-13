@@ -432,3 +432,109 @@ export function calculatePipelineMetrics(sheet: LogSheet, qcReports: SampleRepor
   };
 }
 
+/**
+ * Option 3: Smart Hybrid Shift Duty Technician Resolution
+ * Resolves duty technician dynamically from active logging or manual roster overrides,
+ * preventing hardcoded placeholder names and accurately showing pending check-in states.
+ */
+export interface ShiftDutyTechnicianInfo {
+  shift: 1 | 2 | 3;
+  name: string | null;
+  id: string | null;
+  source: 'auto' | 'manual' | 'pending';
+  displayText: string;
+  badgeLabel: string;
+  isPending: boolean;
+  loggedSlotsCount: number;
+}
+
+export function getShiftDutyTechnician(
+  sheet: LogSheet | undefined | null,
+  shiftNum: 1 | 2 | 3
+): ShiftDutyTechnicianInfo {
+  if (!sheet) {
+    return {
+      shift: shiftNum,
+      name: null,
+      id: null,
+      source: 'pending',
+      displayText: 'Awaiting Check-in',
+      badgeLabel: 'Pending Check-in',
+      isPending: true,
+      loggedSlotsCount: 0,
+    };
+  }
+
+  const entries = sheet.entries || [];
+  const shiftEntries = entries.filter((e) => e.shift === shiftNum && e.is_saved);
+  const loggedSlotsCount = shiftEntries.length;
+
+  const isManual = Boolean(
+    shiftNum === 1 ? sheet.tech_s1_manual : shiftNum === 2 ? sheet.tech_s2_manual : sheet.tech_s3_manual
+  );
+  const sheetTechName = (
+    shiftNum === 1 ? sheet.tech_s1_name : shiftNum === 2 ? sheet.tech_s2_name : sheet.tech_s3_name
+  )?.trim() || null;
+  const sheetTechId = (
+    shiftNum === 1 ? sheet.tech_s1 : shiftNum === 2 ? sheet.tech_s2 : sheet.tech_s3
+  )?.trim() || null;
+
+  // 1. Explicit manual roster assignment takes priority if flagged
+  if (isManual && sheetTechName) {
+    return {
+      shift: shiftNum,
+      name: sheetTechName,
+      id: sheetTechId,
+      source: 'manual',
+      displayText: sheetTechName,
+      badgeLabel: 'Assigned Roster',
+      isPending: false,
+      loggedSlotsCount,
+    };
+  }
+
+  // 2. Auto-detection from saved slots in this shift
+  const entriesWithTechnician = shiftEntries.filter((e) => e.entered_by_name && e.entered_by_name.trim().length > 0);
+  if (entriesWithTechnician.length > 0) {
+    const latestSaved = entriesWithTechnician[entriesWithTechnician.length - 1];
+    const detectedName = latestSaved.entered_by_name!.trim();
+    const detectedId = latestSaved.entered_by || null;
+    return {
+      shift: shiftNum,
+      name: detectedName,
+      id: detectedId,
+      source: 'auto',
+      displayText: detectedName,
+      badgeLabel: 'Auto-Detected',
+      isPending: false,
+      loggedSlotsCount,
+    };
+  }
+
+  // 3. Fallback to pre-assigned sheet technician name if present
+  if (sheetTechName) {
+    return {
+      shift: shiftNum,
+      name: sheetTechName,
+      id: sheetTechId,
+      source: 'manual',
+      displayText: sheetTechName,
+      badgeLabel: 'Assigned Roster',
+      isPending: false,
+      loggedSlotsCount,
+    };
+  }
+
+  // 4. Untouched / awaiting check-in shift
+  return {
+    shift: shiftNum,
+    name: null,
+    id: null,
+    source: 'pending',
+    displayText: 'Awaiting Check-in',
+    badgeLabel: 'Pending Check-in',
+    isPending: true,
+    loggedSlotsCount: 0,
+  };
+}
+

@@ -162,13 +162,16 @@ export interface LogSheet extends ParameterBlock {
   discharge_tank_id: string;
   discharge_tank_name?: string;
 
-  // Technicians by shift
+  // Technicians by shift (Option 3: Smart Hybrid with manual override & auto-detect)
   tech_s1: string | null; // 1st Shift: 0800 - 1500
-  tech_s1_name?: string;
+  tech_s1_name?: string | null;
+  tech_s1_manual?: boolean;
   tech_s2: string | null; // 2nd Shift: 1600 - 2300
-  tech_s2_name?: string;
+  tech_s2_name?: string | null;
+  tech_s2_manual?: boolean;
   tech_s3: string | null; // 3rd Shift: 2400 - 0700
-  tech_s3_name?: string;
+  tech_s3_name?: string | null;
+  tech_s3_manual?: boolean;
 
   status: SheetStatus;
   submitted_at: string | null;

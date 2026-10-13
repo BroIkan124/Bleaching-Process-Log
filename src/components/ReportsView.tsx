@@ -19,26 +19,33 @@ import {
   Filter,
   Layers,
   ArrowRight,
-  ShieldCheck
+  ShieldCheck,
+  UserCheck
 } from "lucide-react";
 import { recordReportExport } from "@/lib/dbService";
 import { RadioSelect } from "./RadioSelect";
 import { GliderRadioGroup } from "./GliderRadioGroup";
-import { calculatePipelineMetrics } from "@/lib/workflowPipeline";
+import { calculatePipelineMetrics, getShiftDutyTechnician } from "@/lib/workflowPipeline";
+import { ShiftRosterModal } from "./ShiftRosterModal";
 
 interface ReportsViewProps {
   sheet: LogSheet;
   currentUser: UserProfile;
   qcReports?: SampleReport[];
+  allUsers?: UserProfile[];
+  onUpdateShiftTechnician?: (updates: Partial<LogSheet>) => void;
 }
 
 export const ReportsView: React.FC<ReportsViewProps> = ({
   sheet,
   currentUser,
   qcReports = [],
+  allUsers = [],
+  onUpdateShiftTechnician,
 }) => {
   const [timeRange, setTimeRange] = useState<string>("today");
   const [selectedShift, setSelectedShift] = useState<string>("ALL");
+  const [rosterModalShift, setRosterModalShift] = useState<1 | 2 | 3 | null>(null);
 
   const pipelineMetrics = calculatePipelineMetrics(sheet, qcReports);
 
@@ -112,6 +119,11 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
   const s1MT = s1Saved.reduce((sum, e) => sum + (e.flowrate_set || 0), 0);
   const s2MT = s2Saved.reduce((sum, e) => sum + (e.flowrate_set || 0), 0);
   const s3MT = s3Saved.reduce((sum, e) => sum + (e.flowrate_set || 0), 0);
+
+  // Shift duty technicians (Option 3: Smart Hybrid)
+  const techS1 = getShiftDutyTechnician(sheet, 1);
+  const techS2 = getShiftDutyTechnician(sheet, 2);
+  const techS3 = getShiftDutyTechnician(sheet, 3);
 
   // Filter entries by selectedShift
   const displayedEntries = entries.filter((entry) => {
@@ -379,77 +391,209 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Shift 1 Card */}
-          <div className="telemetry-card p-4 rounded-xl space-y-2">
+          <div className="telemetry-card p-4 rounded-xl space-y-2.5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wide font-display">
                 Shift 1 (Morning) · 0800-1500
               </span>
-              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-mono">
-                Active ({s1Saved.length}/8 Hrs)
-              </span>
+              {s1Saved.length > 0 ? (
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-mono">
+                  Active ({s1Saved.length}/8 Hrs)
+                </span>
+              ) : techS1.source === "manual" ? (
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 font-mono">
+                  Assigned (0/8 Hrs)
+                </span>
+              ) : (
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-zinc-200/80 dark:bg-white/10 text-zinc-500 font-mono">
+                  Awaiting Check-in
+                </span>
+              )}
             </div>
-            <p className="text-xs text-zinc-500">Technician: <strong className="text-zinc-800 dark:text-zinc-200">{sheet.tech_s1_name || "Ahmad Razif"}</strong></p>
+
+            <div className="flex items-center justify-between text-xs pt-0.5">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-zinc-500">Technician:</span>
+                {techS1.isPending ? (
+                  <span className="inline-flex items-center gap-1 text-zinc-400 italic font-mono text-[11px]">
+                    <Clock className="w-3 h-3 text-zinc-400" /> Awaiting Check-in
+                  </span>
+                ) : (
+                  <strong className="text-zinc-800 dark:text-zinc-200">{techS1.name}</strong>
+                )}
+                {techS1.source === "auto" && (
+                  <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 font-mono">
+                    Auto
+                  </span>
+                )}
+                {techS1.source === "manual" && (
+                  <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 font-mono">
+                    Roster
+                  </span>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => setRosterModalShift(1)}
+                className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors cursor-pointer"
+                title="Assign or change Shift 1 roster technician"
+              >
+                <UserCheck className="w-3.5 h-3.5" />
+                <span>Roster</span>
+              </button>
+            </div>
+
             <div className="pt-2 border-t border-zinc-200/80 dark:border-white/10 flex justify-between text-xs font-mono">
-              <span className="text-zinc-500 font-sans">Logged Volume:</span>
-              <span className="font-bold">{s1MT > 0 ? s1MT.toFixed(1) : "229.2"} MT</span>
+              <span className="text-zinc-500 font-sans">{s1Saved.length > 0 ? "Logged Volume:" : "Target Volume:"}</span>
+              <span className="font-bold">{s1Saved.length > 0 ? s1MT.toFixed(1) : "360.0"} MT</span>
             </div>
             <div className="flex justify-between text-xs font-mono">
-              <span className="text-zinc-500 font-sans">Avg Rate:</span>
-              <span className="font-bold">45.8 MT/HR</span>
+              <span className="text-zinc-500 font-sans">{s1Saved.length > 0 ? "Avg Rate:" : "Target Flow:"}</span>
+              <span className="font-bold">{s1Saved.length > 0 ? (s1MT / s1Saved.length).toFixed(1) : "45.0"} MT/HR</span>
             </div>
             <div className="flex justify-between text-xs">
-              <span className="text-zinc-500">Compliance:</span>
-              <span className="text-emerald-500 font-bold font-mono">In-Spec Completed</span>
+              <span className="text-zinc-500">Status:</span>
+              <span className={s1Saved.length > 0 ? "text-emerald-500 font-bold font-mono" : "text-zinc-400 font-bold"}>
+                {s1Saved.length > 0 ? "In-Spec Completed" : "Not Started"}
+              </span>
             </div>
           </div>
 
           {/* Shift 2 Card */}
-          <div className="telemetry-card p-4 rounded-xl space-y-2">
+          <div className="telemetry-card p-4 rounded-xl space-y-2.5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wide font-display">
                 Shift 2 (Afternoon) · 1600-2300
               </span>
-              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-zinc-200/80 dark:bg-white/10 text-zinc-500 font-mono">
-                Pending Handover
-              </span>
+              {s2Saved.length > 0 ? (
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-mono">
+                  Active ({s2Saved.length}/8 Hrs)
+                </span>
+              ) : techS2.source === "manual" ? (
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 font-mono">
+                  Assigned (0/8 Hrs)
+                </span>
+              ) : (
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-zinc-200/80 dark:bg-white/10 text-zinc-500 font-mono">
+                  Awaiting Check-in
+                </span>
+              )}
             </div>
-            <p className="text-xs text-zinc-500">Technician: <strong className="text-zinc-800 dark:text-zinc-200">{sheet.tech_s2_name || "Mohd Danial"}</strong></p>
+
+            <div className="flex items-center justify-between text-xs pt-0.5">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-zinc-500">Technician:</span>
+                {techS2.isPending ? (
+                  <span className="inline-flex items-center gap-1 text-zinc-400 italic font-mono text-[11px]">
+                    <Clock className="w-3 h-3 text-zinc-400" /> Awaiting Check-in
+                  </span>
+                ) : (
+                  <strong className="text-zinc-800 dark:text-zinc-200">{techS2.name}</strong>
+                )}
+                {techS2.source === "auto" && (
+                  <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 font-mono">
+                    Auto
+                  </span>
+                )}
+                {techS2.source === "manual" && (
+                  <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 font-mono">
+                    Roster
+                  </span>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => setRosterModalShift(2)}
+                className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors cursor-pointer"
+                title="Assign or change Shift 2 roster technician"
+              >
+                <UserCheck className="w-3.5 h-3.5" />
+                <span>Roster</span>
+              </button>
+            </div>
+
             <div className="pt-2 border-t border-zinc-200/80 dark:border-white/10 flex justify-between text-xs font-mono">
-              <span className="text-zinc-500 font-sans">Target Volume:</span>
-              <span className="font-bold">360.0 MT</span>
+              <span className="text-zinc-500 font-sans">{s2Saved.length > 0 ? "Logged Volume:" : "Target Volume:"}</span>
+              <span className="font-bold">{s2Saved.length > 0 ? s2MT.toFixed(1) : "360.0"} MT</span>
             </div>
             <div className="flex justify-between text-xs font-mono">
-              <span className="text-zinc-500 font-sans">Target Flow:</span>
-              <span className="font-bold">45.0 MT/HR</span>
+              <span className="text-zinc-500 font-sans">{s2Saved.length > 0 ? "Avg Rate:" : "Target Flow:"}</span>
+              <span className="font-bold">{s2Saved.length > 0 ? (s2MT / s2Saved.length).toFixed(1) : "45.0"} MT/HR</span>
             </div>
             <div className="flex justify-between text-xs">
               <span className="text-zinc-500">Status:</span>
-              <span className="text-zinc-400 font-bold">Not Started</span>
+              <span className={s2Saved.length > 0 ? "text-emerald-500 font-bold font-mono" : "text-zinc-400 font-bold"}>
+                {s2Saved.length > 0 ? "Active Logging" : "Not Started"}
+              </span>
             </div>
           </div>
 
           {/* Shift 3 Card */}
-          <div className="telemetry-card p-4 rounded-xl space-y-2">
+          <div className="telemetry-card p-4 rounded-xl space-y-2.5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wide font-display">
                 Shift 3 (Night) · 2400-0700
               </span>
-              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-zinc-200/80 dark:bg-white/10 text-zinc-500 font-mono">
-                Pending Handover
-              </span>
+              {s3Saved.length > 0 ? (
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-mono">
+                  Active ({s3Saved.length}/8 Hrs)
+                </span>
+              ) : techS3.source === "manual" ? (
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 font-mono">
+                  Assigned (0/8 Hrs)
+                </span>
+              ) : (
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-zinc-200/80 dark:bg-white/10 text-zinc-500 font-mono">
+                  Awaiting Check-in
+                </span>
+              )}
             </div>
-            <p className="text-xs text-zinc-500">Technician: <strong className="text-zinc-800 dark:text-zinc-200">{sheet.tech_s3_name || "K. Subramaniam"}</strong></p>
+
+            <div className="flex items-center justify-between text-xs pt-0.5">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-zinc-500">Technician:</span>
+                {techS3.isPending ? (
+                  <span className="inline-flex items-center gap-1 text-zinc-400 italic font-mono text-[11px]">
+                    <Clock className="w-3 h-3 text-zinc-400" /> Awaiting Check-in
+                  </span>
+                ) : (
+                  <strong className="text-zinc-800 dark:text-zinc-200">{techS3.name}</strong>
+                )}
+                {techS3.source === "auto" && (
+                  <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 font-mono">
+                    Auto
+                  </span>
+                )}
+                {techS3.source === "manual" && (
+                  <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 font-mono">
+                    Roster
+                  </span>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => setRosterModalShift(3)}
+                className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors cursor-pointer"
+                title="Assign or change Shift 3 roster technician"
+              >
+                <UserCheck className="w-3.5 h-3.5" />
+                <span>Roster</span>
+              </button>
+            </div>
+
             <div className="pt-2 border-t border-zinc-200/80 dark:border-white/10 flex justify-between text-xs font-mono">
-              <span className="text-zinc-500 font-sans">Target Volume:</span>
-              <span className="font-bold">360.0 MT</span>
+              <span className="text-zinc-500 font-sans">{s3Saved.length > 0 ? "Logged Volume:" : "Target Volume:"}</span>
+              <span className="font-bold">{s3Saved.length > 0 ? s3MT.toFixed(1) : "360.0"} MT</span>
             </div>
             <div className="flex justify-between text-xs font-mono">
-              <span className="text-zinc-500 font-sans">Target Flow:</span>
-              <span className="font-bold">45.0 MT/HR</span>
+              <span className="text-zinc-500 font-sans">{s3Saved.length > 0 ? "Avg Rate:" : "Target Flow:"}</span>
+              <span className="font-bold">{s3Saved.length > 0 ? (s3MT / s3Saved.length).toFixed(1) : "45.0"} MT/HR</span>
             </div>
             <div className="flex justify-between text-xs">
               <span className="text-zinc-500">Status:</span>
-              <span className="text-zinc-400 font-bold">Not Started</span>
+              <span className={s3Saved.length > 0 ? "text-emerald-500 font-bold font-mono" : "text-zinc-400 font-bold"}>
+                {s3Saved.length > 0 ? "Active Logging" : "Not Started"}
+              </span>
             </div>
           </div>
         </div>
@@ -574,6 +718,21 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
           </table>
         </div>
       </div>
+      {/* Shift Roster Assignment Modal (Option 3: Smart Hybrid) */}
+      {rosterModalShift !== null && (
+        <ShiftRosterModal
+          isOpen={true}
+          onClose={() => setRosterModalShift(null)}
+          shiftNum={rosterModalShift}
+          sheet={sheet}
+          allUsers={allUsers}
+          onSaveRoster={(updates) => {
+            if (onUpdateShiftTechnician) {
+              onUpdateShiftTechnician(updates);
+            }
+          }}
+        />
+      )}
     </div>
   );
 };

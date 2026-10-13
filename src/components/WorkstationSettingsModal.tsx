@@ -9,7 +9,6 @@ import {
   Sliders,
   Bell,
   ShieldCheck,
-  Database,
   Info,
   Camera,
   Upload,
@@ -22,16 +21,20 @@ import {
   Sun,
   Moon,
   Clock,
-  HardDrive,
   RefreshCw,
-  Download,
   Key,
   Laptop,
   Check,
-  AlertTriangle
+  AlertTriangle,
+  Lock,
+  Eye,
+  EyeOff,
+  AlertCircle
 } from "lucide-react";
 import { UserProfile } from "@/types";
-import { logActivityToInsForge } from "@/lib/dbService";
+import { logActivityToInsForge, syncUserToInsForge } from "@/lib/dbService";
+
+export const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=200&auto=format&fit=crop&q=80";
 
 interface WorkstationSettingsModalProps {
   isOpen: boolean;
@@ -43,7 +46,7 @@ interface WorkstationSettingsModalProps {
   isAudioEnabled: boolean;
   onToggleAudio: () => void;
   onPlayTestSound: () => void;
-  onForceResyncCloud: () => void;
+  onForceResyncCloud?: () => void;
 }
 
 type SettingsSection = 
@@ -51,7 +54,6 @@ type SettingsSection =
   | 'system' 
   | 'alerts' 
   | 'security' 
-  | 'data' 
   | 'about';
 
 export default function WorkstationSettingsModal({
@@ -74,7 +76,7 @@ export default function WorkstationSettingsModal({
   // Profile edit form state
   const [fullName, setFullName] = useState(currentUser.name || "");
   const [department, setDepartment] = useState(currentUser.department || "Refinery Plant Operations");
-  const [avatarUrl, setAvatarUrl] = useState<string>(currentUser.avatar_url || "");
+  const [avatarUrl, setAvatarUrl] = useState<string>(currentUser.avatar_url || DEFAULT_AVATAR);
   const [isUrlModalOpen, setIsUrlModalOpen] = useState(false);
   const [urlInput, setUrlInput] = useState("");
   const [profileSavedToast, setProfileSavedToast] = useState(false);
@@ -110,13 +112,17 @@ export default function WorkstationSettingsModal({
   const [qcBroadcastAlert, setQcBroadcastAlert] = useState(true);
   const [shiftChangeoverAlert, setShiftChangeoverAlert] = useState(true);
 
-  // Security preferences
+  // Security & Password Change state
   const [autoLockTimeout, setAutoLockTimeout] = useState<string>("never");
-  const [newPin, setNewPin] = useState("");
-  const [pinChangeSuccess, setPinChangeSuccess] = useState(false);
-
-  // Storage calculation
-  const [storageUsageKb, setStorageUsageKb] = useState<number>(0);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrentPass, setShowCurrentPass] = useState(false);
+  const [showNewPass, setShowNewPass] = useState(false);
+  const [showConfirmPass, setShowConfirmPass] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -127,8 +133,9 @@ export default function WorkstationSettingsModal({
       document.body.style.overflow = "hidden";
       setFullName(currentUser.name || "");
       setDepartment(currentUser.department || "Refinery Plant Operations");
-      setAvatarUrl(currentUser.avatar_url || "");
-      calculateStorageUsage();
+      setAvatarUrl(currentUser.avatar_url || DEFAULT_AVATAR);
+      setPasswordError(null);
+      setPasswordSuccess(false);
     } else {
       document.body.style.overflow = "";
     }
@@ -136,22 +143,6 @@ export default function WorkstationSettingsModal({
       document.body.style.overflow = "";
     };
   }, [isOpen, currentUser]);
-
-  const calculateStorageUsage = () => {
-    try {
-      if (typeof window !== "undefined") {
-        let total = 0;
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          if (key && key.startsWith("nisshin_")) {
-            const val = localStorage.getItem(key) || "";
-            total += (key.length + val.length) * 2; // UTF-16 bytes
-          }
-        }
-        setStorageUsageKb(Math.round(total / 1024));
-      }
-    } catch {}
-  };
 
   if (!isOpen || !mounted) return null;
 
@@ -163,7 +154,7 @@ export default function WorkstationSettingsModal({
     }, 200);
   };
 
-  // Image upload handler (File input)
+  // Image upload handler (File input) - Syncs avatar immediately with navbar and settings
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -177,22 +168,49 @@ export default function WorkstationSettingsModal({
     reader.onload = () => {
       const result = reader.result as string;
       setAvatarUrl(result);
+      // Immediately sync with parent state & HeaderNav avatar
+      const updatedUser: UserProfile = {
+        ...currentUser,
+        avatar_url: result,
+      };
+      onUpdateUser(updatedUser);
+      try {
+        localStorage.setItem("nisshin_auth_user", JSON.stringify(updatedUser));
+      } catch {}
     };
     reader.readAsDataURL(file);
   };
 
-  // Paste image URL
+  // Paste image URL - Syncs avatar immediately with navbar and settings
   const handleApplyUrl = () => {
     if (urlInput.trim()) {
-      setAvatarUrl(urlInput.trim());
+      const trimmed = urlInput.trim();
+      setAvatarUrl(trimmed);
       setUrlInput("");
       setIsUrlModalOpen(false);
+
+      const updatedUser: UserProfile = {
+        ...currentUser,
+        avatar_url: trimmed,
+      };
+      onUpdateUser(updatedUser);
+      try {
+        localStorage.setItem("nisshin_auth_user", JSON.stringify(updatedUser));
+      } catch {}
     }
   };
 
-  // Remove photo
+  // Remove photo - resets to DEFAULT_AVATAR
   const handleRemovePhoto = () => {
-    setAvatarUrl("");
+    setAvatarUrl(DEFAULT_AVATAR);
+    const updatedUser: UserProfile = {
+      ...currentUser,
+      avatar_url: DEFAULT_AVATAR,
+    };
+    onUpdateUser(updatedUser);
+    try {
+      localStorage.setItem("nisshin_auth_user", JSON.stringify(updatedUser));
+    } catch {}
   };
 
   // Save Operator Profile changes
@@ -202,7 +220,7 @@ export default function WorkstationSettingsModal({
       ...currentUser,
       name: fullName.trim() || currentUser.name,
       department: department || currentUser.department,
-      avatar_url: avatarUrl || undefined,
+      avatar_url: avatarUrl || DEFAULT_AVATAR,
     };
     onUpdateUser(updated);
 
@@ -234,49 +252,81 @@ export default function WorkstationSettingsModal({
     } catch {}
   };
 
-  // Clear cache and resync cloud
-  const handleClearCacheAndResync = () => {
-    if (window.confirm("Are you sure you want to clear the tablet's local storage and pull fresh data from InsForge Cloud?")) {
-      try {
-        const authUser = localStorage.getItem("nisshin_auth_user");
-        localStorage.clear();
-        if (authUser) {
-          localStorage.setItem("nisshin_auth_user", authUser);
-        }
-      } catch {}
-      onForceResyncCloud();
-      calculateStorageUsage();
-      alert("Local workstation cache cleared. Fresh plant data synchronized from cloud.");
-    }
-  };
+  // Change Password Handler with Full Validation & Cloud Sync
+  const handleChangePassword = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setPasswordError(null);
+    setPasswordSuccess(false);
 
-  // Export JSON backup
-  const handleExportBackup = () => {
+    const trimmedCurrent = currentPassword.trim();
+    const trimmedNew = newPassword.trim();
+    const trimmedConfirm = confirmPassword.trim();
+
+    if (!trimmedCurrent) {
+      setPasswordError("Sila masukkan kata laluan semasa anda (Please enter current password).");
+      return;
+    }
+
+    // Expected current password (defaults to "password123" if not explicitly set)
+    const expectedPassword = currentUser.password || "password123";
+    if (trimmedCurrent !== expectedPassword) {
+      setPasswordError("Kata laluan semasa tidak tepat. Sila semak semula (Current password incorrect).");
+      return;
+    }
+
+    if (trimmedNew.length < 6) {
+      setPasswordError("Kata laluan baharu mestilah sekurang-kurangnya 6 aksara (Min. 6 characters).");
+      return;
+    }
+
+    if (trimmedNew === trimmedCurrent) {
+      setPasswordError("Kata laluan baharu tidak boleh sama dengan kata laluan semasa (Cannot reuse current password).");
+      return;
+    }
+
+    if (trimmedNew !== trimmedConfirm) {
+      setPasswordError("Pengesahan kata laluan baharu tidak sepadan (Password confirmation does not match).");
+      return;
+    }
+
+    setIsUpdatingPassword(true);
+
     try {
-      const sheetData = localStorage.getItem("nisshin_process_sheet") || "{}";
-      const qcData = localStorage.getItem("nisshin_qc_reports") || "[]";
-      const backupObj = {
-        exportDate: new Date().toISOString(),
-        plant: "PRD-REF-001 (Nisshin Bleaching Line 1)",
-        user: currentUser.name,
-        sheet: JSON.parse(sheetData),
-        qcReports: JSON.parse(qcData),
+      const updatedUser: UserProfile = {
+        ...currentUser,
+        password: trimmedNew,
       };
 
-      const blob = new Blob([JSON.stringify(backupObj, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `nisshin_rms_backup_${new Date().toISOString().split("T")[0]}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      alert("Failed to export backup: " + err);
+      // 1. Update active session user & allUsers list
+      onUpdateUser(updatedUser);
+
+      // 2. Persist in localStorage
+      try {
+        localStorage.setItem("nisshin_auth_user", JSON.stringify(updatedUser));
+      } catch {}
+
+      // 3. Sync to InsForge PostgreSQL Database
+      await syncUserToInsForge(updatedUser);
+
+      // 4. Log to Audit Trail
+      logActivityToInsForge(currentUser, "CHANGE_PASSWORD", "SECURITY", currentUser.id, {
+        message: `Password updated for ${currentUser.name} (${currentUser.id})`,
+      });
+
+      // Clear fields and show green success badge
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setPasswordSuccess(true);
+      setTimeout(() => setPasswordSuccess(false), 4000);
+    } catch (err: any) {
+      setPasswordError(err?.message || "Ralat mengemas kini kata laluan. Sila cuba lagi.");
+    } finally {
+      setIsUpdatingPassword(false);
     }
   };
 
-  // Default avatar fallback (matches stylish aesthetic)
-  const defaultAvatar = "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=200&auto=format&fit=crop&q=80";
+  const defaultAvatar = DEFAULT_AVATAR;
 
   return createPortal(
     <div
@@ -387,21 +437,7 @@ export default function WorkstationSettingsModal({
                   <span className="truncate">Security & Access</span>
                 </button>
 
-                {/* 5. Data & Export Settings */}
-                <button
-                  type="button"
-                  onClick={() => setActiveSection('data')}
-                  className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-left text-xs font-semibold transition-all cursor-pointer ${
-                    activeSection === 'data'
-                      ? 'bg-[#0098EA] text-white shadow-md shadow-[#0098EA]/25'
-                      : 'text-zinc-400 hover:text-white hover:bg-white/5'
-                  }`}
-                >
-                  <Database className="w-4 h-4 shrink-0" />
-                  <span className="truncate">Data & Export Settings</span>
-                </button>
-
-                {/* 6. About Refinery RMS */}
+                {/* 5. About Refinery RMS */}
                 <button
                   type="button"
                   onClick={() => setActiveSection('about')}
@@ -852,111 +888,136 @@ export default function WorkstationSettingsModal({
                     </select>
                   </div>
 
-                  {/* Change PIN / Password */}
-                  <div className="p-4 rounded-xl bg-[#0E1726]/80 border border-[#1B2A3F] space-y-3">
-                    <div className="text-xs font-bold text-white flex items-center gap-1.5">
-                      <Key className="w-3.5 h-3.5 text-amber-500" />
-                      <span>Update Staff PIN / Passcode</span>
-                    </div>
-                    <div className="flex items-center gap-2 max-w-sm">
-                      <input
-                        type="password"
-                        value={newPin}
-                        onChange={(e) => setNewPin(e.target.value)}
-                        placeholder="Enter new 6-digit PIN or password"
-                        className="flex-1 px-3 py-2 rounded-lg bg-[#09111F] border border-[#1B2A3F] text-xs text-white"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (newPin.trim().length >= 4) {
-                            setPinChangeSuccess(true);
-                            setNewPin("");
-                            setTimeout(() => setPinChangeSuccess(false), 2500);
-                          } else {
-                            alert("PIN/Password must be at least 4 characters.");
-                          }
-                        }}
-                        className="px-3.5 py-2 rounded-lg bg-[#0098EA] hover:bg-sky-400 text-white text-xs font-bold cursor-pointer"
-                      >
-                        Update
-                      </button>
-                    </div>
-                    {pinChangeSuccess && (
-                      <div className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
-                        <Check className="w-3.5 h-3.5" />
-                        <span>Passcode updated successfully!</span>
+                  {/* Change Password Card */}
+                  <form onSubmit={handleChangePassword} className="p-4 rounded-xl bg-[#0E1726]/80 border border-[#1B2A3F] space-y-4">
+                    <div className="flex items-center justify-between border-b border-[#1B2A3F] pb-2.5">
+                      <div className="flex items-center gap-2">
+                        <Key className="w-4 h-4 text-amber-400" />
+                        <div>
+                          <div className="text-xs font-bold text-white">Tukar Kata Laluan (Change Password)</div>
+                          <div className="text-[10px] text-zinc-400">
+                            Kemas kini kata laluan log masuk anda untuk akaun {currentUser.name} ({currentUser.id})
+                          </div>
+                        </div>
                       </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* ======================================================== */}
-            {/* SECTION 5: DATA & EXPORT SETTINGS                        */}
-            {/* ======================================================== */}
-            {activeSection === 'data' && (
-              <div className="space-y-6 animate-in fade-in duration-200">
-                <div>
-                  <h3 className="text-base font-bold text-white uppercase tracking-wide">
-                    5. Data Archive & Export Settings
-                  </h3>
-                  <p className="text-xs text-zinc-400 mt-0.5">
-                    Local tablet storage diagnostics, cloud backups, and PDF export configuration.
-                  </p>
-                </div>
-
-                <div className="space-y-4">
-                  {/* Storage Diagnostics */}
-                  <div className="p-4 rounded-xl bg-[#0E1726]/80 border border-[#1B2A3F] space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="text-xs font-bold text-white flex items-center gap-2">
-                        <HardDrive className="w-4 h-4 text-sky-400" />
-                        <span>Offline Storage Usage</span>
-                      </div>
-                      <span className="text-xs font-mono font-bold text-amber-400">
-                        {storageUsageKb} KB used
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                        Min. 6 Aksara
                       </span>
                     </div>
-                    <div className="w-full h-2 rounded-full bg-zinc-800 overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-sky-500 to-amber-500 rounded-full"
-                        style={{ width: `${Math.min(100, Math.max(5, (storageUsageKb / 5120) * 100))}%` }}
-                      />
-                    </div>
-                    <div className="flex items-center gap-2 pt-1 flex-wrap">
-                      <button
-                        type="button"
-                        onClick={handleClearCacheAndResync}
-                        className="px-3.5 py-2 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-400 text-xs font-semibold flex items-center gap-1.5 cursor-pointer active:scale-95"
-                      >
-                        <RefreshCw className="w-3.5 h-3.5" />
-                        <span>Clear Cache & Resync Cloud</span>
-                      </button>
 
+                    {/* Password Error Message */}
+                    {passwordError && (
+                      <div className="p-3 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2 animate-in fade-in duration-150">
+                        <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                        <span>{passwordError}</span>
+                      </div>
+                    )}
+
+                    {/* Password Success Message */}
+                    {passwordSuccess && (
+                      <div className="p-3 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2 animate-in fade-in duration-150">
+                        <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span className="font-semibold">Kata laluan berjaya dikemas kini! (Password updated successfully).</span>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      {/* Current Password */}
+                      <div>
+                        <label className="block text-[11px] font-semibold text-zinc-300 mb-1">
+                          Kata Laluan Semasa <span className="text-rose-400">*</span>
+                        </label>
+                        <div className="relative">
+                          <input
+                            type={showCurrentPass ? "text" : "password"}
+                            value={currentPassword}
+                            onChange={(e) => { setCurrentPassword(e.target.value); setPasswordError(null); }}
+                            placeholder="Kata laluan asal"
+                            className="w-full pr-8 pl-3 py-2 rounded-lg bg-[#09111F] border border-[#1B2A3F] text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#0098EA]"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowCurrentPass(!showCurrentPass)}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white cursor-pointer"
+                          >
+                            {showCurrentPass ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* New Password */}
+                      <div>
+                        <label className="block text-[11px] font-semibold text-zinc-300 mb-1">
+                          Kata Laluan Baharu <span className="text-rose-400">*</span>
+                        </label>
+                        <div className="relative">
+                          <input
+                            type={showNewPass ? "text" : "password"}
+                            value={newPassword}
+                            onChange={(e) => { setNewPassword(e.target.value); setPasswordError(null); }}
+                            placeholder="Min. 6 aksara"
+                            className="w-full pr-8 pl-3 py-2 rounded-lg bg-[#09111F] border border-[#1B2A3F] text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#0098EA]"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowNewPass(!showNewPass)}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white cursor-pointer"
+                          >
+                            {showNewPass ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Confirm New Password */}
+                      <div>
+                        <label className="block text-[11px] font-semibold text-zinc-300 mb-1">
+                          Sahkan Kata Laluan <span className="text-rose-400">*</span>
+                        </label>
+                        <div className="relative">
+                          <input
+                            type={showConfirmPass ? "text" : "password"}
+                            value={confirmPassword}
+                            onChange={(e) => { setConfirmPassword(e.target.value); setPasswordError(null); }}
+                            placeholder="Ulang kata laluan"
+                            className="w-full pr-8 pl-3 py-2 rounded-lg bg-[#09111F] border border-[#1B2A3F] text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#0098EA]"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowConfirmPass(!showConfirmPass)}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white cursor-pointer"
+                          >
+                            {showConfirmPass ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2">
+                      <span className="text-[10px] text-zinc-400">
+                        Kata laluan akan diselaraskan dengan serta-merta ke peranti dan cloud.
+                      </span>
                       <button
-                        type="button"
-                        onClick={handleExportBackup}
-                        className="px-3.5 py-2 rounded-lg bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/30 text-sky-400 text-xs font-semibold flex items-center gap-1.5 cursor-pointer active:scale-95"
+                        type="submit"
+                        disabled={isUpdatingPassword}
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#0098EA] hover:bg-sky-400 disabled:opacity-50 text-white text-xs font-bold cursor-pointer transition-colors shadow-sm"
                       >
-                        <Download className="w-3.5 h-3.5" />
-                        <span>Download JSON Backup</span>
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        <span>{isUpdatingPassword ? "Menyimpan..." : "Kemas Kini Kata Laluan"}</span>
                       </button>
                     </div>
-                  </div>
+                  </form>
                 </div>
               </div>
             )}
 
             {/* ======================================================== */}
-            {/* SECTION 6: ABOUT REFINERY RMS                            */}
+            {/* SECTION 5: ABOUT REFINERY RMS                            */}
             {/* ======================================================== */}
             {activeSection === 'about' && (
               <div className="space-y-6 animate-in fade-in duration-200">
                 <div>
                   <h3 className="text-base font-bold text-white uppercase tracking-wide">
-                    6. About Refinery RMS
+                    5. About Refinery RMS
                   </h3>
                   <p className="text-xs text-zinc-400 mt-0.5">
                     Software architecture, client certification, and engineering telemetry stack.

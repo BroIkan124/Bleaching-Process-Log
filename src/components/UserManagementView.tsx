@@ -591,9 +591,17 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({
                       {/* User Info */}
                       <td className="py-3 px-3.5">
                         <div className="flex items-center gap-2.5">
-                          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-amber-500/20 to-amber-600/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center justify-center font-bold text-xs uppercase shrink-0 shadow-2xs font-display">
-                            {user.name.slice(0, 2)}
-                          </div>
+                          {user.avatar_url ? (
+                            <img
+                              src={user.avatar_url}
+                              alt={user.name}
+                              className="h-8 w-8 rounded-lg object-cover border border-amber-500/30 shrink-0 shadow-2xs"
+                            />
+                          ) : (
+                            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-amber-500/20 to-amber-600/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center justify-center font-bold text-xs uppercase shrink-0 shadow-2xs font-display">
+                              {user.name.slice(0, 2)}
+                            </div>
+                          )}
                           <div className="min-w-0 flex-1">
                             <div className="font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5 flex-wrap">
                               <span className="truncate">{user.name}</span>

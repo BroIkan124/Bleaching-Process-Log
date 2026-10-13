@@ -29,6 +29,7 @@ import {
   Settings,
   HelpCircle
 } from "lucide-react";
+import { DEFAULT_AVATAR } from "@/components/WorkstationSettingsModal";
 
 interface HeaderNavProps {
   sheetStatus: SheetStatus;
@@ -322,23 +323,36 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
             </>
           )}
 
-          {/* User Identity Chip */}
-          <div
-            className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-800/90 pl-1.5 pr-2.5 py-1 rounded-xl border border-zinc-200 dark:border-zinc-700/80 text-left select-none transition-all hover:border-amber-500/50 hover:shadow-[0_0_12px_rgba(245,158,11,0.25)] dark:hover:border-amber-500/50 dark:hover:shadow-[0_0_12px_rgba(245,158,11,0.2)]"
-            title={`Active User: ${currentRole.name} (${currentRole.role})`}
+          {/* User Identity Chip - Synced with Settings Avatar */}
+          <button
+            type="button"
+            onClick={onOpenSettings}
+            className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-800/90 pl-1.5 pr-2.5 py-1 rounded-xl border border-zinc-200 dark:border-zinc-700/80 text-left select-none transition-all hover:border-amber-500/50 hover:shadow-[0_0_12px_rgba(245,158,11,0.25)] dark:hover:border-amber-500/50 dark:hover:shadow-[0_0_12px_rgba(245,158,11,0.2)] cursor-pointer group"
+            title={`Active User: ${currentRole.name} (${currentRole.role}) - Click to customize workstation & profile`}
           >
-            <div className="h-6 w-6 rounded-lg bg-amber-600 text-white flex items-center justify-center font-bold text-xs uppercase shrink-0 shadow-2xs">
-              {currentRole.name.slice(0, 2)}
-            </div>
+            {currentRole.avatar_url || DEFAULT_AVATAR ? (
+              <img
+                src={currentRole.avatar_url || DEFAULT_AVATAR}
+                alt={currentRole.name}
+                className="h-6 w-6 rounded-lg object-cover shrink-0 shadow-2xs border border-amber-500/40 ring-1 ring-amber-500/20 group-hover:scale-105 transition-transform"
+                onError={(e) => {
+                  (e.target as HTMLElement).style.display = 'none';
+                }}
+              />
+            ) : (
+              <div className="h-6 w-6 rounded-lg bg-amber-600 text-white flex items-center justify-center font-bold text-xs uppercase shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                {currentRole.name.slice(0, 2)}
+              </div>
+            )}
             <div className="hidden sm:block leading-tight">
-              <span className="block text-xs font-bold text-zinc-900 dark:text-zinc-100 max-w-[120px] truncate">
+              <span className="block text-xs font-bold text-zinc-900 dark:text-zinc-100 max-w-[120px] truncate group-hover:text-amber-500 dark:group-hover:text-amber-400 transition-colors">
                 {currentRole.name}
               </span>
               <span className="block text-xs font-mono text-zinc-500 capitalize leading-none mt-0.5">
                 {currentRole.role.replace("_", " ")}
               </span>
             </div>
-          </div>
+          </button>
 
           {/* Direct Sign Out Button */}
           <button

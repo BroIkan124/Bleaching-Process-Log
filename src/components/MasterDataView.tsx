@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
-import { createPortal } from "react-dom";
 import { 
   SampleReport, 
   UserProfile, 
@@ -15,8 +14,6 @@ import {
   LogEntry
 } from "@/types";
 import { 
-  DEFAULT_PRODUCT_SPECS, 
-  DEFAULT_REJECTION_REASONS,
   MOCK_PRODUCTS,
   MOCK_PLANTS,
   MOCK_TANKS
@@ -75,7 +72,6 @@ interface MasterDataViewProps {
   onUpdateReport?: (report: SampleReport) => void;
 }
 
-type MasterSubTab = "pareto_frequency" | "product_specs" | "reason_codes" | "plants_tanks";
 type ProcessChartTab = "combined" | "he_temp" | "vacuum";
 type ProcessShiftFilter = "all" | "1" | "2" | "3";
 type NonConformityFilter = "rejects_only" | "all_non_conformances";
@@ -163,14 +159,7 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
   const plantList = externalPlants || MOCK_PLANTS;
   const tankList = externalTanks || MOCK_TANKS;
 
-  const [isAddPlantModalOpen, setIsAddPlantModalOpen] = useState(false);
-  const [customPlantName, setCustomPlantName] = useState("");
-  const [isAddTankModalOpen, setIsAddTankModalOpen] = useState(false);
-  const [customTankName, setCustomTankName] = useState("");
-  const [customTankKind, setCustomTankKind] = useState<'feed' | 'discharge' | 'both'>('feed');
-  
-  // Navigation & Sub-Tabs
-  const [activeSubTab, setActiveSubTab] = useState<MasterSubTab>("pareto_frequency");
+  // Process Trends Telemetry
   const [activeProcessTab, setActiveProcessTab] = useState<ProcessChartTab>("combined");
   const [selectedShiftFilter, setSelectedShiftFilter] = useState<ProcessShiftFilter>("all");
   const [hoveredEntry, setHoveredEntry] = useState<LogEntry | null>(null);
@@ -183,10 +172,6 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
   // Table search & inspection modal
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [activeCertificateReport, setActiveCertificateReport] = useState<SampleReport | null>(null);
-  
-  // Specs and Reason Masters filters
-  const [specSearchQuery, setSpecSearchQuery] = useState<string>("");
-  const [reasonSearchQuery, setReasonSearchQuery] = useState<string>("");
 
   // Lock body scroll when certificate modal is open
   useEffect(() => {
@@ -563,62 +548,31 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
   return (
     <div className="space-y-6 pb-28 animate-fade-in">
       {/* ========================================================================= */}
-      {/* 1. TOP HEADER                                                             */}
+      {/* 1. TOP HEADER & TELEMETRY TITLE                                           */}
       {/* ========================================================================= */}
-      <div className="glass-panel p-5 sm:p-6 rounded-3xl bg-white/90 dark:bg-[#0A0F1C]/90 backdrop-blur-2xl border border-zinc-200/90 dark:border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex items-center gap-3.5">
-        <div className="p-3 rounded-2xl bg-gradient-to-br from-indigo-500/20 via-indigo-600/15 to-indigo-700/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 shadow-[0_0_20px_rgba(99,102,241,0.2)] shrink-0">
-          <Database className="w-7 h-7" />
-        </div>
-        <div>
-          <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight font-display text-zinc-900 dark:text-white">
-            Master Data &amp; Quality Analytics
-          </h1>
-          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1 font-medium">
-            Process trends telemetry, quality defect Pareto distribution, lot rejection frequencies by product, and refinery master specifications.
-          </p>
+      <div className="glass-panel p-5 sm:p-6 rounded-3xl bg-white/90 dark:bg-[#0A0F1C]/90 backdrop-blur-2xl border border-zinc-200/90 dark:border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex items-center justify-between gap-3.5 flex-wrap">
+        <div className="flex items-center gap-3.5">
+          <div className="p-3 rounded-2xl bg-gradient-to-br from-amber-500/20 via-amber-600/15 to-amber-700/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 shadow-[0_0_20px_rgba(245,158,11,0.2)] shrink-0">
+            <BarChart3 className="w-7 h-7" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider font-display px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                Master Data Analytics
+              </span>
+            </div>
+            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight font-display text-zinc-900 dark:text-white mt-1">
+              QC Rejection Pareto &amp; Product Frequency
+            </h1>
+            <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1 font-medium">
+              Defect reason distribution Pareto telemetry, lot rejection frequencies by finished product, and batch operating parameters.
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* ========================================================================= */}
-      {/* 2. SUB-TABS SELECTOR                                                      */}
-      {/* ========================================================================= */}
-      <div className="overflow-x-auto pb-1 scrollbar-none">
-        <GliderRadioGroup<MasterSubTab>
-          value={activeSubTab}
-          onChange={(val) => setActiveSubTab(val)}
-          themeColor="amber"
-          size="md"
-          variant="rounded"
-          options={[
-            {
-              value: "pareto_frequency",
-              label: "QC Rejection Pareto & Product Frequency",
-              icon: <BarChart3 className="w-4 h-4" />,
-            },
-            {
-              value: "product_specs",
-              label: "Product Quality Specs Master",
-              icon: <Boxes className="w-4 h-4" />,
-            },
-            {
-              value: "reason_codes",
-              label: "Defect Reason Codes Master",
-              icon: <AlertTriangle className="w-4 h-4" />,
-            },
-            {
-              value: "plants_tanks",
-              label: "Plant Lines & Tanks Inventory",
-              icon: <Layers className="w-4 h-4" />,
-            },
-          ]}
-        />
-      </div>
-
-      {/* ========================================================================= */}
-      {/* SUB-TAB 1: QC REJECTION PARETO & PRODUCT FREQUENCY (ANALYTICS MIRROR)     */}
-      {/* ========================================================================= */}
-      {activeSubTab === "pareto_frequency" && (
-        <div className="space-y-6">
+      {/* QC REJECTION PARETO & PRODUCT FREQUENCY (ANALYTICS MIRROR) */}
+      <div className="space-y-6">
           {/* Top KPI Telemetry Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
             <div className="telemetry-card p-4 rounded-2xl">
@@ -1773,250 +1727,6 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
             </div>
           </div>
         </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* SUB-TAB 2: PRODUCT SPECIFICATIONS MASTER                                  */}
-      {/* ========================================================================= */}
-      {activeSubTab === "product_specs" && (
-        <div className="glass-panel p-5 sm:p-6 rounded-3xl bg-white/90 dark:bg-[#0A0F1C]/90 border border-zinc-200/90 dark:border-white/10 shadow-xl space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-200 dark:border-white/10 pb-4">
-            <div>
-              <h2 className="text-base font-bold font-display text-zinc-900 dark:text-white">
-                Refinery Product Quality Release Specifications Master
-              </h2>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                Governing specification thresholds used by QC Laboratory for release decisions (RF-FR-001).
-              </p>
-            </div>
-
-            <div className="relative w-full sm:w-64">
-              <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Search products & specs..."
-                value={specSearchQuery}
-                onChange={(e) => setSpecSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-black/30 text-xs text-zinc-900 dark:text-white focus:outline-none"
-              />
-            </div>
-          </div>
-
-          <div className="overflow-x-auto rounded-2xl border border-zinc-200 dark:border-white/10">
-            <table className="w-full text-left text-xs">
-              <thead>
-                <tr className="bg-zinc-100/80 dark:bg-zinc-900/80 border-b border-zinc-200 dark:border-white/10 font-bold text-zinc-700 dark:text-zinc-300">
-                  <th className="py-3 px-3">Product Name</th>
-                  <th className="py-3 px-3 text-center">FFA Max (%)</th>
-                  <th className="py-3 px-3 text-center">Lovibond Red Max</th>
-                  <th className="py-3 px-3 text-center">Lovibond Yellow Max</th>
-                  <th className="py-3 px-3 text-center">Moisture Max (%)</th>
-                  <th className="py-3 px-3 text-center">PV Max (meq/kg)</th>
-                  <th className="py-3 px-3 text-center">DOBI Min</th>
-                  <th className="py-3 px-3">Governing Standard</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-200 dark:divide-white/5 font-mono">
-                {DEFAULT_PRODUCT_SPECS
-                  .filter((s) => s.productName.toLowerCase().includes(specSearchQuery.toLowerCase()))
-                  .map((spec) => (
-                    <tr key={spec.id} className="hover:bg-zinc-50/50 dark:hover:bg-white/[0.02]">
-                      <td className="py-2.5 px-3 font-sans font-bold text-zinc-900 dark:text-white">
-                        {spec.productName}
-                      </td>
-                      <td className="py-2.5 px-3 text-center text-amber-600 dark:text-amber-400 font-bold">
-                        ≤ {spec.ffaMax.toFixed(2)}
-                      </td>
-                      <td className="py-2.5 px-3 text-center text-rose-600 dark:text-rose-400 font-bold">
-                        ≤ {spec.colourRedMax.toFixed(1)}
-                      </td>
-                      <td className="py-2.5 px-3 text-center text-yellow-600 dark:text-yellow-400">
-                        ≤ {spec.colourYellowMax.toFixed(1)}
-                      </td>
-                      <td className="py-2.5 px-3 text-center text-sky-600 dark:text-sky-400">
-                        ≤ {spec.moistureMax.toFixed(2)}
-                      </td>
-                      <td className="py-2.5 px-3 text-center text-violet-600 dark:text-violet-400">
-                        ≤ {spec.peroxideMax.toFixed(1)}
-                      </td>
-                      <td className="py-2.5 px-3 text-center text-emerald-600 dark:text-emerald-400 font-bold">
-                        ≥ {spec.dobiMin.toFixed(1)}
-                      </td>
-                      <td className="py-2.5 px-3 font-sans text-xs text-zinc-500">
-                        {spec.standardReference}
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* SUB-TAB 3: DEFECT REASON CODES MASTER                                     */}
-      {/* ========================================================================= */}
-      {activeSubTab === "reason_codes" && (
-        <div className="glass-panel p-5 sm:p-6 rounded-3xl bg-white/90 dark:bg-[#0A0F1C]/90 border border-zinc-200/90 dark:border-white/10 shadow-xl space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-200 dark:border-white/10 pb-4">
-            <div>
-              <h2 className="text-base font-bold font-display text-zinc-900 dark:text-white">
-                Defect Reason Taxonomy Master
-              </h2>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                Standard classification reason codes, severity levels, and mandatory corrective actions.
-              </p>
-            </div>
-
-            <div className="relative w-full sm:w-64">
-              <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Search reason codes..."
-                value={reasonSearchQuery}
-                onChange={(e) => setReasonSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-black/30 text-xs text-zinc-900 dark:text-white focus:outline-none"
-              />
-            </div>
-          </div>
-
-          <div className="overflow-x-auto rounded-2xl border border-zinc-200 dark:border-white/10">
-            <table className="w-full text-left text-xs">
-              <thead>
-                <tr className="bg-zinc-100/80 dark:bg-zinc-900/80 border-b border-zinc-200 dark:border-white/10 font-bold text-zinc-700 dark:text-zinc-300">
-                  <th className="py-3 px-3">Reason Code</th>
-                  <th className="py-3 px-3">Description Label</th>
-                  <th className="py-3 px-3">Category</th>
-                  <th className="py-3 px-3">Severity</th>
-                  <th className="py-3 px-3">Default Disposition</th>
-                  <th className="py-3 px-3">Standard Corrective Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-200 dark:divide-white/5 font-sans">
-                {DEFAULT_REJECTION_REASONS
-                  .filter((r) => r.label.toLowerCase().includes(reasonSearchQuery.toLowerCase()) || r.code.toLowerCase().includes(reasonSearchQuery.toLowerCase()))
-                  .map((r) => (
-                    <tr key={r.id} className="hover:bg-zinc-50/50 dark:hover:bg-white/[0.02]">
-                      <td className="py-2.5 px-3 font-mono font-bold text-amber-600 dark:text-amber-400">
-                        {r.code}
-                      </td>
-                      <td className="py-2.5 px-3 font-bold text-zinc-900 dark:text-white">
-                        {r.label}
-                      </td>
-                      <td className="py-2.5 px-3">
-                        <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
-                          {r.category}
-                        </span>
-                      </td>
-                      <td className="py-2.5 px-3">
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-                          r.severity === "Critical" 
-                            ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/30"
-                            : r.severity === "Major"
-                            ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30"
-                            : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/30"
-                        }`}>
-                          {r.severity}
-                        </span>
-                      </td>
-                      <td className="py-2.5 px-3 font-mono font-semibold uppercase text-zinc-700 dark:text-zinc-300">
-                        {r.defaultDisposition}
-                      </td>
-                      <td className="py-2.5 px-3 text-xs text-zinc-500 max-w-sm">
-                        {r.correctiveAction}
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* SUB-TAB 4: PLANTS & TANKS INVENTORY                                       */}
-      {/* ========================================================================= */}
-      {activeSubTab === "plants_tanks" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Plants */}
-          <div className="glass-panel p-5 sm:p-6 rounded-3xl bg-white/90 dark:bg-[#0A0F1C]/90 border border-zinc-200/90 dark:border-white/10 shadow-xl space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-base font-bold font-display text-zinc-900 dark:text-white flex items-center gap-2">
-                <Layers className="w-4 h-4 text-amber-500" />
-                <span>Plant Refining Lines ({plantList.length})</span>
-              </h2>
-              {onAddPlant && (
-                <button
-                  type="button"
-                  onClick={() => setIsAddPlantModalOpen(true)}
-                  className="btn-premium-amber px-3 py-1.5 rounded-xl text-xs font-bold shadow flex items-center gap-1 cursor-pointer"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Add Plant</span>
-                </button>
-              )}
-            </div>
-            <div className="space-y-2.5">
-              {plantList.map((plant) => (
-                <div key={plant.id} className="p-3.5 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-50/50 dark:bg-black/20 flex items-center justify-between">
-                  <div>
-                    <span className="font-bold text-xs text-zinc-900 dark:text-white font-display">
-                      {plant.name}
-                    </span>
-                    <span className="block text-xs font-mono text-zinc-400 mt-0.5">
-                      Line ID: {plant.id}
-                    </span>
-                  </div>
-                  <span className="px-2 py-0.5 rounded-full text-xs font-bold font-mono bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
-                    Active
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Tanks */}
-          <div className="glass-panel p-5 sm:p-6 rounded-3xl bg-white/90 dark:bg-[#0A0F1C]/90 border border-zinc-200/90 dark:border-white/10 shadow-xl space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-base font-bold font-display text-zinc-900 dark:text-white flex items-center gap-2">
-                <Database className="w-4 h-4 text-emerald-500" />
-                <span>Refinery Tanks Inventory ({tankList.length})</span>
-              </h2>
-              {onAddTank && (
-                <button
-                  type="button"
-                  onClick={() => setIsAddTankModalOpen(true)}
-                  className="btn-premium-emerald px-3 py-1.5 rounded-xl text-xs font-bold shadow flex items-center gap-1 cursor-pointer"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Add Tank</span>
-                </button>
-              )}
-            </div>
-            <div className="space-y-2.5">
-              {tankList.map((tank) => (
-                <div key={tank.id} className="p-3.5 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-50/50 dark:bg-black/20 flex items-center justify-between">
-                  <div>
-                    <span className="font-bold text-xs text-zinc-900 dark:text-white font-display">
-                      {tank.name}
-                    </span>
-                    <span className="block text-xs font-mono text-zinc-400 mt-0.5">
-                      Tank ID: {tank.id} · Type: {tank.kind.toUpperCase()}
-                    </span>
-                  </div>
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-bold font-mono ${
-                    tank.kind === "feed" 
-                      ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30" 
-                      : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
-                  }`}>
-                    {tank.kind === "feed" ? "Feed Tank" : "Discharge Tank"}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ========================================================================= */}
       {/* OFFICIAL QC CERTIFICATE OF ANALYSIS (RF-FR-001) MODAL                     */}
@@ -2027,204 +1737,6 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
         report={activeCertificateReport}
         currentUser={currentUser}
       />
-
-      {/* Modal: Add New Plant Line in MasterData (Portalled to document.body) */}
-      {isAddPlantModalOpen && onAddPlant && typeof document !== "undefined" && createPortal(
-        <div 
-          className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setIsAddPlantModalOpen(false);
-          }}
-        >
-          <div className="w-full max-w-md bg-white dark:bg-[#0E1626] rounded-2xl shadow-2xl border border-zinc-200 dark:border-white/10 p-5 space-y-4 animate-scale-in">
-            <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/10 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20">
-                  <Layers className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold font-display text-zinc-900 dark:text-white">
-                    Register New Plant / Production Line
-                  </h3>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                    Add new production line to refinery master data
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsAddPlantModalOpen(false)}
-                className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5 cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
-                Plant / Line Name
-              </label>
-              <input
-                type="text"
-                value={customPlantName}
-                onChange={(e) => setCustomPlantName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    if (customPlantName.trim()) {
-                      onAddPlant(customPlantName.trim());
-                      setCustomPlantName("");
-                      setIsAddPlantModalOpen(false);
-                    }
-                  }
-                }}
-                placeholder="e.g. Refinery Plant 3 (Continuous Bleaching Line 3)"
-                autoFocus
-                className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-300 dark:border-white/15 bg-zinc-50 dark:bg-black/40 text-sm font-bold text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-500/40"
-              />
-            </div>
-
-            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-zinc-200 dark:border-white/10">
-              <button
-                type="button"
-                onClick={() => {
-                  setCustomPlantName("");
-                  setIsAddPlantModalOpen(false);
-                }}
-                className="btn-tactile px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5 cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={!customPlantName.trim()}
-                onClick={() => {
-                  if (customPlantName.trim()) {
-                    onAddPlant(customPlantName.trim());
-                    setCustomPlantName("");
-                    setIsAddPlantModalOpen(false);
-                  }
-                }}
-                className="btn-premium-amber px-5 py-2 rounded-xl text-xs font-bold shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Save Plant Line</span>
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
-
-      {/* Modal: Add New Tank in MasterData (Portalled to document.body) */}
-      {isAddTankModalOpen && onAddTank && typeof document !== "undefined" && createPortal(
-        <div 
-          className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setIsAddTankModalOpen(false);
-          }}
-        >
-          <div className="w-full max-w-md bg-white dark:bg-[#0E1626] rounded-2xl shadow-2xl border border-zinc-200 dark:border-white/10 p-5 space-y-4 animate-scale-in">
-            <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/10 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20">
-                  <Database className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold font-display text-zinc-900 dark:text-white">
-                    Register New Storage / Transfer Tank
-                  </h3>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                    Add new feed or discharge tank to refinery tank farm
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsAddTankModalOpen(false)}
-                className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5 cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
-                  Tank Name / Identifier
-                </label>
-                <input
-                  type="text"
-                  value={customTankName}
-                  onChange={(e) => setCustomTankName(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      if (customTankName.trim()) {
-                        onAddTank(customTankName.trim(), customTankKind);
-                        setCustomTankName("");
-                        setIsAddTankModalOpen(false);
-                      }
-                    }
-                  }}
-                  placeholder="e.g. Feed Tank TK-104 (Crude Feed)"
-                  autoFocus
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-300 dark:border-white/15 bg-zinc-50 dark:bg-black/40 text-sm font-bold text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-500/40"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
-                  Tank Functional Role
-                </label>
-                <GliderRadioGroup
-                  value={customTankKind}
-                  onChange={(val) => setCustomTankKind(val as 'feed' | 'discharge' | 'both')}
-                  themeColor="dynamic"
-                  size="sm"
-                  variant="rounded"
-                  equalWidth
-                  className="w-full"
-                  options={[
-                    { value: "feed", label: "Feed Tank", activeColor: "amber" },
-                    { value: "discharge", label: "Discharge Tank", activeColor: "emerald" },
-                    { value: "both", label: "Dual Purpose", activeColor: "sky" },
-                  ]}
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-zinc-200 dark:border-white/10">
-              <button
-                type="button"
-                onClick={() => {
-                  setCustomTankName("");
-                  setIsAddTankModalOpen(false);
-                }}
-                className="btn-tactile px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5 cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={!customTankName.trim()}
-                onClick={() => {
-                  if (customTankName.trim()) {
-                    onAddTank(customTankName.trim(), customTankKind);
-                    setCustomTankName("");
-                    setIsAddTankModalOpen(false);
-                  }
-                }}
-                className="btn-premium-emerald px-5 py-2 rounded-xl text-xs font-bold shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Save Tank</span>
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
     </div>
   );
 };

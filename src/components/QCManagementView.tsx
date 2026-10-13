@@ -177,16 +177,43 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
     return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
   }, []);
 
+  // Deduplicate incoming reports by Lot Number / Report Number so that identical duplicate rows are never displayed
+  const deduplicatedReports = useMemo(() => {
+    const map = new Map<string, SampleReport>();
+    const lotMap = new Map<string, string>(); // lot_no -> id
+
+    for (const r of reports) {
+      if (!r || !r.id) continue;
+      const lotKey = r.lot_no ? r.lot_no.trim().toLowerCase() : null;
+      const existingId = (lotKey && lotMap.get(lotKey)) || (map.has(r.id) ? r.id : null);
+
+      if (existingId && map.has(existingId)) {
+        const existing = map.get(existingId)!;
+        // Prioritize the one with disposition decision or tested results
+        const existingHasDec = !!existing.decision;
+        const newHasDec = !!r.decision;
+        if (!existingHasDec && newHasDec) {
+          map.set(existingId, { ...existing, ...r, id: existingId });
+        }
+      } else {
+        map.set(r.id, r);
+        if (lotKey) lotMap.set(lotKey, r.id);
+      }
+    }
+
+    return Array.from(map.values());
+  }, [reports]);
+
   // Count of samples recorded for today
   const todayCount = useMemo(() => {
-    return reports.filter(r => r.sample_date === todayDateStr || (r.created_at && r.created_at.startsWith(todayDateStr))).length;
-  }, [reports, todayDateStr]);
+    return deduplicatedReports.filter(r => r.sample_date === todayDateStr || (r.created_at && r.created_at.startsWith(todayDateStr))).length;
+  }, [deduplicatedReports, todayDateStr]);
 
   // Base reports considering Today Only filter toggle
   const dateScopedReports = useMemo(() => {
-    if (!filterTodayOnly) return reports;
-    return reports.filter(r => r.sample_date === todayDateStr || (r.created_at && r.created_at.startsWith(todayDateStr)));
-  }, [reports, filterTodayOnly, todayDateStr]);
+    if (!filterTodayOnly) return deduplicatedReports;
+    return deduplicatedReports.filter(r => r.sample_date === todayDateStr || (r.created_at && r.created_at.startsWith(todayDateStr)));
+  }, [deduplicatedReports, filterTodayOnly, todayDateStr]);
 
   // Filtered reports (sorted newest first)
   const filteredReports = useMemo(() => {
@@ -433,9 +460,9 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
             </div>
             <div className="text-2xl font-bold text-zinc-900 dark:text-white mt-1 tabular-nums">
               {totalCount}
-              {filterTodayOnly && reports.length !== totalCount && (
+              {filterTodayOnly && deduplicatedReports.length !== totalCount && (
                 <span className="text-xs font-normal text-zinc-400 ml-2 font-mono">
-                  / {reports.length} all-time
+                  / {deduplicatedReports.length} all-time
                 </span>
               )}
             </div>

@@ -604,19 +604,36 @@ export async function fetchQcReportsFromInsForge(): Promise<SampleReport[] | nul
       };
     });
 
-    // Merge snapshot and DB rows with single-key deduplication (snapshot has highest fidelity)
+    // Merge snapshot and DB rows with deduplication by ID and Lot Number
     const map = new Map<string, SampleReport>();
+    const lotMap = new Map<string, string>(); // normalized lot_no -> id
+
+    const registerReport = (r: SampleReport) => {
+      if (!r || !r.id) return;
+      const lotKey = r.lot_no ? r.lot_no.trim().toLowerCase() : null;
+      const existingId = (lotKey && lotMap.get(lotKey)) || (map.has(r.id) ? r.id : null);
+
+      if (existingId && map.has(existingId)) {
+        const existing = map.get(existingId)!;
+        // Keep the one that has disposition decision or is updated
+        const existingHasDec = !!existing.decision;
+        const newHasDec = !!r.decision;
+        if (!existingHasDec && newHasDec) {
+          map.set(existingId, { ...existing, ...r, id: existingId });
+        }
+      } else {
+        map.set(r.id, r);
+        if (lotKey) lotMap.set(lotKey, r.id);
+      }
+    };
+
     if (snapshot && Array.isArray(snapshot.data)) {
       for (const s of snapshot.data) {
-        if (s && s.id) {
-          map.set(s.id, s);
-        }
+        registerReport(s);
       }
     }
     for (const r of reportsFromDb) {
-      if (r && r.id && !map.has(r.id)) {
-        map.set(r.id, r);
-      }
+      registerReport(r);
     }
 
     const merged = Array.from(map.values());
@@ -673,13 +690,20 @@ export async function syncQcSampleToInsForge(
       ? "PASS"
       : "PENDING";
 
-    const { data: srData, error: srError } = await insforge.database
+    const sampleCode = sample.lot_no || sample.report_no || `SMP-${Date.now().toString().slice(-6)}`;
+
+    // Check if record with this sample_code already exists to prevent duplicate rows
+    const { data: existingRows } = await insforge.database
       .from("sample_reports")
-      .insert([
-        {
-          sample_code: sample.lot_no || sample.report_no || `SMP-${Date.now().toString().slice(-6)}`,
-          batch_id: "BP001",
-          taken_by: currentUser?.id || "QCS001",
+      .select("id")
+      .eq("sample_code", sampleCode);
+
+    let insertedSrId: string;
+    if (existingRows && existingRows.length > 0) {
+      insertedSrId = existingRows[0].id;
+      await insforge.database
+        .from("sample_reports")
+        .update({
           sample_type: sample.product_name || "Bleached Palm Oil",
           sampling_point: sample.sampling_point_name || sample.sample_point || "Bleacher Bleached Oil Outlet",
           ffa_pct: ffa,
@@ -690,13 +714,33 @@ export async function syncQcSampleToInsForge(
           iv: iv,
           dobi: dobi,
           status: decisionCode === "PASS" ? "Passed" : decisionCode === "REJECT" ? "Rejected" : "Pending",
-        },
-      ])
-      .select();
+        })
+        .eq("id", insertedSrId);
+    } else {
+      const { data: srData, error: srError } = await insforge.database
+        .from("sample_reports")
+        .insert([
+          {
+            sample_code: sampleCode,
+            batch_id: "BP001",
+            taken_by: currentUser?.id || "QCS001",
+            sample_type: sample.product_name || "Bleached Palm Oil",
+            sampling_point: sample.sampling_point_name || sample.sample_point || "Bleacher Bleached Oil Outlet",
+            ffa_pct: ffa,
+            color_red: colorRed,
+            color_yellow: colorYellow,
+            moisture_pct: moisture,
+            peroxide_value: pv,
+            iv: iv,
+            dobi: dobi,
+            status: decisionCode === "PASS" ? "Passed" : decisionCode === "REJECT" ? "Rejected" : "Pending",
+          },
+        ])
+        .select();
 
-    if (srError) throw srError;
-
-    const insertedSrId = srData?.[0]?.id || "SR001";
+      if (srError) throw srError;
+      insertedSrId = srData?.[0]?.id || "SR001";
+    }
 
     if (decisionCode !== "PENDING") {
       await insforge.database.from("qc_decisions").insert([

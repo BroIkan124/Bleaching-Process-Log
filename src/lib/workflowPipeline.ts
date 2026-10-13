@@ -19,9 +19,13 @@ export function createOrUpdateQcSampleFromLogEntry(
   const lotNo = `LOT-${plantCleanCode}-${sheetDate.replace(/-/g, '')}-${entry.time_label}`;
   const sampleId = `sample-${sheetDate}-${entry.time_label}`;
 
-  // Find if a report for this slot on this specific sheet date already exists
+  // Find if a report for this slot on this specific sheet date already exists (match by ID, report_no, or lot_no)
   const existingIndex = existingReports.findIndex(
-    (r) => r.id === sampleId || (r.report_no === reportNo && r.sample_date === sheetDate)
+    (r) =>
+      r.id === sampleId ||
+      (r.report_no === reportNo && r.sample_date === sheetDate) ||
+      (r.lot_no && r.lot_no === lotNo) ||
+      (r.sample_date === sheetDate && (r.time_check === formattedTimeCheck || r.report_no?.endsWith(entry.time_label)))
   );
 
   const sampleResults: SampleResult[] = [
@@ -154,8 +158,14 @@ export function createOrUpdateQcSampleFromLogEntry(
     };
   }
 
-  // Put targetSample at the VERY TOP of the reports list
-  const remaining = existingReports.filter((r) => r.id !== sampleId && r.report_no !== reportNo);
+  // Put targetSample at the VERY TOP of the reports list (filter out any duplicates of the same slot/lot)
+  const remaining = existingReports.filter(
+    (r) =>
+      r.id !== sampleId &&
+      r.report_no !== reportNo &&
+      r.lot_no !== lotNo &&
+      !(r.sample_date === sheetDate && (r.time_check === formattedTimeCheck || r.report_no?.endsWith(entry.time_label)))
+  );
   const updatedReports = [targetSample, ...remaining];
 
   // Audit event for Supervisor Monitoring

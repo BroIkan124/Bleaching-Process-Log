@@ -59,6 +59,7 @@ import {
 } from "lucide-react";
 import { RadioSelect } from "./RadioSelect";
 import { GliderRadioGroup } from "./GliderRadioGroup";
+import { QcCertificateModal } from "./QcCertificateModal";
 
 interface MasterDataViewProps {
   sheet?: LogSheet;
@@ -2018,184 +2019,14 @@ export const MasterDataView: React.FC<MasterDataViewProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* 100% FULL-SCREEN PORTALLED CERTIFICATE & AUDIT MODAL                      */}
+      {/* OFFICIAL QC CERTIFICATE OF ANALYSIS (RF-FR-001) MODAL                     */}
       {/* ========================================================================= */}
-      {activeCertificateReport && typeof document !== "undefined" && createPortal(
-        <div 
-          className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
-          onClick={() => setActiveCertificateReport(null)}
-        >
-          <div 
-            className="bg-[#101927] border border-[#1F2E43] rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden text-slate-100"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Modal Header */}
-            <div className="p-4 sm:p-5 border-b border-[#1F2E43] flex items-center justify-between bg-black/20">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-500">
-                  <ShieldAlert className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-base font-display text-white">
-                      Laboratory Analysis Certificate
-                    </h3>
-                    <span className="font-mono text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded">
-                      {activeCertificateReport.lot_no}
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Form RF-FR-001 · Report No: {activeCertificateReport.report_no}
-                  </p>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setActiveCertificateReport(null)}
-                className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Modal Body */}
-            <div className="p-5 sm:p-6 overflow-y-auto space-y-5">
-              {/* Product & Process Summary */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-black/30 p-4 rounded-xl border border-white/5">
-                <div>
-                  <span className="block text-xs text-slate-400 uppercase font-mono">Product</span>
-                  <span className="font-semibold text-xs text-white mt-1 block truncate">
-                    {activeCertificateReport.product_name || "Refined Product"}
-                  </span>
-                </div>
-                <div>
-                  <span className="block text-xs text-slate-400 uppercase font-mono">Sampling Point</span>
-                  <span className="font-semibold text-xs text-white mt-1 block truncate">
-                    {activeCertificateReport.sampling_point_name || "Deodorizer Discharge"}
-                  </span>
-                </div>
-                <div>
-                  <span className="block text-xs text-slate-400 uppercase font-mono">Sample Date &amp; Time</span>
-                  <span className="font-semibold text-xs font-mono text-white mt-1 block">
-                    {activeCertificateReport.sample_date} {activeCertificateReport.time_check}
-                  </span>
-                </div>
-                <div>
-                  <span className="block text-xs text-slate-400 uppercase font-mono">Sampler</span>
-                  <span className="font-semibold text-xs text-white mt-1 block truncate">
-                    {activeCertificateReport.submitted_by_name}
-                  </span>
-                </div>
-              </div>
-
-              {/* Decision & Root Cause */}
-              <div className="p-4 rounded-xl border border-rose-500/30 bg-rose-500/10 space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 rounded font-mono text-xs font-bold bg-rose-600 text-white">
-                      {activeCertificateReport.decision?.decision === "reject" ? "REJECTED LOT" : "CONCESSION RELEASE"}
-                    </span>
-                    <span className="text-xs font-bold text-rose-400">
-                      {normalizeReason(activeCertificateReport.decision?.reason_label, activeCertificateReport.decision?.reason_id)}
-                    </span>
-                  </div>
-                  {activeCertificateReport.decision?.disposition && (
-                    <span className="text-xs uppercase font-mono font-bold bg-white/10 px-2.5 py-0.5 rounded text-white">
-                      Action: {activeCertificateReport.decision.disposition}
-                    </span>
-                  )}
-                </div>
-                {activeCertificateReport.decision?.reason_detail && (
-                  <p className="text-xs text-slate-300 leading-relaxed pt-1">
-                    {activeCertificateReport.decision.reason_detail}
-                  </p>
-                )}
-              </div>
-
-              {/* Analytical Results Table */}
-              <div className="space-y-2">
-                <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider font-display">
-                  Analytical Assay Results
-                </h4>
-                <div className="border border-white/10 rounded-xl overflow-hidden">
-                  <table className="w-full text-left text-xs">
-                    <thead>
-                      <tr className="bg-white/5 border-b border-white/10 font-bold text-slate-300">
-                        <th className="py-2.5 px-3">Parameter</th>
-                        <th className="py-2.5 px-3 text-right">Result</th>
-                        <th className="py-2.5 px-3 text-center">Unit</th>
-                        <th className="py-2.5 px-3 text-center">Specification Limit</th>
-                        <th className="py-2.5 px-3 text-center">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5 font-mono">
-                      {activeCertificateReport.results.map((res) => (
-                        <tr key={res.id} className="hover:bg-white/[0.02]">
-                          <td className="py-2.5 px-3 font-sans font-medium text-slate-200">
-                            {res.parameter_name}
-                          </td>
-                          <td className="py-2.5 px-3 text-right font-bold text-white">
-                            {res.value_numeric !== null && res.value_numeric !== undefined ? res.value_numeric : "–"}
-                          </td>
-                          <td className="py-2.5 px-3 text-center text-slate-400">
-                            {res.unit || "–"}
-                          </td>
-                          <td className="py-2.5 px-3 text-center text-slate-400">
-                            {res.parameter_code === "FFA" ? "≤ 0.05%" : res.parameter_code === "COLOUR_R" ? "≤ 2.5 R" : "Standard"}
-                          </td>
-                          <td className="py-2.5 px-3 text-center">
-                            {res.in_spec === false ? (
-                              <span className="px-2 py-0.5 rounded font-bold text-xs bg-rose-500/20 text-rose-400 border border-rose-500/40">
-                                OUT OF SPEC
-                              </span>
-                            ) : (
-                              <span className="px-2 py-0.5 rounded font-bold text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
-                                PASS
-                              </span>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Signoff Authority */}
-              <div className="flex items-center justify-between pt-3 border-t border-white/10 text-xs text-slate-400">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  <span>Decided by: <strong className="text-white">{activeCertificateReport.decision?.decided_by_name || "QA Officer"}</strong></span>
-                </div>
-                <div className="font-mono">
-                  Timestamp: {activeCertificateReport.decision?.decided_at || "Recorded"}
-                </div>
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="p-4 border-t border-[#1F2E43] flex items-center justify-end gap-2.5 bg-black/20">
-              <button
-                type="button"
-                onClick={() => window.print()}
-                className="btn-tactile px-4 py-2 rounded-xl text-xs font-bold text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 flex items-center gap-1.5 cursor-pointer"
-              >
-                <Printer className="w-3.5 h-3.5" />
-                <span>Print Certificate</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveCertificateReport(null)}
-                className="btn-tactile px-4 py-2 rounded-xl text-xs font-bold text-white btn-premium-amber cursor-pointer"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
+      <QcCertificateModal
+        isOpen={Boolean(activeCertificateReport)}
+        onClose={() => setActiveCertificateReport(null)}
+        report={activeCertificateReport}
+        currentUser={currentUser}
+      />
 
       {/* Modal: Add New Plant Line in MasterData (Portalled to document.body) */}
       {isAddPlantModalOpen && onAddPlant && typeof document !== "undefined" && createPortal(

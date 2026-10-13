@@ -10,13 +10,17 @@ import {
   ShieldCheck, 
   Users,
   Database,
-  ChevronRight
+  ChevronRight,
+  Settings,
+  HelpCircle
 } from "lucide-react";
 
 interface SidebarNavProps {
   activeTab: DashboardTab;
   onTabChange: (tab: DashboardTab) => void;
   onOpenPdf: () => void;
+  onOpenSettings?: () => void;
+  onOpenHelp?: () => void;
   qcSampleCount?: number;
   sheetStatus: SheetStatus;
   currentUser: UserProfile;
@@ -27,6 +31,8 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
   activeTab,
   onTabChange,
   onOpenPdf,
+  onOpenSettings,
+  onOpenHelp,
   qcSampleCount = 0,
   sheetStatus,
   currentUser,
@@ -140,8 +146,45 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         </nav>
       </div>
 
-      {/* Bottom Quick Action: Print PDF */}
-      <div className="pt-2 border-t border-zinc-200/80 dark:border-white/10 mt-2 md:mt-0">
+      {/* Bottom Quick Actions: Settings, Support & Print PDF */}
+      <div className="pt-2.5 border-t border-zinc-200/80 dark:border-white/10 mt-2 md:mt-0 space-y-1">
+        {/* 1. Workstation Settings */}
+        {onOpenSettings && (
+          <button
+            type="button"
+            onClick={onOpenSettings}
+            className="w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-medium text-zinc-700 dark:text-zinc-300 bg-zinc-50/80 dark:bg-zinc-900/80 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200/80 dark:border-white/5 shadow-2xs transition-all cursor-pointer group"
+            title="Plant Workstation Settings & Preferences"
+          >
+            <div className="flex items-center gap-2">
+              <Settings className="w-4 h-4 text-sky-500 group-hover:rotate-45 transition-transform" />
+              <span>Settings</span>
+            </div>
+            <span className="text-[10px] text-zinc-400 font-mono">
+              PRD-001
+            </span>
+          </button>
+        )}
+
+        {/* 2. Help & SOP Support */}
+        {onOpenHelp && (
+          <button
+            type="button"
+            onClick={onOpenHelp}
+            className="w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-medium text-zinc-700 dark:text-zinc-300 bg-zinc-50/80 dark:bg-zinc-900/80 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200/80 dark:border-white/5 shadow-2xs transition-all cursor-pointer group"
+            title="SOP Guidance, Process Specs & Plant Support"
+          >
+            <div className="flex items-center gap-2">
+              <HelpCircle className="w-4 h-4 text-emerald-500 group-hover:scale-110 transition-transform" />
+              <span>Help & SOP Support</span>
+            </div>
+            <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">
+              24H
+            </span>
+          </button>
+        )}
+
+        {/* 3. Print Form PDF */}
         <button
           type="button"
           onClick={onOpenPdf}

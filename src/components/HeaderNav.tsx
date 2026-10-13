@@ -25,7 +25,9 @@ import {
   FlaskConical,
   AlertTriangle,
   CheckCircle2,
-  Info
+  Info,
+  Settings,
+  HelpCircle
 } from "lucide-react";
 
 interface HeaderNavProps {
@@ -37,6 +39,8 @@ interface HeaderNavProps {
   onToggleDark: () => void;
   isOffline: boolean;
   onOpenPdf: () => void;
+  onOpenSettings?: () => void;
+  onOpenHelp?: () => void;
   onSubmitSheet: () => void;
   onOpenReview: () => void;
   currentShift: 1 | 2 | 3;
@@ -64,6 +68,8 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   onToggleDark,
   isOffline,
   onOpenPdf,
+  onOpenSettings,
+  onOpenHelp,
   onSubmitSheet,
   onOpenReview,
   currentShift,
@@ -434,6 +440,32 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
               </div>
             )}
           </div>
+
+          {/* Help & SOP Support Shortcut */}
+          {onOpenHelp && (
+            <button
+              type="button"
+              onClick={onOpenHelp}
+              className="btn-tactile btn-premium-glass p-2 rounded-xl text-zinc-500 hover:text-emerald-500 dark:text-zinc-400 dark:hover:text-emerald-400 cursor-pointer group"
+              title="Help & SOP Support (24-Hour Refinery Ops)"
+              aria-label="Help and Support"
+            >
+              <HelpCircle className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
+            </button>
+          )}
+
+          {/* Plant Workstation Settings Shortcut */}
+          {onOpenSettings && (
+            <button
+              type="button"
+              onClick={onOpenSettings}
+              className="btn-tactile btn-premium-glass p-2 rounded-xl text-zinc-500 hover:text-sky-500 dark:text-zinc-400 dark:hover:text-sky-400 cursor-pointer group"
+              title="Plant Workstation Settings & Preferences"
+              aria-label="Workstation Settings"
+            >
+              <Settings className="w-4 h-4 transition-transform duration-200 group-hover:rotate-45" />
+            </button>
+          )}
 
           {/* Industrial Audible Chime Toggle Button */}
           {onToggleAudio && (

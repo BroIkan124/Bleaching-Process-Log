@@ -37,6 +37,7 @@ export interface UserProfile {
   phone?: string;
   password?: string;
   last_login?: string;
+  avatar_url?: string;
 }
 
 export interface SupervisorUpdateEvent {

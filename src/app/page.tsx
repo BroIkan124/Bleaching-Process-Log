@@ -44,6 +44,8 @@ import { SupervisorMonitoringView } from "@/components/SupervisorMonitoringView"
 import { ReportsView } from "@/components/ReportsView";
 import { MasterDataView } from "@/components/MasterDataView";
 import LoginView from "@/components/LoginView";
+import WorkstationSettingsModal from "@/components/WorkstationSettingsModal";
+import HelpSupportModal from "@/components/HelpSupportModal";
 import { AlertCircle, CheckCircle, Info, Calendar } from "lucide-react";
 import {
   logActivityToInsForge,
@@ -208,6 +210,8 @@ export default function BleachingProcessLogApp() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [isPdfOpen, setIsPdfOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
 
   // Audible Industrial Chime state
@@ -1323,6 +1327,8 @@ export default function BleachingProcessLogApp() {
         onToggleDark={() => setIsDark(!isDark)}
         isOffline={isOffline}
         onOpenPdf={() => setIsPdfOpen(true)}
+        onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenHelp={() => setIsHelpOpen(true)}
         onSubmitSheet={handleSubmitSheet}
         onOpenReview={() => setIsReviewOpen(true)}
         currentShift={currentShift}
@@ -1386,6 +1392,8 @@ export default function BleachingProcessLogApp() {
           activeTab={activeTab}
           onTabChange={setActiveTab}
           onOpenPdf={() => setIsPdfOpen(true)}
+          onOpenSettings={() => setIsSettingsOpen(true)}
+          onOpenHelp={() => setIsHelpOpen(true)}
           sheetStatus={sheet.status}
           qcSampleCount={qcReports.length}
           currentUser={currentUser}
@@ -1563,6 +1571,36 @@ export default function BleachingProcessLogApp() {
         qcReports={qcReports}
         currentUser={currentUser || undefined}
         allUsers={allUsers}
+      />
+
+      {/* Plant Workstation Settings & Preferences Modal (Matches User Design) */}
+      {currentUser && (
+        <WorkstationSettingsModal
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+          currentUser={currentUser}
+          onUpdateUser={(updated) => {
+            setCurrentUser(updated);
+            setAllUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
+            try {
+              localStorage.setItem("nisshin_auth_user", JSON.stringify(updated));
+            } catch {}
+            showNotice(`Profile updated: ${updated.name} (${updated.department || updated.role})`, "success");
+          }}
+          isDark={isDark}
+          onToggleDark={() => setIsDark(!isDark)}
+          isAudioEnabled={isAudioActive}
+          onToggleAudio={handleToggleAudio}
+          onPlayTestSound={playTestTone}
+          onForceResyncCloud={() => loadCloudData(true)}
+        />
+      )}
+
+      {/* Help & SOP Support Modal */}
+      <HelpSupportModal
+        isOpen={isHelpOpen}
+        onClose={() => setIsHelpOpen(false)}
+        currentUser={currentUser}
       />
     </div>
   );

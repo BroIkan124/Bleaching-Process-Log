@@ -27,6 +27,7 @@ import { RadioSelect } from "./RadioSelect";
 import { GliderRadioGroup } from "./GliderRadioGroup";
 import { calculatePipelineMetrics, getShiftDutyTechnician } from "@/lib/workflowPipeline";
 import { ShiftRosterModal } from "./ShiftRosterModal";
+import { PlantPerformanceReportModal } from "./PlantPerformanceReportModal";
 
 interface ReportsViewProps {
   sheet: LogSheet;
@@ -46,6 +47,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
   const [timeRange, setTimeRange] = useState<string>("today");
   const [selectedShift, setSelectedShift] = useState<string>("ALL");
   const [rosterModalShift, setRosterModalShift] = useState<1 | 2 | 3 | null>(null);
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState<boolean>(false);
 
   const pipelineMetrics = calculatePipelineMetrics(sheet, qcReports);
 
@@ -194,7 +196,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
       time_range: timeRange,
       shift: selectedShift,
     });
-    window.print();
+    setIsPrintModalOpen(true);
   };
 
   return (
@@ -799,6 +801,28 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
           }}
         />
       )}
+
+      {/* Official Plant Performance Report Print Modal (A4 with Lam Soon Badge) */}
+      <PlantPerformanceReportModal
+        isOpen={isPrintModalOpen}
+        onClose={() => setIsPrintModalOpen(false)}
+        sheet={sheet}
+        currentUser={currentUser}
+        qcReports={qcReports}
+        timeRange={timeRange}
+        selectedShift={selectedShift}
+        totalInputMT={totalInputMT}
+        avgFlowrate={avgFlowrate}
+        avgTemp={avgTemp}
+        avgVacuum={avgVacuum}
+        inSpecPercentage={inSpecPercentage}
+        avgFFA={avgFFA}
+        avgRed={avgRed}
+        avgYellow={avgYellow}
+        s1MT={s1MT}
+        s2MT={s2MT}
+        s3MT={s3MT}
+      />
     </div>
   );
 };

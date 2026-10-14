@@ -405,44 +405,6 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* 0. Synchronized Bleaching Log Product Indicator Banner */}
-      <div className="glass-panel p-4 rounded-2xl flex flex-wrap items-center justify-between gap-3 border border-amber-500/25 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-amber-500/15 text-amber-500 border border-amber-500/30 shadow-xs">
-            <Droplets className="w-5 h-5 text-amber-500" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
-                Synchronized Bleaching Log Product
-              </span>
-            </div>
-            <p className="text-sm font-semibold text-zinc-900 dark:text-white mt-0.5">
-              Current Operating Oil:{" "}
-              <span className="text-amber-600 dark:text-amber-400 font-bold">
-                {activeProductName || newSample.product_name || "CHOCOHI 357A NPHO"}
-              </span>
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => {
-              if (activeProductName) {
-                setNewSample(prev => ({ ...prev, product_name: activeProductName }));
-              }
-              setIsNewSampleOpen(true);
-            }}
-            className="btn-premium-amber flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold shadow-sm cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Sample for Active Product</span>
-          </button>
-        </div>
-      </div>
-
       {/* 1. Header Metrics Banner */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {/* Total Samples */}

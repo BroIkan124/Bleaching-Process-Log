@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { UserProfile, SampleReport, SampleResult, QCDecisionType, Disposition, Product, Plant, Tank } from "@/types";
+import { UserProfile, SampleReport, SampleResult, QCDecision, QCDecisionType, Disposition, Product, Plant, Tank } from "@/types";
 import { QC_SNAPSHOT_DATA } from "@/lib/qcSampleData";
 import { 
   FlaskConical, 
@@ -297,14 +297,23 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
 
   // Handle Save Edited Test Results
   const handleSaveResults = (updatedReport: SampleReport) => {
-    // If a disposition decision is chosen, require mandatory QC PIN/Password Authorization!
-    if (updatedReport.decision?.decision) {
-      setPendingReportToAuthorize(updatedReport);
-      setIsAuthModalOpen(true);
-      return;
-    }
+    // Ensure an effective decision is always established when saving (default to 'accept' if pending/not yet set)
+    const effectiveDecision: QCDecision = updatedReport.decision?.decision ? updatedReport.decision : {
+      id: updatedReport.decision?.id || `dec-${Date.now()}`,
+      report_id: updatedReport.id,
+      decision: "accept",
+      decided_by_name: currentUser.name,
+      decided_at: new Date().toISOString(),
+    };
 
-    commitSaveResults(updatedReport);
+    const reportToAuthorize: SampleReport = {
+      ...updatedReport,
+      decision: effectiveDecision,
+    };
+
+    // Mandatory QC PIN/Password Authorization for all QC batch releases / decisions!
+    setPendingReportToAuthorize(reportToAuthorize);
+    setIsAuthModalOpen(true);
   };
 
   const commitSaveResults = (
@@ -787,7 +796,17 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
                       <div className="flex items-center justify-center gap-1">
                         <button
                           onClick={() => {
-                            setSelectedReport(report);
+                            const reportToEdit: SampleReport = report.decision?.decision ? report : {
+                              ...report,
+                              decision: {
+                                id: `dec-${Date.now()}`,
+                                report_id: report.id,
+                                decision: "accept",
+                                decided_by_name: currentUser.name,
+                                decided_at: new Date().toISOString(),
+                              }
+                            };
+                            setSelectedReport(reportToEdit);
                             setIsEditorOpen(true);
                           }}
                           className="btn-tactile p-1.5 rounded-lg border border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-700 dark:text-zinc-300 cursor-pointer group transition-all"

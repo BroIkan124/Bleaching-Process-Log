@@ -200,6 +200,13 @@ export default function WorkstationSettingsModal({
     setMounted(true);
   }, []);
 
+  // Admin access guard: automatically divert non-admins away from database section
+  useEffect(() => {
+    if (currentUser.role !== 'admin' && activeSection === 'database') {
+      setActiveSection('profile');
+    }
+  }, [currentUser.role, activeSection]);
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -555,19 +562,26 @@ export default function WorkstationSettingsModal({
                   <span className="truncate">Security & Access</span>
                 </button>
 
-                {/* 5. Local Database & Backup */}
-                <button
-                  type="button"
-                  onClick={() => setActiveSection('database')}
-                  className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-left text-xs font-semibold transition-all cursor-pointer ${
-                    activeSection === 'database'
-                      ? 'bg-[#0098EA] text-white shadow-md shadow-[#0098EA]/25'
-                      : 'text-zinc-400 hover:text-white hover:bg-white/5'
-                  }`}
-                >
-                  <Database className="w-4 h-4 shrink-0" />
-                  <span className="truncate">Local Database & Backup</span>
-                </button>
+                {/* 5. Local Database & Backup (Admin Only) */}
+                {currentUser.role === 'admin' && (
+                  <button
+                    type="button"
+                    onClick={() => setActiveSection('database')}
+                    className={`flex items-center justify-between w-full px-3 py-2.5 rounded-xl text-left text-xs font-semibold transition-all cursor-pointer ${
+                      activeSection === 'database'
+                        ? 'bg-[#0098EA] text-white shadow-md shadow-[#0098EA]/25'
+                        : 'text-zinc-400 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <Database className="w-4 h-4 shrink-0 text-amber-400" />
+                      <span className="truncate">Local Database & Backup</span>
+                    </div>
+                    <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold uppercase">
+                      Admin
+                    </span>
+                  </button>
+                )}
 
                 {/* 6. About Refinery RMS */}
                 <button
@@ -1260,9 +1274,9 @@ export default function WorkstationSettingsModal({
             )}
 
             {/* ======================================================== */}
-            {/* SECTION 5: LOCAL DATABASE & DATA TRANSFER                */}
+            {/* SECTION 5: LOCAL DATABASE & DATA TRANSFER (ADMIN ONLY)   */}
             {/* ======================================================== */}
-            {activeSection === 'database' && (
+            {activeSection === 'database' && currentUser.role === 'admin' && (
               <div className="space-y-6 animate-in fade-in duration-200">
                 <div>
                   <h3 className="text-base font-bold text-white uppercase tracking-wide flex items-center gap-2">

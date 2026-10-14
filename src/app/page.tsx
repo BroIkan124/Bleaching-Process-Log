@@ -64,6 +64,7 @@ import {
   saveStateSnapshotToInsForge,
   checkCloudUpdateTimestamp
 } from "@/lib/dbService";
+import { ENABLE_CLOUD_SYNC } from "@/lib/insforge";
 
 export default function BleachingProcessLogApp() {
   // 1. Navigation Tab State
@@ -604,6 +605,13 @@ export default function BleachingProcessLogApp() {
   }, [selectedDate]);
 
   const loadCloudData = async (isManual = false) => {
+    if (!ENABLE_CLOUD_SYNC) {
+      if (isManual) {
+        showNotice("Local Database Active (100% On-Premise Air-Gapped).", "success");
+      }
+      return;
+    }
+
     try {
       if (isManual) setIsSyncing(true);
 
@@ -698,13 +706,17 @@ export default function BleachingProcessLogApp() {
     }
   };
 
-  // Immediate cloud data fetch on application mount across all laptops
+  // Immediate cloud data fetch on application mount across all laptops (only when cloud sync enabled)
   useEffect(() => {
-    loadCloudData(false);
+    if (ENABLE_CLOUD_SYNC) {
+      loadCloudData(false);
+    }
   }, []);
 
-  // Smart periodic cloud synchronization (Background auto-sync polling every 1s & on window focus)
+  // Smart periodic cloud synchronization (Only runs when cloud sync is enabled)
   useEffect(() => {
+    if (!ENABLE_CLOUD_SYNC) return;
+
     const pollInterval = setInterval(async () => {
       if (isSyncing || isDrawerOpenRef.current) return;
       try {

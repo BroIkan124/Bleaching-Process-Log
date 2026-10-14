@@ -29,10 +29,21 @@ import {
   Lock,
   Eye,
   EyeOff,
-  AlertCircle
+  AlertCircle,
+  Database,
+  Download,
+  HardDrive,
+  FileCheck
 } from "lucide-react";
 import { UserProfile } from "@/types";
-import { logActivityToInsForge, syncUserToInsForge } from "@/lib/dbService";
+import { 
+  logActivityToInsForge, 
+  syncUserToInsForge, 
+  getLocalDatabaseStats, 
+  exportFullDatabaseBackup, 
+  importFullDatabaseBackup, 
+  LocalDatabaseStats 
+} from "@/lib/dbService";
 import { getUserQcPin, setUserQcPin } from "@/lib/qcPinService";
 
 export const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=200&auto=format&fit=crop&q=80";
@@ -55,6 +66,7 @@ type SettingsSection =
   | 'system' 
   | 'alerts' 
   | 'security' 
+  | 'database'
   | 'about';
 
 export default function WorkstationSettingsModal({
@@ -134,6 +146,55 @@ export default function WorkstationSettingsModal({
   const [pinSuccess, setPinSuccess] = useState(false);
   const [isUpdatingPin, setIsUpdatingPin] = useState(false);
   const [showPinAccountPass, setShowPinAccountPass] = useState(false);
+
+  // Local Database Backup & Restore state
+  const jsonFileInputRef = useRef<HTMLInputElement>(null);
+  const [dbStats, setDbStats] = useState<LocalDatabaseStats | null>(null);
+  const [backupExportSuccess, setBackupExportSuccess] = useState<string | null>(null);
+  const [backupImportSuccess, setBackupImportSuccess] = useState<string | null>(null);
+  const [backupImportError, setBackupImportError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setDbStats(getLocalDatabaseStats());
+    }
+  }, [isOpen]);
+
+  const handleExportBackup = () => {
+    const res = exportFullDatabaseBackup();
+    if (res.success) {
+      setBackupExportSuccess(`Sandaran berjaya dieksport (${res.filename}). Simpan fail ini ke pemacu USB untuk dipindahkan ke Desktop Server.`);
+      setDbStats(getLocalDatabaseStats());
+      setTimeout(() => setBackupExportSuccess(null), 7000);
+    }
+  };
+
+  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setBackupImportError(null);
+    setBackupImportSuccess(null);
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const text = event.target?.result as string;
+        const res = importFullDatabaseBackup(text);
+        if (res.success) {
+          setBackupImportSuccess(`Berjaya memulihkan ${res.restoredKeysCount} jadual data kilang! Halaman akan dimuat semula.`);
+          setDbStats(getLocalDatabaseStats());
+          setTimeout(() => {
+            window.location.reload();
+          }, 1500);
+        } else {
+          setBackupImportError(res.error || "Ralat semasa memulihkan fail.");
+        }
+      } catch {
+        setBackupImportError("Fail sandaran rosak atau bukan format JSON yang sah.");
+      }
+    };
+    reader.readAsText(file);
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -494,7 +555,21 @@ export default function WorkstationSettingsModal({
                   <span className="truncate">Security & Access</span>
                 </button>
 
-                {/* 5. About Refinery RMS */}
+                {/* 5. Local Database & Backup */}
+                <button
+                  type="button"
+                  onClick={() => setActiveSection('database')}
+                  className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-left text-xs font-semibold transition-all cursor-pointer ${
+                    activeSection === 'database'
+                      ? 'bg-[#0098EA] text-white shadow-md shadow-[#0098EA]/25'
+                      : 'text-zinc-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <Database className="w-4 h-4 shrink-0" />
+                  <span className="truncate">Local Database & Backup</span>
+                </button>
+
+                {/* 6. About Refinery RMS */}
                 <button
                   type="button"
                   onClick={() => setActiveSection('about')}
@@ -523,9 +598,9 @@ export default function WorkstationSettingsModal({
                 <Laptop className="w-3.5 h-3.5 text-sky-400" />
                 <span>Station: WS-REF-001</span>
               </div>
-              <div className="text-[10px] text-emerald-400 mt-0.5 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-ping" />
-                <span>Cloud Link Online</span>
+              <div className="text-[10px] text-emerald-400 mt-0.5 flex items-center gap-1.5 font-semibold">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
+                <span>Local DB: 100% On-Premise</span>
               </div>
             </div>
           </aside>
@@ -1185,13 +1260,140 @@ export default function WorkstationSettingsModal({
             )}
 
             {/* ======================================================== */}
-            {/* SECTION 5: ABOUT REFINERY RMS                            */}
+            {/* SECTION 5: LOCAL DATABASE & DATA TRANSFER                */}
+            {/* ======================================================== */}
+            {activeSection === 'database' && (
+              <div className="space-y-6 animate-in fade-in duration-200">
+                <div>
+                  <h3 className="text-base font-bold text-white uppercase tracking-wide flex items-center gap-2">
+                    <Database className="w-5 h-5 text-emerald-400" />
+                    <span>5. Local Database & Data Transfer (100% On-Premise)</span>
+                  </h3>
+                  <p className="text-xs text-zinc-400 mt-0.5">
+                    Storan data tempatan berasingan (Air-Gapped). Sesuai untuk persekitaran sekuriti ketat kilang tanpa sambungan cloud luar.
+                  </p>
+                </div>
+
+                {/* Storage Mode Badge */}
+                <div className="p-4 rounded-xl bg-emerald-950/30 border border-emerald-500/30 flex items-center justify-between flex-wrap gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-xl bg-emerald-500/20 text-emerald-400">
+                      <HardDrive className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-bold text-white flex items-center gap-2">
+                        <span>Status Storan: 100% On-Premise Air-Gapped</span>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/20 text-emerald-300 font-bold">
+                          ACTIVE
+                        </span>
+                      </div>
+                      <div className="text-xs text-zinc-400">
+                        Sambungan Cloud BaaS: <strong className="text-rose-400">DIMATIKAN (Disabled)</strong> · Tiada data dihantar keluar dari kilang.
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setDbStats(getLocalDatabaseStats())}
+                    className="px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 text-xs font-semibold cursor-pointer"
+                  >
+                    Segarkan Status
+                  </button>
+                </div>
+
+                {/* Realtime Table Telemetry Cards */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="p-3.5 rounded-xl bg-[#0E1726]/80 border border-[#1B2A3F]">
+                    <span className="text-[10px] text-zinc-400 uppercase font-mono block">Log Helaian Proses</span>
+                    <span className="text-lg font-bold text-white font-mono">{dbStats?.tables.processSheets || 1} Hari</span>
+                  </div>
+                  <div className="p-3.5 rounded-xl bg-[#0E1726]/80 border border-[#1B2A3F]">
+                    <span className="text-[10px] text-zinc-400 uppercase font-mono block">Ujian Sampel Makmal</span>
+                    <span className="text-lg font-bold text-sky-400 font-mono">{dbStats?.tables.qcReports || 0} Laporan</span>
+                  </div>
+                  <div className="p-3.5 rounded-xl bg-[#0E1726]/80 border border-[#1B2A3F]">
+                    <span className="text-[10px] text-zinc-400 uppercase font-mono block">Jejak Audit ISO 9001</span>
+                    <span className="text-lg font-bold text-amber-400 font-mono">{dbStats?.tables.auditLogs || 0} Rekod</span>
+                  </div>
+                  <div className="p-3.5 rounded-xl bg-[#0E1726]/80 border border-[#1B2A3F]">
+                    <span className="text-[10px] text-zinc-400 uppercase font-mono block">Pengguna & Peranan</span>
+                    <span className="text-lg font-bold text-emerald-400 font-mono">{dbStats?.tables.users || 7} Staf</span>
+                  </div>
+                </div>
+
+                {/* Export & Import Action Cards */}
+                <div className="p-5 rounded-2xl bg-[#0E1726]/80 border border-[#1B2A3F] space-y-4">
+                  <div className="border-b border-[#1B2A3F] pb-3">
+                    <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                      <Download className="w-4 h-4 text-sky-400" />
+                      <span>Eksport & Pindah Pengkalan Data ke Desktop Kilang</span>
+                    </h4>
+                    <p className="text-xs text-zinc-400 mt-1">
+                      Muat turun semua rekod ke dalam satu fail sandaran berformat JSON. Anda boleh simpan fail ini ke dalam USB thumbdrive (pendrive) dan memindahkannya ke Desktop Server kilang nanti.
+                    </p>
+                  </div>
+
+                  {backupExportSuccess && (
+                    <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-semibold flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <span>{backupExportSuccess}</span>
+                    </div>
+                  )}
+
+                  {backupImportSuccess && (
+                    <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-semibold flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <span>{backupImportSuccess}</span>
+                    </div>
+                  )}
+
+                  {backupImportError && (
+                    <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs font-semibold flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                      <span>{backupImportError}</span>
+                    </div>
+                  )}
+
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-1">
+                    {/* Export Button */}
+                    <button
+                      type="button"
+                      onClick={handleExportBackup}
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[#0098EA] hover:bg-sky-400 text-white text-xs font-bold transition-all cursor-pointer shadow-md shadow-[#0098EA]/20 active:scale-95"
+                    >
+                      <Download className="w-4 h-4" />
+                      <span>Eksport Sandaran Penuh (.json)</span>
+                    </button>
+
+                    {/* Import Button */}
+                    <input
+                      ref={jsonFileInputRef}
+                      type="file"
+                      accept=".json"
+                      className="hidden"
+                      onChange={handleImportFile}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => jsonFileInputRef.current?.click()}
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold transition-all cursor-pointer border border-white/10 active:scale-95"
+                    >
+                      <Upload className="w-4 h-4 text-emerald-400" />
+                      <span>Pulihkan / Import Sandaran (.json)</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ======================================================== */}
+            {/* SECTION 6: ABOUT REFINERY RMS                            */}
             {/* ======================================================== */}
             {activeSection === 'about' && (
               <div className="space-y-6 animate-in fade-in duration-200">
                 <div>
                   <h3 className="text-base font-bold text-white uppercase tracking-wide">
-                    5. About Refinery RMS
+                    6. About Refinery RMS
                   </h3>
                   <p className="text-xs text-zinc-400 mt-0.5">
                     Software architecture, client certification, and engineering telemetry stack.
@@ -1227,8 +1429,8 @@ export default function WorkstationSettingsModal({
                       <span className="font-bold text-emerald-400">ISO 9001:2015 & Halal Certified</span>
                     </div>
                     <div className="p-3 rounded-lg bg-black/30 border border-white/5">
-                      <span className="text-zinc-500 block text-[10px]">CLOUD INFRASTRUCTURE</span>
-                      <span className="font-bold text-sky-400">InsForge PostgreSQL + Next.js Engine</span>
+                      <span className="text-zinc-500 block text-[10px]">DATABASE ARCHITECTURE</span>
+                      <span className="font-bold text-emerald-400">100% On-Premise Local Storage (Air-Gapped)</span>
                     </div>
                   </div>
                 </div>

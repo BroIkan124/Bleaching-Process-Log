@@ -354,8 +354,12 @@ export async function fetchBatchSheetFromInsForge(
     let sheet: LogSheet;
     if (snapshot?.data && snapshot.data.sheet_date === activeDate) {
       sheet = { ...snapshot.data };
-      // Sanitize any ghost remarks or status on unsaved & undispatched slots
-      if (Array.isArray(sheet.entries)) {
+      const savedCount = Array.isArray(sheet.entries)
+        ? sheet.entries.filter((e) => e.is_saved).length
+        : 0;
+      if (savedCount === 0 && (sheet.input_mt_hr !== null || sheet.tech_s1 !== null || sheet.tech_s1_name !== null)) {
+        sheet = createCleanSheet(activeDate);
+      } else if (Array.isArray(sheet.entries)) {
         sheet.entries = sheet.entries.map((e) => {
           if (!e.is_saved && !e.qc_sample_sent && (e.remarks || e.qc_status || e.qc_last_decision)) {
             return {

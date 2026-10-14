@@ -120,6 +120,16 @@ export default function BleachingProcessLogApp() {
         if (saved) {
           const parsed = JSON.parse(saved);
           if (parsed && parsed.sheet_date === todayStr) {
+            const savedCount = Array.isArray(parsed.entries)
+              ? parsed.entries.filter((e: LogEntry) => e.is_saved).length
+              : 0;
+            // If no slots have been saved yet today and sheet has stale leftover parameters, reset clean
+            if (savedCount === 0 && (parsed.input_mt_hr !== null || parsed.tech_s1 !== null || parsed.tech_s1_name !== null)) {
+              const clean = createCleanSheet(todayStr);
+              try { localStorage.setItem("nisshin_process_sheet", JSON.stringify(clean)); } catch {}
+              return clean;
+            }
+
             // Sanitize any ghost remarks or status on unsaved & undispatched slots
             if (Array.isArray(parsed.entries)) {
               let hasGhost = false;

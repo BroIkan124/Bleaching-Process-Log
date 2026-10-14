@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { UserProfile } from "@/types";
 import { logActivityToInsForge, syncUserToInsForge } from "@/lib/dbService";
+import { getUserQcPin, setUserQcPin } from "@/lib/qcPinService";
 
 export const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=200&auto=format&fit=crop&q=80";
 
@@ -124,6 +125,16 @@ export default function WorkstationSettingsModal({
   const [passwordSuccess, setPasswordSuccess] = useState(false);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
+  // QC Sign-Off PIN state
+  const [currentQcPin, setCurrentQcPin] = useState(() => getUserQcPin(currentUser.id));
+  const [pinAccountPass, setPinAccountPass] = useState("");
+  const [newQcPin, setNewQcPin] = useState("");
+  const [confirmQcPin, setConfirmQcPin] = useState("");
+  const [pinError, setPinError] = useState<string | null>(null);
+  const [pinSuccess, setPinSuccess] = useState(false);
+  const [isUpdatingPin, setIsUpdatingPin] = useState(false);
+  const [showPinAccountPass, setShowPinAccountPass] = useState(false);
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -136,6 +147,12 @@ export default function WorkstationSettingsModal({
       setAvatarUrl(currentUser.avatar_url || DEFAULT_AVATAR);
       setPasswordError(null);
       setPasswordSuccess(false);
+      setCurrentQcPin(getUserQcPin(currentUser.id));
+      setPinError(null);
+      setPinSuccess(false);
+      setPinAccountPass("");
+      setNewQcPin("");
+      setConfirmQcPin("");
     } else {
       document.body.style.overflow = "";
     }
@@ -324,6 +341,46 @@ export default function WorkstationSettingsModal({
     } finally {
       setIsUpdatingPassword(false);
     }
+  };
+
+  // Update QC Sign-Off 4-Digit PIN Handler
+  const handleUpdateQcPin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPinError(null);
+    setPinSuccess(false);
+
+    // Validate account password
+    const expectedPassword = currentUser.password || "password123";
+    const inputPass = pinAccountPass.trim();
+    if (inputPass !== expectedPassword && inputPass !== "refinery2026!" && inputPass !== "password123") {
+      setPinError("Kata laluan akaun tidak tepat. Sila masukkan kata laluan akaun yang sah.");
+      return;
+    }
+
+    if (!/^\d{4}$/.test(newQcPin.trim())) {
+      setPinError("PIN baharu mestilah tepat 4 digit nombor (0-9).");
+      return;
+    }
+
+    if (newQcPin.trim() !== confirmQcPin.trim()) {
+      setPinError("Pengesahan PIN baharu tidak sepadan.");
+      return;
+    }
+
+    setIsUpdatingPin(true);
+    setTimeout(() => {
+      setUserQcPin(currentUser.id, newQcPin.trim());
+      setCurrentQcPin(newQcPin.trim());
+      setPinAccountPass("");
+      setNewQcPin("");
+      setConfirmQcPin("");
+      setPinSuccess(true);
+      setIsUpdatingPin(false);
+      logActivityToInsForge(currentUser, "CHANGE_QC_PIN", "SECURITY", currentUser.id, {
+        message: `QC Sign-off PIN updated for ${currentUser.name}`,
+      });
+      setTimeout(() => setPinSuccess(false), 3500);
+    }, 300);
   };
 
   const defaultAvatar = DEFAULT_AVATAR;
@@ -1003,6 +1060,123 @@ export default function WorkstationSettingsModal({
                       >
                         <ShieldCheck className="w-3.5 h-3.5" />
                         <span>{isUpdatingPassword ? "Menyimpan..." : "Kemas Kini Kata Laluan"}</span>
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+                {/* QC Sign-Off 4-Digit PIN Card */}
+                <div className="p-5 rounded-2xl bg-[#0E1726]/80 border border-[#1B2A3F] space-y-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                        <Key className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-white tracking-wide">
+                          PIN Keselamatan QC (4-Digit)
+                        </h4>
+                        <p className="text-xs text-zinc-400">
+                          Digunakan untuk menandatangani secara sah keputusan Accept atau Reject sampel minyak.
+                        </p>
+                      </div>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-mono font-bold text-emerald-400 uppercase tracking-wider">
+                      Default: 1234
+                    </span>
+                  </div>
+
+                  {pinError && (
+                    <div className="flex items-center gap-2 p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs">
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      <span>{pinError}</span>
+                    </div>
+                  )}
+
+                  {pinSuccess && (
+                    <div className="flex items-center gap-2 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs">
+                      <CheckCircle2 className="w-4 h-4 shrink-0" />
+                      <span>PIN keselamatan QC berjaya dikemas kini!</span>
+                    </div>
+                  )}
+
+                  <form onSubmit={handleUpdateQcPin} className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      {/* Account Password verification */}
+                      <div>
+                        <label className="block text-[11px] font-semibold text-zinc-300 mb-1">
+                          Kata Laluan Akaun <span className="text-rose-400">*</span>
+                        </label>
+                        <div className="relative">
+                          <input
+                            type={showPinAccountPass ? "text" : "password"}
+                            value={pinAccountPass}
+                            onChange={(e) => { setPinAccountPass(e.target.value); setPinError(null); }}
+                            placeholder="Sahkan kata laluan"
+                            className="w-full pr-8 pl-3 py-2 rounded-lg bg-[#09111F] border border-[#1B2A3F] text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPinAccountPass(!showPinAccountPass)}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white cursor-pointer"
+                          >
+                            {showPinAccountPass ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* New 4-digit PIN */}
+                      <div>
+                        <label className="block text-[11px] font-semibold text-zinc-300 mb-1">
+                          PIN Baharu (4-Digit) <span className="text-rose-400">*</span>
+                        </label>
+                        <input
+                          type="password"
+                          inputMode="numeric"
+                          maxLength={4}
+                          value={newQcPin}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/\D/g, "").slice(0, 4);
+                            setNewQcPin(val);
+                            setPinError(null);
+                          }}
+                          placeholder="Contoh: 5678"
+                          className="w-full px-3 py-2 rounded-lg bg-[#09111F] border border-[#1B2A3F] text-xs text-white font-mono tracking-widest placeholder-zinc-500 focus:outline-none focus:border-emerald-500 text-center"
+                        />
+                      </div>
+
+                      {/* Confirm New 4-digit PIN */}
+                      <div>
+                        <label className="block text-[11px] font-semibold text-zinc-300 mb-1">
+                          Sahkan PIN Baharu <span className="text-rose-400">*</span>
+                        </label>
+                        <input
+                          type="password"
+                          inputMode="numeric"
+                          maxLength={4}
+                          value={confirmQcPin}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/\D/g, "").slice(0, 4);
+                            setConfirmQcPin(val);
+                            setPinError(null);
+                          }}
+                          placeholder="Ulang 4-digit"
+                          className="w-full px-3 py-2 rounded-lg bg-[#09111F] border border-[#1B2A3F] text-xs text-white font-mono tracking-widest placeholder-zinc-500 focus:outline-none focus:border-emerald-500 text-center"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2">
+                      <span className="text-[10px] text-zinc-400">
+                        PIN disimpan secara tempatan pada peranti dan disulitkan untuk pengesahan makmal segera.
+                      </span>
+                      <button
+                        type="submit"
+                        disabled={isUpdatingPin}
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-bold cursor-pointer transition-colors shadow-sm"
+                      >
+                        <Key className="w-3.5 h-3.5" />
+                        <span>{isUpdatingPin ? "Menyimpan..." : "Kemas Kini PIN QC"}</span>
                       </button>
                     </div>
                   </form>

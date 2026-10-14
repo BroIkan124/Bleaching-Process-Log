@@ -1458,6 +1458,7 @@ export default function BleachingProcessLogApp() {
               onProductChange={handleProductChange}
               plants={plants}
               tanks={tanks}
+              allUsers={allUsers}
               onAddPlant={handleAddPlant}
               onAddTank={handleAddTank}
               onAddProduct={handleAddProduct}

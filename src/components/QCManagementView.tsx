@@ -33,7 +33,8 @@ import { RadioSelect } from "./RadioSelect";
 import { GliderRadioGroup } from "./GliderRadioGroup";
 import { AnimatedCheckbox } from "./AnimatedCheckbox";
 import { QcCertificateModal } from "./QcCertificateModal";
-import { DEFAULT_REJECTION_REASONS, MOCK_PRODUCTS, MOCK_TANKS, MOCK_PLANTS } from "@/lib/mockData";
+import { QCAuthorizationModal } from "./QCAuthorizationModal";
+import { DEFAULT_REJECTION_REASONS, MOCK_PRODUCTS, MOCK_TANKS, MOCK_PLANTS, MOCK_USERS } from "@/lib/mockData";
 
 interface QCManagementViewProps {
   currentUser: UserProfile;
@@ -44,6 +45,7 @@ interface QCManagementViewProps {
   onProductChange?: (productName: string) => void;
   plants?: Plant[];
   tanks?: Tank[];
+  allUsers?: UserProfile[];
   onAddPlant?: (plantName: string) => Plant | null;
   onAddTank?: (tankName: string, kind?: 'feed' | 'discharge' | 'both') => Tank | null;
   onAddProduct?: (productName: string) => Product | null;
@@ -60,6 +62,7 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
   onProductChange,
   plants: externalPlants,
   tanks: externalTanks,
+  allUsers,
   onAddPlant,
   onAddTank,
   onAddProduct,
@@ -108,9 +111,11 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
   const [isClosingNewSample, setIsClosingNewSample] = useState(false);
   const [isClosingEditor, setIsClosingEditor] = useState(false);
   const [isClosingCertificate, setIsClosingCertificate] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [pendingReportToAuthorize, setPendingReportToAuthorize] = useState<SampleReport | null>(null);
 
   useEffect(() => {
-    if (isEditorOpen || isNewSampleOpen || isAddProdModalOpen || isAddTankModalOpen || isCertificateOpen) {
+    if (isEditorOpen || isNewSampleOpen || isAddProdModalOpen || isAddTankModalOpen || isCertificateOpen || isAuthModalOpen) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
@@ -118,7 +123,7 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
     return () => {
       document.body.style.overflow = "";
     };
-  }, [isEditorOpen, isNewSampleOpen, isAddProdModalOpen, isAddTankModalOpen, isCertificateOpen]);
+  }, [isEditorOpen, isNewSampleOpen, isAddProdModalOpen, isAddTankModalOpen, isCertificateOpen, isAuthModalOpen]);
 
   const handleCloseNewSample = () => {
     setIsClosingNewSample(true);
@@ -292,6 +297,26 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
 
   // Handle Save Edited Test Results
   const handleSaveResults = (updatedReport: SampleReport) => {
+    // If a disposition decision is chosen, require mandatory QC PIN/Password Authorization!
+    if (updatedReport.decision?.decision) {
+      setPendingReportToAuthorize(updatedReport);
+      setIsAuthModalOpen(true);
+      return;
+    }
+
+    commitSaveResults(updatedReport);
+  };
+
+  const commitSaveResults = (
+    updatedReport: SampleReport,
+    authMetadata?: {
+      authorized_by_id: string;
+      authorized_by_name: string;
+      authorized_at: string;
+      auth_method: "pin" | "password" | "supervisor_override";
+      signature_stamp: string;
+    }
+  ) => {
     // Sanitize results: untested parameters must have value_numeric: null and in_spec: null
     const processedResults = updatedReport.results?.map(res => {
       const active = isParamTested(res);
@@ -309,10 +334,20 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
       };
     });
 
+    const finalizedDecision = updatedReport.decision ? {
+      ...updatedReport.decision,
+      authorized_by_id: authMetadata?.authorized_by_id || currentUser.id,
+      authorized_by_name: authMetadata?.authorized_by_name || currentUser.name,
+      authorized_at: authMetadata?.authorized_at || new Date().toISOString(),
+      auth_method: authMetadata?.auth_method || "pin",
+      signature_stamp: authMetadata?.signature_stamp || `SIG-${currentUser.id.slice(0, 5).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`,
+    } : null;
+
     const finalizedReport: SampleReport = {
       ...updatedReport,
       results: processedResults,
-      status: updatedReport.decision ? 'decided' : 'results_entered',
+      decision: finalizedDecision,
+      status: finalizedDecision ? 'decided' : 'results_entered',
       updated_at: new Date().toISOString(),
     };
 
@@ -327,6 +362,9 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
       lot_no: finalizedReport.lot_no,
       report_no: finalizedReport.report_no,
       decision: finalizedReport.decision?.decision,
+      auth_method: authMetadata?.auth_method,
+      authorized_by: authMetadata?.authorized_by_name,
+      signature_stamp: authMetadata?.signature_stamp,
     });
   };
 
@@ -1648,6 +1686,28 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
         report={selectedReport}
         currentUser={currentUser}
       />
+
+      {/* 7. Modal: Mandatory QC Security PIN & Authorization Sign-Off */}
+      {isAuthModalOpen && pendingReportToAuthorize && pendingReportToAuthorize.decision && (
+        <QCAuthorizationModal
+          isOpen={isAuthModalOpen}
+          onClose={() => {
+            setIsAuthModalOpen(false);
+            setPendingReportToAuthorize(null);
+          }}
+          report={pendingReportToAuthorize}
+          decision={pendingReportToAuthorize.decision}
+          currentUser={currentUser}
+          allUsers={allUsers || MOCK_USERS}
+          onAuthorize={(authMetadata) => {
+            if (pendingReportToAuthorize) {
+              commitSaveResults(pendingReportToAuthorize, authMetadata);
+            }
+            setIsAuthModalOpen(false);
+            setPendingReportToAuthorize(null);
+          }}
+        />
+      )}
     </div>
   );
 };

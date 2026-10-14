@@ -36,6 +36,7 @@ export interface UserProfile {
   active: boolean;
   phone?: string;
   password?: string;
+  qc_pin?: string;
   last_login?: string;
   avatar_url?: string;
 }
@@ -230,6 +231,11 @@ export interface QCDecision {
   disposition?: Disposition | null;
   decided_by_name: string;
   decided_at: string;
+  authorized_by_id?: string;
+  authorized_by_name?: string;
+  authorized_at?: string;
+  auth_method?: 'pin' | 'password' | 'supervisor_override';
+  signature_stamp?: string;
 }
 
 export interface SampleReport {

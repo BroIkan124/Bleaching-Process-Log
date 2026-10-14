@@ -230,6 +230,11 @@ export function syncQcResultToLogEntries(
   const isAccept = qcReport.decision?.decision === 'accept' || qcReport.decision?.decision === 'accept_concession';
 
   const targetEntry = currentEntries[slotIndex];
+
+  // Prevent ghost sync: Do not inject QC results into unsaved and undispatched hourly slots
+  if (!targetEntry.is_saved && !targetEntry.qc_sample_sent) {
+    return { updatedEntries: currentEntries, newEvent: null };
+  }
   const updatedEntry: LogEntry = {
     ...targetEntry,
     colour_r: colorVal !== null ? colorVal : targetEntry.colour_r,

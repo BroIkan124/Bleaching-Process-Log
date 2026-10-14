@@ -92,15 +92,15 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
           {/* Telemetry info */}
           <div className="flex items-center gap-2 text-xs flex-wrap">
             <span className="text-zinc-500 dark:text-zinc-400">
-              Feed: <strong className="text-zinc-800 dark:text-zinc-200 font-medium">{currentFeed.split(" ")[0]}</strong>
+              Feed: <strong className="text-zinc-800 dark:text-zinc-200 font-medium">{currentFeed.includes("TK-") ? currentFeed.match(/TK-\d+/)?.[0] || currentFeed : currentFeed}</strong>
             </span>
             <span className="text-zinc-300 dark:text-zinc-700">·</span>
             <span className="text-zinc-500 dark:text-zinc-400">
-              Discharge: <strong className="text-zinc-800 dark:text-zinc-200 font-medium">{currentDischarge.split(" ")[0]}</strong>
+              Discharge: <strong className="text-zinc-800 dark:text-zinc-200 font-medium">{currentDischarge.includes("TK-") ? currentDischarge.match(/TK-\d+/)?.[0] || currentDischarge : currentDischarge}</strong>
             </span>
             <span className="text-zinc-300 dark:text-zinc-700">·</span>
             <span className="text-zinc-500 dark:text-zinc-400">
-              Target: <strong className="text-amber-600 dark:text-amber-400 font-semibold">{sheet.input_mt_hr ?? 45.0} MT/HR</strong>
+              Target: <strong className="text-amber-600 dark:text-amber-400 font-semibold">{typeof sheet.input_mt_hr === 'number' ? `${sheet.input_mt_hr} MT/HR` : "Not Set"}</strong>
             </span>
           </div>
         </div>

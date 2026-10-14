@@ -354,9 +354,26 @@ export async function fetchBatchSheetFromInsForge(
     let sheet: LogSheet;
     if (snapshot?.data && snapshot.data.sheet_date === activeDate) {
       sheet = { ...snapshot.data };
+      // Sanitize any ghost remarks or status on unsaved & undispatched slots
+      if (Array.isArray(sheet.entries)) {
+        sheet.entries = sheet.entries.map((e) => {
+          if (!e.is_saved && !e.qc_sample_sent && (e.remarks || e.qc_status || e.qc_last_decision)) {
+            return {
+              ...e,
+              remarks: "",
+              qc_status: undefined,
+              qc_last_decision: undefined,
+              colour_r: null,
+              colour_y: null,
+              ffa_pct: null,
+            };
+          }
+          return e;
+        });
+      }
     } else {
       // Snapshot is either null or belongs to a previous day -> create fresh clean sheet for activeDate
-      sheet = createCleanSheet(activeDate, snapshot?.data);
+      sheet = createCleanSheet(activeDate);
     }
 
     // B. Query live relational batch_processes for this specific date batch

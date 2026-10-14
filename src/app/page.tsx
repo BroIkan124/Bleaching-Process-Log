@@ -120,11 +120,25 @@ export default function BleachingProcessLogApp() {
         if (saved) {
           const parsed = JSON.parse(saved);
           if (parsed && parsed.sheet_date === todayStr) {
+            // Sanitize any ghost remarks or status on unsaved & undispatched slots
+            if (Array.isArray(parsed.entries)) {
+              let hasGhost = false;
+              parsed.entries = parsed.entries.map((e: LogEntry) => {
+                if (!e.is_saved && !e.qc_sample_sent && (e.remarks || e.qc_status || e.qc_last_decision)) {
+                  hasGhost = true;
+                  return { ...e, remarks: "", qc_status: undefined, qc_last_decision: undefined, colour_r: null, colour_y: null, ffa_pct: null };
+                }
+                return e;
+              });
+              if (hasGhost) {
+                try { localStorage.setItem("nisshin_process_sheet", JSON.stringify(parsed)); } catch {}
+              }
+            }
             return parsed;
           } else if (parsed && parsed.sheet_date) {
             // Archive previous day's sheet and initialize fresh clean sheet for today
             localStorage.setItem(`nisshin_archive_sheet_${parsed.sheet_date}`, JSON.stringify(parsed));
-            return createCleanSheet(todayStr, parsed);
+            return createCleanSheet(todayStr);
           }
         }
       } catch {}
@@ -574,6 +588,11 @@ export default function BleachingProcessLogApp() {
     isDrawerOpenRef.current = isDrawerOpen;
   }, [isDrawerOpen]);
 
+  const selectedDateRef = React.useRef(selectedDate);
+  useEffect(() => {
+    selectedDateRef.current = selectedDate;
+  }, [selectedDate]);
+
   const loadCloudData = async (isManual = false) => {
     try {
       if (isManual) setIsSyncing(true);
@@ -615,18 +634,21 @@ export default function BleachingProcessLogApp() {
       if (!isDrawerOpenRef.current) {
         const today = new Date();
         const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-        const cloudSheetRes = await fetchBatchSheetFromInsForge(todayStr);
-        if (cloudSheetRes && cloudSheetRes.sheet) {
-          if (cloudSheetRes.sheet.sheet_date === todayStr) {
-            setSheet(cloudSheetRes.sheet);
-            try { localStorage.setItem("nisshin_process_sheet", JSON.stringify(cloudSheetRes.sheet)); } catch {}
-          } else {
-            // Cloud sheet belongs to a previous date -> Archive and reset for today!
-            try { localStorage.setItem(`nisshin_archive_sheet_${cloudSheetRes.sheet.sheet_date}`, JSON.stringify(cloudSheetRes.sheet)); } catch {}
-            const freshSheet = createCleanSheet(todayStr, cloudSheetRes.sheet);
-            setSheet(freshSheet);
-            try { localStorage.setItem("nisshin_process_sheet", JSON.stringify(freshSheet)); } catch {}
-            saveStateSnapshotToInsForge("CURRENT_SHEET", freshSheet, currentUser);
+        // If operator is actively inspecting historical archive date, don't overwrite view
+        if (!selectedDateRef.current || selectedDateRef.current === todayStr) {
+          const cloudSheetRes = await fetchBatchSheetFromInsForge(todayStr);
+          if (cloudSheetRes && cloudSheetRes.sheet) {
+            if (cloudSheetRes.sheet.sheet_date === todayStr) {
+              setSheet(cloudSheetRes.sheet);
+              try { localStorage.setItem("nisshin_process_sheet", JSON.stringify(cloudSheetRes.sheet)); } catch {}
+            } else {
+              // Cloud sheet belongs to a previous date -> Archive and reset for today!
+              try { localStorage.setItem(`nisshin_archive_sheet_${cloudSheetRes.sheet.sheet_date}`, JSON.stringify(cloudSheetRes.sheet)); } catch {}
+              const freshSheet = createCleanSheet(todayStr);
+              setSheet(freshSheet);
+              try { localStorage.setItem("nisshin_process_sheet", JSON.stringify(freshSheet)); } catch {}
+              saveStateSnapshotToInsForge("CURRENT_SHEET", freshSheet, currentUser);
+            }
           }
         }
       }
@@ -704,7 +726,7 @@ export default function BleachingProcessLogApp() {
         try {
           localStorage.setItem(`nisshin_archive_sheet_${sheet.sheet_date}`, JSON.stringify(sheet));
         } catch {}
-        const freshSheet = createCleanSheet(todayStr, sheet);
+        const freshSheet = createCleanSheet(todayStr);
         setSheet(freshSheet);
         try {
           localStorage.setItem("nisshin_process_sheet", JSON.stringify(freshSheet));
@@ -719,7 +741,7 @@ export default function BleachingProcessLogApp() {
       try {
         localStorage.setItem(`nisshin_archive_sheet_${sheet.sheet_date}`, JSON.stringify(sheet));
       } catch {}
-      const freshSheet = createCleanSheet(todayStr, sheet);
+      const freshSheet = createCleanSheet(todayStr);
       setSheet(freshSheet);
       try {
         localStorage.setItem("nisshin_process_sheet", JSON.stringify(freshSheet));
@@ -981,25 +1003,49 @@ export default function BleachingProcessLogApp() {
     setQcReports(updatedReports);
     
     if (currentUser) {
-      const { updatedEntries, newEvent } = syncQcResultToLogEntries(
-        report,
-        sheet.entries,
-        currentUser
-      );
-      const updatedSheet: LogSheet = {
-        ...sheet,
-        entries: updatedEntries,
-        updated_at: new Date().toISOString(),
-      };
-      setSheet(updatedSheet);
-      let updatedEvents = supervisorEvents;
-      if (newEvent) {
-        updatedEvents = [newEvent, ...supervisorEvents];
-        setSupervisorEvents(updatedEvents);
-        syncSupervisorEventsToInsForge(updatedEvents, currentUser);
+      // Date verification: Only sync into current live sheet if the QC sample belongs to this sheet's date!
+      const reportDate = report.sample_date || (report.created_at ? report.created_at.split('T')[0] : '');
+      const isForCurrentSheet = !reportDate || reportDate === sheet.sheet_date;
+
+      if (isForCurrentSheet) {
+        const { updatedEntries, newEvent } = syncQcResultToLogEntries(
+          report,
+          sheet.entries,
+          currentUser
+        );
+        const updatedSheet: LogSheet = {
+          ...sheet,
+          entries: updatedEntries,
+          updated_at: new Date().toISOString(),
+        };
+        setSheet(updatedSheet);
+        let updatedEvents = supervisorEvents;
+        if (newEvent) {
+          updatedEvents = [newEvent, ...supervisorEvents];
+          setSupervisorEvents(updatedEvents);
+          syncSupervisorEventsToInsForge(updatedEvents, currentUser);
+        }
+        syncQcSampleToInsForge(report, currentUser, updatedReports);
+        saveStateSnapshotToInsForge("CURRENT_SHEET", updatedSheet, currentUser);
+      } else {
+        // If the report belongs to an archived past sheet, update that past archived sheet in localStorage
+        try {
+          const archiveKey = `nisshin_archive_sheet_${reportDate}`;
+          const rawArchive = localStorage.getItem(archiveKey);
+          if (rawArchive) {
+            const archiveSheet: LogSheet = JSON.parse(rawArchive);
+            const { updatedEntries } = syncQcResultToLogEntries(
+              report,
+              archiveSheet.entries,
+              currentUser
+            );
+            archiveSheet.entries = updatedEntries;
+            archiveSheet.updated_at = new Date().toISOString();
+            localStorage.setItem(archiveKey, JSON.stringify(archiveSheet));
+          }
+        } catch {}
+        syncQcSampleToInsForge(report, currentUser, updatedReports);
       }
-      syncQcSampleToInsForge(report, currentUser, updatedReports);
-      saveStateSnapshotToInsForge("CURRENT_SHEET", updatedSheet, currentUser);
 
       // Extract slot time label for plant broadcast
       let timeLabel = "";

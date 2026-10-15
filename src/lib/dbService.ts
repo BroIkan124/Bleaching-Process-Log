@@ -1,3 +1,4 @@
+import { getProductionDateString } from "./utils";
 import { insforge, isInsForgeConfigured } from "./insforge";
 import { LogSheet, LogEntry, SampleReport, UserProfile, Product, Plant, Tank, SupervisorUpdateEvent } from "@/types";
 import { createCleanSheet, MOCK_PRODUCTS, MOCK_PLANTS, MOCK_TANKS, INITIAL_SUPERVISOR_EVENTS } from "./mockData";
@@ -444,7 +445,7 @@ export async function fetchBatchSheetFromInsForge(
   targetDate?: string
 ): Promise<{ sheet: LogSheet; source: "cloud" | "fallback" } | null> {
   const today = new Date();
-  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  const todayStr = getProductionDateString(today);
   const activeDate = targetDate || todayStr;
 
   if (!isInsForgeConfigured || !insforge) {

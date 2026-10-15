@@ -61,7 +61,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
     return sum + (typeof e.flowrate_set === 'number' ? e.flowrate_set : 0);
   }, 0);
 
-  const avgFlowrate = totalSavedSlots > 0 ? (totalInputMT / totalSavedSlots).toFixed(1) : "45.5";
+  const avgFlowrate = totalSavedSlots > 0 ? (totalInputMT / totalSavedSlots).toFixed(1) : "—";
 
   // Temperatures (he_temp_c: 70.0 - 115.0 °C)
   const tempValues = savedEntries
@@ -69,7 +69,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
     .filter((v): v is number => typeof v === 'number' && !isNaN(v));
   const avgTemp = tempValues.length > 0 
     ? (tempValues.reduce((a, b) => a + b, 0) / tempValues.length).toFixed(1) 
-    : "105.8";
+    : "—";
 
   // Vacuum (vacuum_mmhg: >= 600.0 mmHg)
   const vacuumValues = savedEntries
@@ -77,7 +77,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
     .filter((v): v is number => typeof v === 'number' && !isNaN(v));
   const avgVacuum = vacuumValues.length > 0
     ? (vacuumValues.reduce((a, b) => a + b, 0) / vacuumValues.length).toFixed(1)
-    : "638.4";
+    : "—";
 
   // Out of spec counts
   const tempOutOfSpec = tempValues.filter((t) => t < 70 || t > 115).length;
@@ -85,7 +85,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
   const totalIncidents = tempOutOfSpec + vacuumOutOfSpec;
   const inSpecPercentage = totalSavedSlots > 0 
     ? Math.max(0, Math.round(((totalSavedSlots * 2 - totalIncidents) / (totalSavedSlots * 2)) * 100))
-    : 98;
+    : null; // no saved slots -> no figure (never a placeholder %)
 
   // Quality metrics (FFA %, Colour R, Colour Y)
   const ffaValues = savedEntries
@@ -93,21 +93,21 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
     .filter((v): v is number => typeof v === 'number' && !isNaN(v));
   const avgFFA = ffaValues.length > 0
     ? (ffaValues.reduce((a, b) => a + b, 0) / ffaValues.length).toFixed(3)
-    : "0.045";
+    : "—";
 
   const rValues = savedEntries
     .map((e) => e.colour_r)
     .filter((v): v is number => typeof v === 'number' && !isNaN(v));
   const avgRed = rValues.length > 0
     ? (rValues.reduce((a, b) => a + b, 0) / rValues.length).toFixed(1)
-    : "2.1";
+    : "—";
 
   const yValues = savedEntries
     .map((e) => e.colour_y)
     .filter((v): v is number => typeof v === 'number' && !isNaN(v));
   const avgYellow = yValues.length > 0
     ? (yValues.reduce((a, b) => a + b, 0) / yValues.length).toFixed(1)
-    : "18.2";
+    : "—";
 
   // Shift breakdown calculations
   const s1Slots = entries.slice(0, 8);
@@ -169,12 +169,13 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
       `"${(e.remarks || "").replace(/"/g, '""')}"`
     ]);
 
-    const csvContent = "data:text/csv;charset=utf-8," + 
-      [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+    const csvContent = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
 
-    const encodedUri = encodeURI(csvContent);
+    // Blob URL: a data: URI via encodeURI truncated the file at the first '#' in a remark
+    const blobUrl = URL.createObjectURL(new Blob(["﻿" + csvContent], { type: "text/csv;charset=utf-8" }));
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
+    link.setAttribute("href", blobUrl);
     link.setAttribute("download", `Bleaching_Report_RF-FR-003_${sheet.sheet_date || "Today"}.csv`);
     document.body.appendChild(link);
     link.click();
@@ -263,7 +264,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
           </div>
           <div className="flex items-baseline gap-1.5">
             <span className="text-2xl font-bold font-display text-zinc-900 dark:text-zinc-100 font-mono tabular-nums">
-              {totalInputMT > 0 ? totalInputMT.toFixed(1) : "229.2"}
+              {totalInputMT > 0 ? totalInputMT.toFixed(1) : "—"}
             </span>
             <span className="text-xs text-zinc-500 font-bold font-mono">MT</span>
           </div>
@@ -281,7 +282,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
           </div>
           <div className="flex items-baseline gap-1.5">
             <span className="text-2xl font-bold font-display text-emerald-500 font-mono tabular-nums">
-              {inSpecPercentage}%
+              {inSpecPercentage !== null ? `${inSpecPercentage}%` : "—"}
             </span>
             <span className="text-xs text-zinc-500 font-bold">In-Spec</span>
           </div>
@@ -468,11 +469,11 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
             <div className="pt-2 border-t border-zinc-200/80 dark:border-white/5 space-y-1.5 text-xs font-mono">
               <div className="flex items-center justify-between">
                 <span className="text-zinc-400 font-sans text-[11px]">{s1Saved.length > 0 ? "Logged Volume" : "Target Volume"}</span>
-                <span className="font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">{s1Saved.length > 0 ? s1MT.toFixed(1) : "360.0"} MT</span>
+                <span className="font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">{s1Saved.length > 0 ? s1MT.toFixed(1) : "—"} MT</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-zinc-400 font-sans text-[11px]">{s1Saved.length > 0 ? "Average Rate" : "Target Flow"}</span>
-                <span className="font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">{s1Saved.length > 0 ? (s1MT / s1Saved.length).toFixed(1) : "45.0"} MT/HR</span>
+                <span className="font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">{s1Saved.length > 0 ? (s1MT / s1Saved.length).toFixed(1) : "—"} MT/HR</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-zinc-400 font-sans text-[11px]">Shift Status</span>
@@ -559,11 +560,11 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
             <div className="pt-2 border-t border-zinc-200/80 dark:border-white/5 space-y-1.5 text-xs font-mono">
               <div className="flex items-center justify-between">
                 <span className="text-zinc-400 font-sans text-[11px]">{s2Saved.length > 0 ? "Logged Volume" : "Target Volume"}</span>
-                <span className="font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">{s2Saved.length > 0 ? s2MT.toFixed(1) : "360.0"} MT</span>
+                <span className="font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">{s2Saved.length > 0 ? s2MT.toFixed(1) : "—"} MT</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-zinc-400 font-sans text-[11px]">{s2Saved.length > 0 ? "Average Rate" : "Target Flow"}</span>
-                <span className="font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">{s2Saved.length > 0 ? (s2MT / s2Saved.length).toFixed(1) : "45.0"} MT/HR</span>
+                <span className="font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">{s2Saved.length > 0 ? (s2MT / s2Saved.length).toFixed(1) : "—"} MT/HR</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-zinc-400 font-sans text-[11px]">Shift Status</span>
@@ -650,11 +651,11 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
             <div className="pt-2 border-t border-zinc-200/80 dark:border-white/5 space-y-1.5 text-xs font-mono">
               <div className="flex items-center justify-between">
                 <span className="text-zinc-400 font-sans text-[11px]">{s3Saved.length > 0 ? "Logged Volume" : "Target Volume"}</span>
-                <span className="font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">{s3Saved.length > 0 ? s3MT.toFixed(1) : "360.0"} MT</span>
+                <span className="font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">{s3Saved.length > 0 ? s3MT.toFixed(1) : "—"} MT</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-zinc-400 font-sans text-[11px]">{s3Saved.length > 0 ? "Average Rate" : "Target Flow"}</span>
-                <span className="font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">{s3Saved.length > 0 ? (s3MT / s3Saved.length).toFixed(1) : "45.0"} MT/HR</span>
+                <span className="font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">{s3Saved.length > 0 ? (s3MT / s3Saved.length).toFixed(1) : "—"} MT/HR</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-zinc-400 font-sans text-[11px]">Shift Status</span>

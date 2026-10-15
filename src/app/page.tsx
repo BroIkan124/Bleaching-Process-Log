@@ -11,7 +11,7 @@ import {
   INITIAL_SUPERVISOR_EVENTS
 } from "@/lib/mockData";
 import { SHIFTS } from "@/lib/constants";
-import { getShiftForSlot } from "@/lib/utils";
+import { getShiftForSlot, getProductionDateString, isSupervisorRole } from "@/lib/utils";
 import { 
   getRealtimeClockState, 
   RealtimeClockState, 
@@ -21,6 +21,7 @@ import {
 import { 
   createOrUpdateQcSampleFromLogEntry, 
   syncQcResultToLogEntries,
+  getSlotLabelFromReport,
   createRetestSampleFromLogEntry 
 } from "@/lib/workflowPipeline";
 import { 
@@ -71,7 +72,22 @@ export default function BleachingProcessLogApp() {
   const [activeTab, setActiveTab] = useState<DashboardTab>('bleaching');
 
   // 2. Authentication & Users State
-  const [allUsers, setAllUsers] = useState<UserProfile[]>(MOCK_USERS);
+  // Users persist locally: without this, added users / changed passwords reverted to MOCK_USERS on every reload
+  const [allUsers, setAllUsers] = useState<UserProfile[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("nisshin_users");
+        const parsed = saved ? JSON.parse(saved) : null;
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch {}
+    }
+    return MOCK_USERS;
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem("nisshin_users", JSON.stringify(allUsers));
+    } catch {}
+  }, [allUsers]);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
 
@@ -80,7 +96,14 @@ export default function BleachingProcessLogApp() {
     try {
       const saved = localStorage.getItem("nisshin_auth_user");
       if (saved) {
-        setCurrentUser(JSON.parse(saved));
+        const sessionUser: UserProfile = JSON.parse(saved);
+        // Re-validate against the user directory so role changes / deactivation take effect
+        const record = allUsers.find(u => u.id === sessionUser.id);
+        if (record && record.active !== false) {
+          setCurrentUser({ ...sessionUser, ...record, avatar_url: sessionUser.avatar_url ?? record.avatar_url });
+        } else {
+          localStorage.removeItem("nisshin_auth_user");
+        }
       }
     } catch {
       // fallback
@@ -103,12 +126,14 @@ export default function BleachingProcessLogApp() {
     try {
       localStorage.setItem("nisshin_supervisor_events", JSON.stringify(supervisorEvents));
     } catch {}
+    // Single place that snapshots events (handlers use functional updates, so nothing is lost)
+    syncSupervisorEventsToInsForge(supervisorEvents, currentUser);
   }, [supervisorEvents]);
 
   // 4. Core Bleaching Log State (Resets automatically every new calendar day & supports historical calendar archive)
   const getTodayDateStr = () => {
     const today = new Date();
-    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    return getProductionDateString(today);
   };
 
   const [selectedDate, setSelectedDate] = useState<string>(() => getTodayDateStr());
@@ -522,7 +547,21 @@ export default function BleachingProcessLogApp() {
 
   // 7. Realtime Clock, Slot Rule & Override State (Strict 100% Live Clock)
   const [clockState, setClockState] = useState<RealtimeClockState>(() => getRealtimeClockState());
-  const [supervisorUnlockedSlots, setSupervisorUnlockedSlots] = useState<number[]>([]);
+  // Supervisor slot overrides are persisted per production date so every tab sees them and they
+  // survive a reload; an entry for another date is ignored (overrides never carry into a new day).
+  const [supervisorUnlockedSlots, setSupervisorUnlockedSlots] = useState<number[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const saved = JSON.parse(localStorage.getItem("nisshin_unlocked_slots") || "null");
+      if (saved && saved.date === getTodayDateStr() && Array.isArray(saved.slots)) return saved.slots;
+    } catch {}
+    return [];
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem("nisshin_unlocked_slots", JSON.stringify({ date: getTodayDateStr(), slots: supervisorUnlockedSlots }));
+    } catch {}
+  }, [supervisorUnlockedSlots]);
 
   // 8. Centralized QC Reports for Multi-Department Workflow Handover (Stage 1 -> Stage 4, Persisted, Starts with Real Empty Set)
   const [qcReports, setQcReports] = useState<SampleReport[]>(() => {
@@ -586,9 +625,10 @@ export default function BleachingProcessLogApp() {
 
   const showNotice = (message: string, type: 'success' | 'info' | 'error' = 'info') => {
     setNotification({ message, type });
+    // Only clear if no newer notice replaced this one; errors stay longer so operators can read them
     setTimeout(() => {
-      setNotification(null);
-    }, 4500);
+      setNotification(current => (current && current.message === message ? null : current));
+    }, type === 'error' ? 8000 : 4500);
   };
 
   // 9. Multi-Device Cloud Synchronization Engine (InsForge PostgreSQL)
@@ -651,7 +691,7 @@ export default function BleachingProcessLogApp() {
       // 3. Fetch live process log sheet (protect current drawer edit if operator actively typing)
       if (!isDrawerOpenRef.current) {
         const today = new Date();
-        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        const todayStr = getProductionDateString(today);
         // If operator is actively inspecting historical archive date, don't overwrite view
         if (!selectedDateRef.current || selectedDateRef.current === todayStr) {
           const cloudSheetRes = await fetchBatchSheetFromInsForge(todayStr);
@@ -738,6 +778,76 @@ export default function BleachingProcessLogApp() {
     };
   }, [lastRemoteTimestamp, isSyncing]);
 
+  // Local cross-tab/window sync. Every tab keeps its own React state, so without this a second
+  // tab (or a window left open) silently overwrote newer data with its stale copy.
+  // The 'storage' event fires only in OTHER tabs and only when a value actually changes.
+  useEffect(() => {
+    const readJson = <T,>(key: string): T | null => {
+      try {
+        const raw = localStorage.getItem(key);
+        return raw ? (JSON.parse(raw) as T) : null;
+      } catch {
+        return null;
+      }
+    };
+    const pullSheet = () => {
+      // Never replace the sheet under an operator who is typing, or while viewing an archive date
+      if (isDrawerOpenRef.current) return;
+      const live = readJson<LogSheet>("nisshin_process_sheet");
+      if (live && live.sheet_date === selectedDateRef.current) {
+        setSheet(prev => (prev.sheet_date === live.sheet_date ? live : prev));
+      }
+    };
+    const pullAll = () => {
+      pullSheet();
+      const qc = readJson<SampleReport[]>("nisshin_qc_reports");
+      if (Array.isArray(qc)) setQcReports(qc);
+      const ev = readJson<SupervisorUpdateEvent[]>("nisshin_supervisor_events");
+      if (Array.isArray(ev)) setSupervisorEvents(ev);
+      const us = readJson<UserProfile[]>("nisshin_users");
+      if (Array.isArray(us) && us.length > 0) setAllUsers(us);
+      const pr = readJson<Product[]>("nisshin_products");
+      if (Array.isArray(pr) && pr.length > 0) setProducts(pr);
+      const pl = readJson<Plant[]>("nisshin_plants");
+      if (Array.isArray(pl) && pl.length > 0) setPlants(pl);
+      const tk = readJson<Tank[]>("nisshin_tanks");
+      if (Array.isArray(tk) && tk.length > 0) setTanks(tk);
+      const un = readJson<{ date: string; slots: number[] }>("nisshin_unlocked_slots");
+      if (un && Array.isArray(un.slots)) setSupervisorUnlockedSlots(un.date === getTodayDateStr() ? un.slots : []);
+    };
+    // Explicit allow-list: snapshot/audit keys carry timestamps that change on every write and
+    // would make two open tabs ping-pong updates forever.
+    const DATA_KEYS = new Set([
+      "nisshin_qc_reports", "nisshin_supervisor_events", "nisshin_users",
+      "nisshin_products", "nisshin_plants", "nisshin_tanks", "nisshin_unlocked_slots",
+    ]);
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "nisshin_process_sheet") pullSheet();
+      else if (e.key && DATA_KEYS.has(e.key)) pullAll();
+    };
+    // A window left in the background may have missed changes: re-read when it regains focus
+    const onFocus = () => pullAll();
+    window.addEventListener("storage", onStorage);
+    window.addEventListener("focus", onFocus);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener("focus", onFocus);
+    };
+  }, []);
+
+  // When the entry drawer closes, catch up on any sheet change made in another tab meanwhile
+  useEffect(() => {
+    if (isDrawerOpen) return;
+    try {
+      const raw = localStorage.getItem("nisshin_process_sheet");
+      const live: LogSheet | null = raw ? JSON.parse(raw) : null;
+      if (live && live.sheet_date === selectedDateRef.current && live.updated_at && live.updated_at > (sheet.updated_at || "")) {
+        setSheet(live);
+      }
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDrawerOpen]);
+
   // Automated day rollover detection (Auto-reset when entering a new calendar day)
   const lastActiveDateRef = React.useRef<string>("");
   useEffect(() => {
@@ -758,13 +868,23 @@ export default function BleachingProcessLogApp() {
       }
       return;
     }
-    if (lastActiveDateRef.current !== todayStr || sheet.sheet_date !== todayStr) {
+    // Only roll over when the production day actually changes. Viewing an archived
+    // date (sheet.sheet_date !== today) must NOT reset/overwrite today's live sheet.
+    if (lastActiveDateRef.current !== todayStr) {
       lastActiveDateRef.current = todayStr;
+      // Archive the live sheet (which may not be the one on screen if an archive is open)
       try {
-        localStorage.setItem(`nisshin_archive_sheet_${sheet.sheet_date}`, JSON.stringify(sheet));
+        const liveRaw = localStorage.getItem("nisshin_process_sheet");
+        const live: LogSheet | null = liveRaw ? JSON.parse(liveRaw) : null;
+        const toArchive = live && live.sheet_date && live.sheet_date !== todayStr ? live : sheet;
+        if (toArchive.sheet_date !== todayStr) {
+          localStorage.setItem(`nisshin_archive_sheet_${toArchive.sheet_date}`, JSON.stringify(toArchive));
+        }
       } catch {}
       const freshSheet = createCleanSheet(todayStr);
       setSheet(freshSheet);
+      setSelectedDate(todayStr);
+      setSupervisorUnlockedSlots([]); // slot overrides are per-day; never carry into the new sheet
       try {
         localStorage.setItem("nisshin_process_sheet", JSON.stringify(freshSheet));
       } catch {}
@@ -774,7 +894,8 @@ export default function BleachingProcessLogApp() {
   }, [clockState.dateString, sheet, currentUser]);
 
   // Determine if current user can edit the selected slot based on Realtime Slot Rule & Supervisor Override
-  const isSheetLocked = sheet.status === 'Approved';
+  // Submitted sheets are frozen pending review; Approved sheets are permanently locked.
+  const isSheetLocked = sheet.status === 'Approved' || sheet.status === 'Submitted';
   const selectedSlotAccess = evaluateSlotAccess(
     selectedSlotIndex,
     currentSlotIndex,
@@ -805,12 +926,24 @@ export default function BleachingProcessLogApp() {
   // Handle Save Slot - Operator saves parameters and syncs data (does not auto-dispatch sample to QC)
   const handleSaveSlot = (updatedEntry: LogEntry) => {
     if (!currentUser) return;
+    // Enforce lock rules in the handler too, not only via disabled UI
+    const saveAccess = evaluateSlotAccess(
+      updatedEntry.slot_index,
+      currentSlotIndex,
+      supervisorUnlockedSlots.includes(updatedEntry.slot_index),
+      currentUser.role
+    );
+    if (isSheetLocked || sheet.sheet_date !== getTodayDateStr() || !saveAccess.canEdit) {
+      showNotice("Save blocked: this slot or sheet is locked. Ask a supervisor for an override if a correction is needed.", "error");
+      return;
+    }
     const updatedEntries = sheet.entries.map((e, idx) => 
       idx === updatedEntry.slot_index ? updatedEntry : e
     );
 
     const hasSavedAny = updatedEntries.some(e => e.is_saved);
-    const newStatus = sheet.status === 'Draft' && hasSavedAny ? 'InProgress' : sheet.status;
+    // A Returned sheet goes back to InProgress once corrected so it can be re-submitted
+    const newStatus = (sheet.status === 'Draft' || sheet.status === 'Returned') && hasSavedAny ? 'InProgress' : sheet.status;
 
     // Shift technician auto-detection (Option 3: Smart Hybrid)
     // If duty technician for this shift is not manually pinned, auto-assign from the active operator
@@ -867,9 +1000,7 @@ export default function BleachingProcessLogApp() {
       acknowledged: false,
     };
 
-    const updatedEvents = [slotEvent, ...supervisorEvents];
-    setSupervisorEvents(updatedEvents);
-    syncSupervisorEventsToInsForge(updatedEvents, currentUser);
+    setSupervisorEvents(prev => [slotEvent, ...prev]);
 
     setIsDrawerOpen(false);
     showNotice(`Slot ${updatedEntry.time_label} Hrs saved & synchronized. Click "Send to QC" to dispatch sample.`, 'success');
@@ -889,6 +1020,10 @@ export default function BleachingProcessLogApp() {
   // Handle Operator Explicit Dispatch Sample to QC Management
   const handleDispatchToQc = (slotIndex: number) => {
     if (!currentUser) return;
+    if (sheet.status === 'Approved') {
+      showNotice("Sheet is approved and locked. QC samples can no longer be dispatched from it.", "error");
+      return;
+    }
     const entry = sheet.entries[slotIndex];
     if (!entry || !entry.is_saved) {
       showNotice(`Please save parameter telemetry for Slot ${entry?.time_label ?? slotIndex} before dispatching sample to QC.`, 'info');
@@ -945,9 +1080,7 @@ export default function BleachingProcessLogApp() {
       slot_time: entry.time_label,
     };
 
-    const updatedEvents = [dispatchEvent, pipelineEvent, ...supervisorEvents];
-    setSupervisorEvents(updatedEvents);
-    syncSupervisorEventsToInsForge(updatedEvents, currentUser);
+    setSupervisorEvents(prev => [dispatchEvent, pipelineEvent, ...prev]);
 
     addPlantNotification(
       'info',
@@ -963,6 +1096,10 @@ export default function BleachingProcessLogApp() {
   // Handle Operator Retest Dispatch following QC Rejection (STAGE 4 RETEST WORKFLOW)
   const handleDispatchRetest = (slotIndex: number) => {
     if (!currentUser) return;
+    if (sheet.status === 'Approved') {
+      showNotice("Sheet is approved and locked. QC samples can no longer be dispatched from it.", "error");
+      return;
+    }
     const entry = sheet.entries[slotIndex];
     if (!entry) return;
 
@@ -1003,9 +1140,7 @@ export default function BleachingProcessLogApp() {
     saveStateSnapshotToInsForge("QC_REPORTS", updatedReports, currentUser);
     saveStateSnapshotToInsForge("CURRENT_SHEET", updatedSheet, currentUser);
 
-    const updatedEvents = [retestEvent, ...supervisorEvents];
-    setSupervisorEvents(updatedEvents);
-    syncSupervisorEventsToInsForge(updatedEvents, currentUser);
+    setSupervisorEvents(prev => [retestEvent, ...prev]);
 
     playChime('retest');
     addPlantNotification(
@@ -1022,11 +1157,11 @@ export default function BleachingProcessLogApp() {
   // QC Lab -> Bleaching Log & Reports Sync (STAGE 2 & STAGE 4)
   const handleUpdateQcReport = (report: SampleReport) => {
     const updatedReports = qcReports.map(r => r.id === report.id ? report : r);
-    setQcReports(updatedReports);
-    
+    setQcReports(prev => prev.map(r => r.id === report.id ? report : r));
+
     if (currentUser) {
       // Date verification: Only sync into current live sheet if the QC sample belongs to this sheet's date!
-      const reportDate = report.sample_date || (report.created_at ? report.created_at.split('T')[0] : '');
+      const reportDate = report.sample_date || (report.created_at ? getProductionDateString(new Date(report.created_at)) : '');
       const isForCurrentSheet = !reportDate || reportDate === sheet.sheet_date;
 
       if (isForCurrentSheet) {
@@ -1041,18 +1176,18 @@ export default function BleachingProcessLogApp() {
           updated_at: new Date().toISOString(),
         };
         setSheet(updatedSheet);
-        let updatedEvents = supervisorEvents;
         if (newEvent) {
-          updatedEvents = [newEvent, ...supervisorEvents];
-          setSupervisorEvents(updatedEvents);
-          syncSupervisorEventsToInsForge(updatedEvents, currentUser);
+          setSupervisorEvents(prev => [newEvent, ...prev]);
         }
         syncQcSampleToInsForge(report, currentUser, updatedReports);
         saveStateSnapshotToInsForge("CURRENT_SHEET", updatedSheet, currentUser);
       } else {
-        // If the report belongs to an archived past sheet, update that past archived sheet in localStorage
+        // The report's sheet is not the one on screen. It may be TODAY's live sheet (user is browsing an
+        // archive date) or an archived past sheet - write to the right store so the result is never lost.
         try {
-          const archiveKey = `nisshin_archive_sheet_${reportDate}`;
+          const archiveKey = reportDate === getTodayDateStr()
+            ? "nisshin_process_sheet"
+            : `nisshin_archive_sheet_${reportDate}`;
           const rawArchive = localStorage.getItem(archiveKey);
           if (rawArchive) {
             const archiveSheet: LogSheet = JSON.parse(rawArchive);
@@ -1070,16 +1205,7 @@ export default function BleachingProcessLogApp() {
       }
 
       // Extract slot time label for plant broadcast
-      let timeLabel = "";
-      if (report.time_check) {
-        const raw = report.time_check.replace(":", "").trim();
-        if (raw.length === 2) timeLabel = `${raw}00`;
-        else if (raw.length === 4) timeLabel = raw;
-      }
-      if (!timeLabel && report.report_no) {
-        const match = report.report_no.match(/\d{4}/);
-        if (match) timeLabel = match[0];
-      }
+      const timeLabel = getSlotLabelFromReport(report);
 
       if (report.decision?.decision === 'reject') {
         addPlantNotification(
@@ -1124,15 +1250,17 @@ export default function BleachingProcessLogApp() {
       lot_no: newReport.lot_no,
       acknowledged: true,
     };
-    const updatedEvents = [newEvent, ...supervisorEvents];
-    setSupervisorEvents(updatedEvents);
+    setSupervisorEvents(prev => [newEvent, ...prev]);
     syncQcSampleToInsForge(newReport, currentUser, updatedReports);
-    syncSupervisorEventsToInsForge(updatedEvents, currentUser);
     showNotice(`Laboratory sample ${newReport.report_no} registered & synced to cloud.`, 'info');
   };
 
   // Reset shift to clean real data state across all devices
   const handleResetCleanShift = () => {
+    if (!currentUser || currentUser.role !== 'admin') {
+      showNotice("Only an admin can reset the live log and QC records.", "error");
+      return;
+    }
     const clean = createCleanSheet();
     setSheet(clean);
     setQcReports([]);
@@ -1150,6 +1278,14 @@ export default function BleachingProcessLogApp() {
 
   // Supervisor Emergency Slot Unlock (STAGE 4)
   const handleToggleSupervisorOverride = (slotIndex: number) => {
+    if (!currentUser || !isSupervisorRole(currentUser.role)) {
+      showNotice("Only a supervisor or admin can override slot time locks.", "error");
+      return;
+    }
+    if (isSheetLocked) {
+      showNotice("This sheet is submitted/approved and locked. Slot overrides are not allowed.", "error");
+      return;
+    }
     const isCurrentlyUnlocked = supervisorUnlockedSlots.includes(slotIndex);
     const updated = isCurrentlyUnlocked 
       ? supervisorUnlockedSlots.filter(i => i !== slotIndex)
@@ -1212,6 +1348,10 @@ export default function BleachingProcessLogApp() {
   // Submit Sheet for Review
   const handleSubmitSheet = () => {
     if (!currentUser) return;
+    if (sheet.status !== 'InProgress' && sheet.status !== 'Returned') {
+      showNotice(`Sheet cannot be submitted while its status is "${sheet.status}".`, "error");
+      return;
+    }
     const submittedSheet = {
       ...sheet,
       status: 'Submitted' as const,
@@ -1247,6 +1387,10 @@ export default function BleachingProcessLogApp() {
   // Supervisor Approval
   const handleApproveSheet = (reviewNote: string) => {
     if (!currentUser) return;
+    if (!isSupervisorRole(currentUser.role) || sheet.status !== 'Submitted') {
+      showNotice("Approval blocked: only a supervisor or admin can approve a submitted sheet.", "error");
+      return;
+    }
     const approvedSheet: LogSheet = {
       ...sheet,
       status: 'Approved',
@@ -1273,9 +1417,7 @@ export default function BleachingProcessLogApp() {
       requires_acknowledgment: false,
       acknowledged: true,
     };
-    const updatedEvents = [newEvent, ...supervisorEvents];
-    setSupervisorEvents(updatedEvents);
-    syncSupervisorEventsToInsForge(updatedEvents, currentUser);
+    setSupervisorEvents(prev => [newEvent, ...prev]);
 
     showNotice("Sheet has been officially APPROVED and LOCKED in InsForge.", "success");
   };
@@ -1283,6 +1425,10 @@ export default function BleachingProcessLogApp() {
   // Supervisor Return
   const handleReturnSheet = (reviewNote: string) => {
     if (!currentUser) return;
+    if (!isSupervisorRole(currentUser.role) || sheet.status !== 'Submitted') {
+      showNotice("Return blocked: only a supervisor or admin can return a submitted sheet.", "error");
+      return;
+    }
     const returnedSheet: LogSheet = {
       ...sheet,
       status: 'Returned',
@@ -1309,22 +1455,18 @@ export default function BleachingProcessLogApp() {
       requires_acknowledgment: true,
       acknowledged: false,
     };
-    const updatedEvents = [newEvent, ...supervisorEvents];
-    setSupervisorEvents(updatedEvents);
-    syncSupervisorEventsToInsForge(updatedEvents, currentUser);
+    setSupervisorEvents(prev => [newEvent, ...prev]);
 
     showNotice("Sheet RETURNED to technician with supervisor review notes.", "info");
   };
 
   // Supervisor Acknowledge Event
   const handleAcknowledgeEvent = (eventId: string, acknowledgedBy: string) => {
-    const updatedEvents = supervisorEvents.map(e => 
+    setSupervisorEvents(prev => prev.map(e =>
       e.id === eventId 
         ? { ...e, acknowledged: true, acknowledged_by: acknowledgedBy, acknowledged_at: new Date().toISOString() }
         : e
-    );
-    setSupervisorEvents(updatedEvents);
-    syncSupervisorEventsToInsForge(updatedEvents, currentUser);
+    ));
 
     // Log acknowledgment in InsForge audit trail
     if (currentUser) {
@@ -1439,7 +1581,7 @@ export default function BleachingProcessLogApp() {
 
       {/* Notification Toast with 3D Depth */}
       {notification && (
-        <div className={`fixed bottom-6 right-6 z-50 px-4 py-3 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.25)] dark:shadow-[0_24px_60px_rgba(0,0,0,0.6)] backdrop-blur-xl border flex items-center gap-2.5 text-xs font-bold animate-in slide-in-from-bottom duration-300 [transform-style:preserve-3d] ${
+        <div role={notification.type === 'error' ? "alert" : "status"} className={`fixed bottom-6 right-6 left-6 sm:left-auto sm:max-w-md z-50 px-4 py-3 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.25)] dark:shadow-[0_24px_60px_rgba(0,0,0,0.6)] backdrop-blur-xl border flex items-center gap-2.5 text-sm font-bold animate-in slide-in-from-bottom duration-300 [transform-style:preserve-3d] ${
           notification.type === 'success' 
             ? 'bg-emerald-600/95 text-white border-emerald-400/50 shadow-[0_0_24px_rgba(16,185,129,0.3)]' 
             : notification.type === 'error'
@@ -1619,6 +1761,7 @@ export default function BleachingProcessLogApp() {
           isLastSlot={selectedSlotIndex === 23}
           activeCurrentHourIndex={currentSlotIndex}
           isSupervisorOverride={supervisorUnlockedSlots.includes(selectedSlotIndex)}
+          onToggleSupervisorOverride={handleToggleSupervisorOverride}
         />
       )}
 

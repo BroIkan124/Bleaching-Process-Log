@@ -1,5 +1,5 @@
 import { SLOT_HOURS, SHIFTS } from "./constants";
-import { getShiftForSlot } from "./utils";
+import { getShiftForSlot, getProductionDateString } from "./utils";
 
 /**
  * Converts a 24-hour clock hour (0 to 23) into the manufacturing slot index (0 to 23).
@@ -175,7 +175,7 @@ export function getRealtimeClockState(): RealtimeClockState {
   const yyyy = now.getFullYear();
   const mm = String(now.getMonth() + 1).padStart(2, '0');
   const dd = String(now.getDate()).padStart(2, '0');
-  const dateString = `${yyyy}-${mm}-${dd}`;
+  const dateString = getProductionDateString(now); // production day: 08:00 -> 07:59
 
   return {
     now,

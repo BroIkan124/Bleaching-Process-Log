@@ -1,3 +1,4 @@
+import { getProductionDateString } from "./utils";
 import { LogEntry, LogSheet, UserProfile, SupervisorUpdateEvent, SampleReport, SampleResult } from "@/types";
 
 /**
@@ -13,8 +14,9 @@ export function createOrUpdateQcSampleFromLogEntry(
   // Normalize time label to HH:00 format (e.g. "0900" -> "09:00")
   const hourPart = entry.time_label.slice(0, 2);
   const formattedTimeCheck = `${hourPart}:00`;
-  const sheetDate = sheet.sheet_date || new Date().toISOString().split('T')[0];
-  const reportNo = `SAR-${sheetDate.slice(0, 4)}-${entry.time_label}`;
+  const sheetDate = sheet.sheet_date || getProductionDateString();
+  // Report no. carries the full sheet date so slot 0900 today never collides with (and deletes) 0900 from another day
+  const reportNo = `SAR-${sheetDate.replace(/-/g, "")}-${entry.time_label}`;
   const plantCleanCode = (sheet.plant_name || sheet.plant_id || "REF1").toUpperCase().replace(/[^A-Z0-9]/g, '');
   const lotNo = `LOT-${plantCleanCode}-${sheetDate.replace(/-/g, '')}-${entry.time_label}`;
   const sampleId = `sample-${sheetDate}-${entry.time_label}`;
@@ -133,7 +135,8 @@ export function createOrUpdateQcSampleFromLogEntry(
       submitted_by_name: currentUser.name,
       remarks: `Synchronized from Bleaching Log Slot ${entry.time_label} Hrs (Flow: ${entry.flowrate_set ?? '-'} MT/HR, Vac: ${entry.vacuum_mmhg ?? '-'} mmHg, Temp: ${entry.he_temp_c ?? '-'}°C)`,
       status: existing.decision ? existing.status : 'awaiting_results',
-      results: sampleResults,
+      // Never wipe lab results the chemist already decided on
+      results: existing.decision ? existing.results : sampleResults,
       updated_at: new Date().toISOString(),
     };
   } else {
@@ -195,22 +198,26 @@ export function createOrUpdateQcSampleFromLogEntry(
  * Synchronizes QC Lab test results back into Bleaching Log and Reports.
  * Implements: QC Lab -> Bleaching Log & Reports handover.
  */
+/**
+ * Slot label ("0900") a QC report belongs to: from time_check, else from report_no in either the
+ * legacy "SAR-2026-0900" or the dated "SAR-20261015-0900[-R1]" format.
+ */
+export function getSlotLabelFromReport(report: Pick<SampleReport, "time_check" | "report_no">): string {
+  if (report.time_check) {
+    const raw = report.time_check.replace(":", "").trim();
+    if (raw.length === 2) return `${raw}00`;
+    if (raw.length === 4) return raw;
+  }
+  const m = report.report_no?.match(/^SAR-(?:\d{8}|\d{4})-(\d{4})(?:-R\d+)?$/);
+  return m ? m[1] : "";
+}
+
 export function syncQcResultToLogEntries(
   qcReport: SampleReport,
   currentEntries: LogEntry[],
   currentUser: UserProfile
 ): { updatedEntries: LogEntry[]; newEvent: SupervisorUpdateEvent | null } {
-  // Extract time label from time_check e.g. "09:00" -> "0900" or report_no "SAR-2026-0900"
-  let timeLabel = "";
-  if (qcReport.time_check) {
-    const raw = qcReport.time_check.replace(":", "").trim();
-    if (raw.length === 2) timeLabel = `${raw}00`;
-    else if (raw.length === 4) timeLabel = raw;
-  }
-  if (!timeLabel && qcReport.report_no) {
-    const match = qcReport.report_no.match(/\d{4}$/);
-    if (match) timeLabel = match[0];
-  }
+  const timeLabel = getSlotLabelFromReport(qcReport);
 
   const slotIndex = currentEntries.findIndex((e) => e.time_label === timeLabel);
   if (slotIndex < 0) {
@@ -290,10 +297,10 @@ export function createRetestSampleFromLogEntry(
 
   // Find parent report if previously dispatched
   const parentReport = existingReports.find(
-    r => r.time_check?.replace(":", "") === entry.time_label || r.report_no.includes(entry.time_label)
+    r => r.sample_date === sheet.sheet_date && (r.time_check?.replace(":", "") === entry.time_label || r.report_no.includes(entry.time_label))
   );
 
-  const baseReportNo = parentReport ? parentReport.report_no.replace(/-R\d+$/, "") : `SAR-${currentYear}-${entry.time_label}`;
+  const baseReportNo = parentReport ? parentReport.report_no.replace(/-R\d+$/, "") : `SAR-${(sheet.sheet_date || currentYear).replace(/-/g, "")}-${entry.time_label}`;
   const reportNo = `${baseReportNo}-R${retestSeq}`;
 
   const baseLot = parentReport ? parentReport.lot_no.replace(/-R\d+$/, "") : `LOT-${sheet.plant_id || "REFINERY"}-${(sheet.sheet_date || "20261012").replace(/-/g, "")}-${entry.time_label}`;

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { LogEntry, UserProfile, OutOfSpecFlag } from "@/types";
 import { NIAGARA_FILTERS, BLEACHER_LEVELS } from "@/lib/constants";
-import { validateReadingSpecs } from "@/lib/utils";
+import { validateReadingSpecs, parseNumericInput } from "@/lib/utils";
 import { 
   X, 
   Check, 
@@ -77,6 +77,16 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
     }, 240);
   };
 
+  // Escape closes the dialog (same as Cancel)
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") handleSmoothClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     setFormData({ ...entry });
     setOutOfSpecFlags(entry.out_of_spec || []);
@@ -144,8 +154,11 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
         if (e.target === e.currentTarget) handleSmoothClose();
       }}
     >
-      <div 
-        className={`w-full max-w-5xl max-h-[92vh] bg-white dark:bg-[#0B1120] shadow-[0_24px_80px_rgba(0,0,0,0.45)] dark:shadow-[0_32px_120px_rgba(0,0,0,0.9)] flex flex-col rounded-3xl border border-zinc-200/90 dark:border-white/10 overflow-hidden transform transition-all duration-240 ease-[cubic-bezier(0.32,0.72,0,1)] ${
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="slot-entry-title"
+        className={`w-full max-w-5xl max-h-[92dvh] bg-white dark:bg-[#0B1120] shadow-[0_24px_80px_rgba(0,0,0,0.45)] dark:shadow-[0_32px_120px_rgba(0,0,0,0.9)] flex flex-col rounded-3xl border border-zinc-200/90 dark:border-white/10 overflow-hidden transform transition-all duration-240 ease-[cubic-bezier(0.32,0.72,0,1)] ${
           isMounted && !isClosing ? "scale-100 opacity-100" : "scale-95 opacity-0"
         }`}
       >
@@ -163,7 +176,7 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold text-zinc-900 dark:text-white">
+                <h3 id="slot-entry-title" className="text-base font-bold text-zinc-900 dark:text-white">
                   Slot Hourly Entry: {formData.time_label} Hrs
                 </h3>
                 <span className="text-xs text-zinc-500 font-medium">
@@ -278,14 +291,14 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
               
               {/* 1. Operating Flow & Chemical Dosing */}
               <div className="p-4 rounded-2xl bg-zinc-50/70 dark:bg-white/[0.02] border border-zinc-200/80 dark:border-white/10 space-y-2.5">
-                <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5 font-display">
+                <div className="text-sm font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5 font-display">
                   <Droplets className="w-3.5 h-3.5 text-amber-500" />
                   <span>Process Feed & Chemical Dosing</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {/* Flowrate MT/HR Set */}
                   <div>
-                    <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                    <label htmlFor="slot-flowrate" className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
                       Flowrate (MT/HR)
                     </label>
                     <div 
@@ -295,16 +308,16 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                           : 'border-zinc-300 dark:border-white/10 bg-white dark:bg-white/5 hover:border-zinc-400 focus-within:border-amber-500 focus-within:ring-2 focus-within:ring-amber-500/30'
                       }`}
                     >
-                      <input
+                      <input id="slot-flowrate" inputMode="decimal"
                         type="number"
                         step="0.1"
                         disabled={!isEditable}
                         value={formData.flowrate_set ?? ''}
-                        onChange={(e) => handleFieldChange('flowrate_set', parseFloat(e.target.value) || null)}
+                        onChange={(e) => handleFieldChange('flowrate_set', parseNumericInput(e.target.value))}
                         className="w-full bg-transparent font-mono text-base font-bold tabular-nums text-zinc-900 dark:text-white focus:outline-none disabled:opacity-60"
                         placeholder="e.g. 45.0"
                       />
-                      <span className="text-[11px] text-zinc-400 font-mono">MT/HR</span>
+                      <span className="text-sm text-zinc-400 font-mono">MT/HR</span>
                     </div>
                   </div>
 
@@ -316,6 +329,7 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                     <button
                       type="button"
                       disabled={!isEditable}
+                      aria-pressed={!!formData.acid_dosage_ok}
                       onClick={() => handleFieldChange('acid_dosage_ok', !formData.acid_dosage_ok)}
                       className={`btn-tactile touch-target w-full rounded-xl border flex items-center justify-center gap-2.5 font-semibold text-xs select-none transition-all ${
                         !isEditable ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
@@ -343,6 +357,7 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                     <button
                       type="button"
                       disabled={!isEditable}
+                      aria-pressed={!!formData.earth_dosage_ok}
                       onClick={() => handleFieldChange('earth_dosage_ok', !formData.earth_dosage_ok)}
                       className={`btn-tactile touch-target w-full rounded-xl border flex items-center justify-center gap-2.5 font-semibold text-xs select-none transition-all ${
                         !isEditable ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
@@ -366,7 +381,7 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
 
               {/* 2. Critical Telemetry (HE Temp & Vacuum) with 3D Specular Depth */}
               <div className="telemetry-card p-4 rounded-2xl bg-zinc-50/90 dark:bg-black/35 border border-zinc-200/90 dark:border-white/10 shadow-inner space-y-2.5">
-                <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5 font-display">
+                <div className="text-sm font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5 font-display">
                   <Sliders className="w-3.5 h-3.5 text-sky-500" />
                   <span>Bleaching Vessel Telemetry</span>
                 </div>
@@ -374,12 +389,12 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                   {/* HE Temp */}
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <label className="text-xs font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5 font-display">
+                      <label htmlFor="slot-he-temp" className="text-xs font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5 font-display">
                         <Thermometer className="w-3.5 h-3.5 text-amber-500" />
                         <span>HE Temp (°C)</span>
                         {isHeTempOutOfSpec && <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />}
                       </label>
-                      <span className="text-[11px] font-mono font-medium text-zinc-500">
+                      <span className="text-sm font-mono font-medium text-zinc-500">
                         Spec: 70-115 °C
                       </span>
                     </div>
@@ -392,19 +407,19 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                             : 'border-zinc-300 dark:border-white/10 bg-white dark:bg-white/5 hover:border-zinc-400 focus-within:border-amber-500 focus-within:ring-2 focus-within:ring-amber-500/30'
                       }`}
                     >
-                      <input
+                      <input id="slot-he-temp" inputMode="decimal"
                         type="number"
                         step="0.1"
                         disabled={!isEditable}
                         value={formData.he_temp_c ?? ''}
-                        onChange={(e) => handleFieldChange('he_temp_c', parseFloat(e.target.value) || null)}
+                        onChange={(e) => handleFieldChange('he_temp_c', parseNumericInput(e.target.value))}
                         className="w-full bg-transparent font-mono text-lg font-bold tabular-nums text-zinc-900 dark:text-white focus:outline-none disabled:opacity-60"
                         placeholder="e.g. 105.0"
                       />
                       <span className="font-mono text-xs font-semibold text-zinc-400">°C</span>
                     </div>
                     {isHeTempOutOfSpec && (
-                      <p className="text-[11px] text-rose-600 dark:text-rose-400 font-semibold mt-1">
+                      <p className="text-sm text-rose-600 dark:text-rose-400 font-semibold mt-1">
                         Out of range! Must be 70.0 - 115.0 °C.
                       </p>
                     )}
@@ -413,12 +428,12 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                   {/* Bleacher Vacuum */}
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <label className="text-xs font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5 font-display">
+                      <label htmlFor="slot-vacuum" className="text-xs font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5 font-display">
                         <Gauge className="w-3.5 h-3.5 text-sky-500" />
                         <span>Bleacher Vacuum (mmHg)</span>
                         {isVacOutOfSpec && <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />}
                       </label>
-                      <span className="text-[11px] font-mono font-medium text-zinc-500">
+                      <span className="text-sm font-mono font-medium text-zinc-500">
                         Spec: Min. 600
                       </span>
                     </div>
@@ -431,19 +446,19 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                             : 'border-zinc-300 dark:border-white/10 bg-white dark:bg-white/5 hover:border-zinc-400 focus-within:border-amber-500 focus-within:ring-2 focus-within:ring-amber-500/30'
                       }`}
                     >
-                      <input
+                      <input id="slot-vacuum" inputMode="decimal"
                         type="number"
                         step="1"
                         disabled={!isEditable}
                         value={formData.vacuum_mmhg ?? ''}
-                        onChange={(e) => handleFieldChange('vacuum_mmhg', parseFloat(e.target.value) || null)}
+                        onChange={(e) => handleFieldChange('vacuum_mmhg', parseNumericInput(e.target.value))}
                         className="w-full bg-transparent font-mono text-lg font-bold tabular-nums text-zinc-900 dark:text-white focus:outline-none disabled:opacity-60"
                         placeholder="e.g. 640"
                       />
                       <span className="font-mono text-xs font-semibold text-zinc-400">mmHg</span>
                     </div>
                     {isVacOutOfSpec && (
-                      <p className="text-[11px] text-rose-600 dark:text-rose-400 font-semibold mt-1">
+                      <p className="text-sm text-rose-600 dark:text-rose-400 font-semibold mt-1">
                         Too low! Min 600.0 mmHg.
                       </p>
                     )}
@@ -453,7 +468,7 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
 
               {/* 3. Level & Niagara Filtration */}
               <div className="p-4 rounded-2xl bg-zinc-50/70 dark:bg-white/[0.02] border border-zinc-200/80 dark:border-white/10 space-y-3">
-                <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5 font-display">
+                <div className="text-sm font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5 font-display">
                   <Activity className="w-3.5 h-3.5 text-emerald-500" />
                   <span>Vessel Level & Niagara Filtration</span>
                 </div>
@@ -483,13 +498,13 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
 
                   {/* Changing Filter Time */}
                   <div>
-                    <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                    <label htmlFor="slot-filter-time" className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
                       Filter Change Time
                     </label>
                     <div className={`touch-target flex items-center px-3 py-1.5 rounded-xl border border-zinc-300 dark:border-white/10 ${
                       !isEditable ? 'bg-zinc-100 dark:bg-zinc-900 opacity-60 cursor-not-allowed' : 'bg-white dark:bg-white/5'
                     }`}>
-                      <input
+                      <input id="slot-filter-time"
                         type="text"
                         readOnly={!isEditable}
                         disabled={!isEditable}
@@ -508,7 +523,7 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                     <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
                       Niagara Filter (1 of 4 Active)
                     </label>
-                    <span className="text-[11px] font-mono text-zinc-400">Selected: {formData.niagara_filter || 'N60-1'}</span>
+                    <span className="text-sm font-mono text-zinc-400">Selected: {formData.niagara_filter || 'N60-1'}</span>
                   </div>
                   <GliderRadioGroup
                     disabled={!isEditable}
@@ -534,14 +549,14 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
               
               {/* 4. Laboratory Quality Telemetry */}
               <div className="p-4 rounded-2xl bg-zinc-50/70 dark:bg-white/[0.02] border border-zinc-200/80 dark:border-white/10 space-y-2.5">
-                <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5 font-display">
+                <div className="text-sm font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5 font-display">
                   <FlaskConical className="w-3.5 h-3.5 text-amber-500" />
                   <span>Laboratory Quality Checks</span>
                 </div>
                 <div className="grid grid-cols-3 gap-2.5">
                   {/* Quality FFA % */}
                   <div>
-                    <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                    <label htmlFor="slot-ffa" className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
                       FFA (%)
                     </label>
                     <div 
@@ -551,22 +566,22 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                           : 'border-zinc-300 dark:border-white/10 bg-white dark:bg-white/5 hover:border-zinc-400 focus-within:border-amber-500 focus-within:ring-2 focus-within:ring-amber-500/30'
                       }`}
                     >
-                      <input
+                      <input id="slot-ffa" inputMode="decimal"
                         type="number"
                         step="0.001"
                         disabled={!isEditable}
                         value={formData.ffa_pct ?? ''}
-                        onChange={(e) => handleFieldChange('ffa_pct', parseFloat(e.target.value) || null)}
+                        onChange={(e) => handleFieldChange('ffa_pct', parseNumericInput(e.target.value))}
                         className="w-full bg-transparent font-mono text-base font-bold tabular-nums text-zinc-900 dark:text-white focus:outline-none disabled:opacity-60"
                         placeholder="0.045"
                       />
-                      <span className="text-[11px] text-zinc-400 font-mono">%</span>
+                      <span className="text-sm text-zinc-400 font-mono">%</span>
                     </div>
                   </div>
 
                   {/* Quality Colour Red (R) */}
                   <div>
-                    <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                    <label htmlFor="slot-colour-r" className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
                       Colour (R)
                     </label>
                     <div 
@@ -576,22 +591,22 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                           : 'border-zinc-300 dark:border-white/10 bg-white dark:bg-white/5 hover:border-zinc-400 focus-within:border-amber-500 focus-within:ring-2 focus-within:ring-amber-500/30'
                       }`}
                     >
-                      <input
+                      <input id="slot-colour-r" inputMode="decimal"
                         type="number"
                         step="0.1"
                         disabled={!isEditable}
                         value={formData.colour_r ?? ''}
-                        onChange={(e) => handleFieldChange('colour_r', parseFloat(e.target.value) || null)}
+                        onChange={(e) => handleFieldChange('colour_r', parseNumericInput(e.target.value))}
                         className="w-full bg-transparent font-mono text-base font-bold tabular-nums text-rose-600 dark:text-rose-400 focus:outline-none disabled:opacity-60"
                         placeholder="2.1"
                       />
-                      <span className="text-[11px] text-rose-500 font-bold font-mono">R</span>
+                      <span className="text-sm text-rose-500 font-bold font-mono">R</span>
                     </div>
                   </div>
 
                   {/* Quality Colour Yellow (Y) */}
                   <div>
-                    <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                    <label htmlFor="slot-colour-y" className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
                       Colour (Y)
                     </label>
                     <div 
@@ -601,16 +616,16 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                           : 'border-zinc-300 dark:border-white/10 bg-white dark:bg-white/5 hover:border-zinc-400 focus-within:border-amber-500 focus-within:ring-2 focus-within:ring-amber-500/30'
                       }`}
                     >
-                      <input
+                      <input id="slot-colour-y" inputMode="decimal"
                         type="number"
                         step="0.1"
                         disabled={!isEditable}
                         value={formData.colour_y ?? ''}
-                        onChange={(e) => handleFieldChange('colour_y', parseFloat(e.target.value) || null)}
+                        onChange={(e) => handleFieldChange('colour_y', parseNumericInput(e.target.value))}
                         className="w-full bg-transparent font-mono text-base font-bold tabular-nums text-amber-600 dark:text-amber-400 focus:outline-none disabled:opacity-60"
                         placeholder="18.0"
                       />
-                      <span className="text-[11px] text-amber-500 font-bold font-mono">Y</span>
+                      <span className="text-sm text-amber-500 font-bold font-mono">Y</span>
                     </div>
                   </div>
                 </div>
@@ -623,7 +638,7 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                     <AlertTriangle className="w-4 h-4 shrink-0" />
                     <span>Process Out-of-Spec Alert</span>
                   </div>
-                  <ul className="list-disc pl-4 space-y-0.5 text-[11px] font-medium">
+                  <ul className="list-disc pl-4 space-y-0.5 text-sm font-medium">
                     {outOfSpecFlags.map((flag, idx) => (
                       <li key={idx}>{flag.message}</li>
                     ))}
@@ -634,15 +649,15 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
               {/* 6. Operator Remarks */}
               <div className="p-4 rounded-2xl bg-zinc-50/70 dark:bg-white/[0.02] border border-zinc-200/80 dark:border-white/10 space-y-2 flex-1 flex flex-col min-h-[140px]">
                 <div className="flex items-center justify-between">
-                  <label className={`text-xs font-bold flex items-center gap-1.5 font-display ${
+                  <label htmlFor="slot-remarks" className={`text-xs font-bold flex items-center gap-1.5 font-display ${
                     hasOutOfSpec ? 'text-rose-600 dark:text-rose-400' : 'text-zinc-700 dark:text-zinc-300'
                   }`}>
                     <span>Operator Remarks</span>
                     {hasOutOfSpec && <span className="text-rose-500 font-bold">* (Mandatory)</span>}
                   </label>
-                  <span className="text-[11px] text-zinc-500">Action taken / notes</span>
+                  <span className="text-sm text-zinc-500">Action taken / notes</span>
                 </div>
-                <textarea
+                <textarea id="slot-remarks"
                   rows={4}
                   readOnly={!isEditable}
                   disabled={!isEditable}
@@ -658,7 +673,7 @@ export const SlotEntryDrawer: React.FC<SlotEntryDrawerProps> = ({
                   placeholder={hasOutOfSpec ? "State cause of deviation and corrective action taken (e.g., steam valve adjusted)..." : "Optional remarks..."}
                 />
                 {remarksError && (
-                  <p className="text-[11px] text-rose-600 dark:text-rose-400 font-semibold flex items-center gap-1">
+                  <p role="alert" className="text-sm text-rose-600 dark:text-rose-400 font-semibold flex items-center gap-1">
                     <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
                     <span>{remarksError}</span>
                   </p>

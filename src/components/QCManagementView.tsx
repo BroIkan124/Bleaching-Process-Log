@@ -1,5 +1,6 @@
 "use client";
 
+import { getProductionDateString } from "@/lib/utils";
 import React, { useState, useMemo, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { UserProfile, SampleReport, SampleResult, QCDecision, QCDecisionType, Disposition, Product, Plant, Tank } from "@/types";
@@ -113,6 +114,7 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
   const [isClosingCertificate, setIsClosingCertificate] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [pendingReportToAuthorize, setPendingReportToAuthorize] = useState<SampleReport | null>(null);
+  const [editorError, setEditorError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isEditorOpen || isNewSampleOpen || isAddProdModalOpen || isAddTankModalOpen || isCertificateOpen || isAuthModalOpen) {
@@ -160,7 +162,7 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
     feed_tank_code: defaultFeedTank,
     discharge_tank_code: defaultDischargeTank,
     sampling_point_name: "Bleacher Outlet / Polishing Filter",
-    sample_date: new Date().toISOString().split("T")[0],
+    sample_date: getProductionDateString(),
     time_check: "14:00",
     lot_no: `LOT-BPO-${new Date().toISOString().slice(2, 10).replace(/-/g, "")}-1400`,
     remarks: "",
@@ -179,7 +181,7 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
   // Today date string (YYYY-MM-DD)
   const todayDateStr = useMemo(() => {
     const today = new Date();
-    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    return getProductionDateString(today);
   }, []);
 
   // Deduplicate incoming reports by Lot Number / Report Number so that identical duplicate rows are never displayed
@@ -255,18 +257,9 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
   const pendingCount = totalCount - acceptedCount - rejectedCount;
 
   // Helper to get default numeric parameter values for Form RF-FR-001
-  const getDefaultParamValue = (code: string): number => {
-    switch (code.toUpperCase()) {
-      case "FFA": return 0.045;
-      case "H2O": return 0.030;
-      case "PV": return 0.20;
-      case "IV": return 52.5;
-      case "COLOUR_R": return 2.1;
-      case "COLOUR_Y": return 18.0;
-      case "DOBI": return 2.85;
-      default: return 0.0;
-    }
-  };
+  // Selecting a parameter for testing must not invent a lab result: it starts empty
+  // until the chemist enters the measured value.
+  const getDefaultParamValue = (_code: string): number | null => null;
 
   // Helper to determine if a parameter is actively selected for testing
   const isParamTested = (res: SampleResult): boolean => {
@@ -297,19 +290,21 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
 
   // Handle Save Edited Test Results
   const handleSaveResults = (updatedReport: SampleReport) => {
-    // Ensure an effective decision is always established when saving (default to 'accept' if pending/not yet set)
-    const effectiveDecision: QCDecision = updatedReport.decision?.decision ? updatedReport.decision : {
-      id: updatedReport.decision?.id || `dec-${Date.now()}`,
-      report_id: updatedReport.id,
-      decision: "accept",
-      decided_by_name: currentUser.name,
-      decided_at: new Date().toISOString(),
-    };
+    // A release decision must be an explicit chemist choice, never an implied 'accept'
+    if (!updatedReport.decision?.decision) {
+      setEditorError("Select a QC decision (Accept / Reject / Concession) before saving.");
+      return;
+    }
+    const missing = (updatedReport.results || []).filter(
+      r => isParamTested(r) && (r.value_numeric === null || r.value_numeric === undefined)
+    );
+    if (missing.length > 0) {
+      setEditorError(`Enter a measured value for: ${missing.map(r => r.parameter_name).join(", ")}.`);
+      return;
+    }
+    setEditorError(null);
 
-    const reportToAuthorize: SampleReport = {
-      ...updatedReport,
-      decision: effectiveDecision,
-    };
+    const reportToAuthorize: SampleReport = { ...updatedReport };
 
     // Mandatory QC PIN/Password Authorization for all QC batch releases / decisions!
     setPendingReportToAuthorize(reportToAuthorize);
@@ -381,7 +376,10 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
   const handleCreateSample = (e: React.FormEvent) => {
     e.preventDefault();
     const newId = `sample-${Date.now()}`;
-    const reportNo = `SAR-2026-${String(reports.length + 1).padStart(4, "0")}`;
+    // Manual samples get a date-scoped "M" sequence so they never collide with slot samples (SAR-YYYYMMDD-HHMM)
+    const datePart = (newSample.sample_date || getProductionDateString()).replace(/-/g, "");
+    const manualSeq = reports.filter(r => r.report_no?.startsWith(`SAR-${datePart}-M`)).length + 1;
+    const reportNo = `SAR-${datePart}-M${String(manualSeq).padStart(3, "0")}-${String(Date.now()).slice(-4)}`;
 
     const created: SampleReport = {
       id: newId,
@@ -399,20 +397,15 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
       updated_at: new Date().toISOString(),
       remarks: newSample.remarks,
       results: [
-        { id: `res-ffa-${newId}`, report_id: newId, parameter_code: "FFA", parameter_name: "Free Fatty Acid (% Palmitic)", unit: "%", value_numeric: 0.045, in_spec: true, is_tested: true },
-        { id: `res-h2o-${newId}`, report_id: newId, parameter_code: "H2O", parameter_name: "Moisture & Impurities", unit: "%", value_numeric: 0.030, in_spec: true, is_tested: false },
-        { id: `res-pv-${newId}`, report_id: newId, parameter_code: "PV", parameter_name: "Peroxide Value", unit: "meq/kg", value_numeric: 0.20, in_spec: true, is_tested: false },
-        { id: `res-iv-${newId}`, report_id: newId, parameter_code: "IV", parameter_name: "Iodine Value (Wijs)", unit: "g I2/100g", value_numeric: 52.5, in_spec: true, is_tested: false },
-        { id: `res-cr-${newId}`, report_id: newId, parameter_code: "COLOUR_R", parameter_name: "Colour Lovibond Red (5¼\" cell)", unit: "R", value_numeric: 2.1, in_spec: true, is_tested: true },
-        { id: `res-cy-${newId}`, report_id: newId, parameter_code: "COLOUR_Y", parameter_name: "Colour Lovibond Yellow", unit: "Y", value_numeric: 18.0, in_spec: true, is_tested: true },
+        { id: `res-ffa-${newId}`, report_id: newId, parameter_code: "FFA", parameter_name: "Free Fatty Acid (% Palmitic)", unit: "%", value_numeric: null, in_spec: null, is_tested: true },
+        { id: `res-h2o-${newId}`, report_id: newId, parameter_code: "H2O", parameter_name: "Moisture & Impurities", unit: "%", value_numeric: null, in_spec: null, is_tested: false },
+        { id: `res-pv-${newId}`, report_id: newId, parameter_code: "PV", parameter_name: "Peroxide Value", unit: "meq/kg", value_numeric: null, in_spec: null, is_tested: false },
+        { id: `res-iv-${newId}`, report_id: newId, parameter_code: "IV", parameter_name: "Iodine Value (Wijs)", unit: "g I2/100g", value_numeric: null, in_spec: null, is_tested: false },
+        { id: `res-cr-${newId}`, report_id: newId, parameter_code: "COLOUR_R", parameter_name: "Colour Lovibond Red (5¼\" cell)", unit: "R", value_numeric: null, in_spec: null, is_tested: true },
+        { id: `res-cy-${newId}`, report_id: newId, parameter_code: "COLOUR_Y", parameter_name: "Colour Lovibond Yellow", unit: "Y", value_numeric: null, in_spec: null, is_tested: true },
       ],
-      decision: {
-        id: `dec-${newId}`,
-        report_id: newId,
-        decision: "accept",
-        decided_by_name: currentUser.name,
-        decided_at: new Date().toISOString(),
-      },
+      // Not tested yet: no decision until the chemist records results and signs off
+      decision: null,
     };
 
     if (onCreateReport) {
@@ -1243,10 +1236,16 @@ export const QCManagementView: React.FC<QCManagementViewProps> = ({
               </div>
             </div>
 
-            <div className="px-6 py-4 border-t border-zinc-200 dark:border-white/10 bg-zinc-50/80 dark:bg-black/30 flex justify-end gap-3">
+            <div className="px-6 py-4 border-t border-zinc-200 dark:border-white/10 bg-zinc-50/80 dark:bg-black/30 flex flex-wrap items-center justify-end gap-3">
+              {editorError && (
+                <p role="alert" className="mr-auto flex items-center gap-2 text-sm font-semibold text-rose-700 dark:text-rose-400">
+                  <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  {editorError}
+                </p>
+              )}
               <button
                 type="button"
-                onClick={handleCloseEditor}
+                onClick={() => { setEditorError(null); handleCloseEditor(); }}
                 className="btn-tactile px-4 py-2 rounded-xl text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200/60 dark:hover:bg-white/5 border border-zinc-200 dark:border-white/10 cursor-pointer"
               >
                 Cancel

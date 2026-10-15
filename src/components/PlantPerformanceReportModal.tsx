@@ -19,7 +19,7 @@ interface PlantPerformanceReportModalProps {
   avgFlowrate: string;
   avgTemp: string;
   avgVacuum: string;
-  inSpecPercentage: number;
+  inSpecPercentage: number | null;
   avgFFA: string;
   avgRed: string;
   avgYellow: string;
@@ -310,7 +310,7 @@ export const PlantPerformanceReportModal: React.FC<PlantPerformanceReportModalPr
 
                 <div className="border border-black p-2.5 rounded bg-white text-center">
                   <span className="text-[9.5px] uppercase font-bold text-gray-600 block">Process Spec Compliance</span>
-                  <div className="text-lg font-extrabold font-mono text-emerald-700">{inSpecPercentage}%</div>
+                  <div className="text-lg font-extrabold font-mono text-emerald-700">{inSpecPercentage !== null ? `${inSpecPercentage}%` : "—"}</div>
                   <span className="text-[9px] text-gray-500 font-mono">Normal Operational Limits</span>
                 </div>
 

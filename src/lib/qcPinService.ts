@@ -53,8 +53,9 @@ export function verifyUserPassword(user: UserProfile, inputPassword: string): bo
     } catch {}
   }
 
-  // Fallback to profile password or refinery default
+  // Fallback to the user's own profile password (or the default for accounts never given one).
+  // No universal master passwords: they let any operator sign as any supervisor/QC.
   const expected = user.password || "password123";
-  return input === expected || input === "refinery2026!" || input === "password123";
+  return input === expected;
 }
 

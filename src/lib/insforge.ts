@@ -9,12 +9,10 @@ import { createClient } from "@insforge/sdk";
 export const ENABLE_CLOUD_SYNC = false;
 
 const insforgeUrl = 
-  process.env.NEXT_PUBLIC_INSFORGE_URL || 
-  "https://s9sdr5z9.ap-southeast.insforge.app";
+  process.env.NEXT_PUBLIC_INSFORGE_URL || ""; // no hardcoded fallback: configure via env only
 
 const insforgeAnonKey = 
-  process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY || 
-  "anon_8a8266a62ddbca351ab90c7e19af966da6db83b089ea9b08be6bdad92bd14a1c";
+  process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY || "";
 
 export const isInsForgeConfigured = Boolean(
   ENABLE_CLOUD_SYNC &&

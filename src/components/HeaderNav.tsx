@@ -1,5 +1,6 @@
 "use client";
 
+import { getProductionDateString } from "@/lib/utils";
 import React, { useState, useRef, useEffect } from "react";
 import { UserProfile, SheetStatus, DashboardTab, PlantNotification } from "@/types";
 import { RealtimeClockState } from "@/lib/realtimeTimeline";
@@ -244,7 +245,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
                   type="button"
                   onClick={() => {
                     const today = new Date();
-                    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                    const todayStr = getProductionDateString(today);
                     onDateChange(todayStr);
                   }}
                   title="Return to today's live shift"
@@ -274,7 +275,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
           {/* Bleaching Specific Workflow Actions */}
           {activeTab === 'bleaching' && (
             <>
-              {currentRole.role === 'technician' && sheetStatus === 'InProgress' && (
+              {currentRole.role === 'technician' && (sheetStatus === 'InProgress' || sheetStatus === 'Returned') && (
                 <button
                   type="button"
                   onClick={onSubmitSheet}

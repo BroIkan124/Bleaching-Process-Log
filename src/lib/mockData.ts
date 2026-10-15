@@ -1,5 +1,5 @@
 import { Plant, Product, Tank, UserProfile, LogSheet, SupervisorUpdateEvent } from "@/types";
-import { generateInitialEntries, validateReadingSpecs } from "./utils";
+import { generateInitialEntries, validateReadingSpecs, getProductionDateString } from "./utils";
 
 export const MOCK_USERS: UserProfile[] = [
   { 
@@ -304,7 +304,7 @@ export function createCleanSheet(targetDate?: string, templateSheet?: Partial<Lo
   const yyyy = now.getFullYear();
   const mm = String(now.getMonth() + 1).padStart(2, '0');
   const dd = String(now.getDate()).padStart(2, '0');
-  const sheetDate = targetDate || `${yyyy}-${mm}-${dd}`;
+  const sheetDate = targetDate || getProductionDateString(now);
   const sheetId = `sheet-${sheetDate}`;
   const entries = generateInitialEntries(sheetId, sheetDate);
 

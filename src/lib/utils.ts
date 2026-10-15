@@ -14,9 +14,36 @@ export function cn(...inputs: ClassValue[]) {
 export function calculateSlotTimestamp(sheetDateStr: string, slotIndex: number): string {
   // Parse sheet date (YYYY-MM-DD)
   const [year, month, day] = sheetDateStr.split('-').map(Number);
-  const baseDate = new Date(Date.UTC(year, month - 1, day, 8, 0, 0, 0)); // 08:00 UTC
+  // Plant runs on Malaysia time (UTC+8, no DST): 08:00 MYT == 00:00 UTC
+  const baseDate = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
   const slotDate = new Date(baseDate.getTime() + slotIndex * 60 * 60 * 1000);
   return slotDate.toISOString();
+}
+
+/**
+ * Production (sheet) date YYYY-MM-DD for a moment in time.
+ * The RF-FR-003 production day runs 08:00 -> 07:59 next morning, so 00:00-07:59
+ * still belongs to the previous calendar day's sheet (Shift 3, slots 2400-0700).
+ */
+export function getProductionDateString(now: Date = new Date()): string {
+  const d = new Date(now.getTime());
+  if (d.getHours() < 8) d.setDate(d.getDate() - 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+/** Roles allowed to approve/return sheets and override slot time locks (mirrors the UI rules). */
+export function isSupervisorRole(role?: string | null): boolean {
+  return role === 'supervisor' || role === 'admin';
+}
+
+/**
+ * Parses a numeric <input> value. Empty -> null; keeps a legitimate 0
+ * (the old `parseFloat(v) || null` pattern silently erased readings of 0).
+ */
+export function parseNumericInput(value: string): number | null {
+  if (value.trim() === '') return null;
+  const n = parseFloat(value);
+  return Number.isNaN(n) ? null : n;
 }
 
 /**

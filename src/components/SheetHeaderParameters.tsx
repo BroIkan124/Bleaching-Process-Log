@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { LogSheet, Plant, Product, Tank } from "@/types";
+import { parseNumericInput } from "@/lib/utils";
 import { 
   Sliders, 
   ChevronDown, 
@@ -317,7 +318,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                       step="0.1"
                       disabled={isLocked}
                       value={sheet.input_mt_hr ?? ""}
-                      onChange={(e) => onUpdateHeader({ input_mt_hr: parseFloat(e.target.value) || null })}
+                      onChange={(e) => onUpdateHeader({ input_mt_hr: parseNumericInput(e.target.value) })}
                       className="w-full px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700/80 font-mono text-sm font-bold text-zinc-900 dark:text-white shadow-inner focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
                       placeholder="45.0"
                     />
@@ -331,7 +332,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                       step="1"
                       disabled={isLocked}
                       value={sheet.input_mt_day ?? ""}
-                      onChange={(e) => onUpdateHeader({ input_mt_day: parseFloat(e.target.value) || null })}
+                      onChange={(e) => onUpdateHeader({ input_mt_day: parseNumericInput(e.target.value) })}
                       className="w-full px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700/80 font-mono text-sm font-bold text-zinc-900 dark:text-white shadow-inner focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
                       placeholder="1080"
                     />
@@ -367,7 +368,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                       type="number"
                       disabled={isLocked}
                       value={sheet.acid_mm ?? ""}
-                      onChange={(e) => onUpdateHeader({ acid_mm: parseFloat(e.target.value) || null })}
+                      onChange={(e) => onUpdateHeader({ acid_mm: parseNumericInput(e.target.value) })}
                       className="w-full px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700/80 font-mono text-sm font-bold text-zinc-900 dark:text-white shadow-inner focus:border-amber-500"
                       placeholder="12.5"
                     />
@@ -380,7 +381,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                       type="number"
                       disabled={isLocked}
                       value={sheet.acid_cm_hr ?? ""}
-                      onChange={(e) => onUpdateHeader({ acid_cm_hr: parseFloat(e.target.value) || null })}
+                      onChange={(e) => onUpdateHeader({ acid_cm_hr: parseNumericInput(e.target.value) })}
                       className="w-full px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700/80 font-mono text-sm font-bold text-zinc-900 dark:text-white shadow-inner focus:border-amber-500"
                       placeholder="24.0"
                     />
@@ -394,7 +395,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                       step="0.01"
                       disabled={isLocked}
                       value={sheet.acid_pct ?? ""}
-                      onChange={(e) => onUpdateHeader({ acid_pct: parseFloat(e.target.value) || null })}
+                      onChange={(e) => onUpdateHeader({ acid_pct: parseNumericInput(e.target.value) })}
                       className="w-full px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700/80 font-mono text-sm font-bold text-zinc-900 dark:text-white shadow-inner focus:border-amber-500"
                       placeholder="0.06"
                     />
@@ -421,7 +422,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                       step="0.05"
                       disabled={isLocked}
                       value={sheet.earth_setting ?? ""}
-                      onChange={(e) => onUpdateHeader({ earth_setting: parseFloat(e.target.value) || null })}
+                      onChange={(e) => onUpdateHeader({ earth_setting: parseNumericInput(e.target.value) })}
                       className="w-full px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700/80 font-mono text-sm font-bold text-zinc-900 dark:text-white shadow-inner focus:border-amber-500"
                       placeholder="1.25"
                     />
@@ -435,7 +436,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                       step="0.01"
                       disabled={isLocked}
                       value={sheet.earth_min_pct ?? ""}
-                      onChange={(e) => onUpdateHeader({ earth_min_pct: parseFloat(e.target.value) || null })}
+                      onChange={(e) => onUpdateHeader({ earth_min_pct: parseNumericInput(e.target.value) })}
                       className="w-full px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700/80 font-mono text-sm font-bold text-zinc-900 dark:text-white shadow-inner focus:border-amber-500"
                       placeholder="0.80"
                     />
@@ -448,7 +449,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                       type="number"
                       disabled={isLocked}
                       value={sheet.earth_kgs_day ?? ""}
-                      onChange={(e) => onUpdateHeader({ earth_kgs_day: parseFloat(e.target.value) || null })}
+                      onChange={(e) => onUpdateHeader({ earth_kgs_day: parseNumericInput(e.target.value) })}
                       className="w-full px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700/80 font-mono text-sm font-bold text-zinc-900 dark:text-white shadow-inner focus:border-amber-500"
                       placeholder="9180"
                     />
@@ -483,7 +484,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                         type="number"
                         disabled={isLocked}
                         value={sheet.aid1_qty ?? ""}
-                        onChange={(e) => onUpdateHeader({ aid1_qty: parseFloat(e.target.value) || null })}
+                        onChange={(e) => onUpdateHeader({ aid1_qty: parseNumericInput(e.target.value) })}
                         className="w-full px-2.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700/80 font-mono text-xs font-bold text-zinc-900 dark:text-white shadow-inner"
                         placeholder="Qty (Kg)"
                       />
@@ -506,7 +507,7 @@ export const SheetHeaderParameters: React.FC<SheetHeaderParametersProps> = ({
                         type="number"
                         disabled={isLocked}
                         value={sheet.aid2_qty ?? ""}
-                        onChange={(e) => onUpdateHeader({ aid2_qty: parseFloat(e.target.value) || null })}
+                        onChange={(e) => onUpdateHeader({ aid2_qty: parseNumericInput(e.target.value) })}
                         className="w-full px-2.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700/80 font-mono text-xs font-bold text-zinc-900 dark:text-white shadow-inner"
                         placeholder="Qty (Kg)"
                       />

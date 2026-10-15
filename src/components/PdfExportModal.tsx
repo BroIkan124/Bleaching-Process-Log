@@ -92,7 +92,8 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
     let yCount = 0;
     let oosCount = 0;
 
-    entries.forEach((e) => {
+    // Only saved slots count, matching ReportsView (unsaved leftovers must not skew the official form)
+    entries.filter((e) => e.is_saved).forEach((e) => {
       if (e.flowrate_set != null && !isNaN(e.flowrate_set)) {
         totalFlow += e.flowrate_set;
         flowCount++;
@@ -583,26 +584,27 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
                       const moistRes = qc.results.find((r) => r.parameter_code?.toLowerCase().includes("moist") || r.parameter_name?.toLowerCase().includes("moisture"));
                       const pvRes = qc.results.find((r) => r.parameter_code?.toLowerCase().includes("pv") || r.parameter_name?.toLowerCase().includes("peroxide"));
 
-                      const isPassed = qc.decision?.decision === "accept" || qc.status === "decided";
+                      const isPassed = qc.decision?.decision === "accept" || qc.decision?.decision === "accept_concession";
+                      const isRejected = qc.decision?.decision === "reject";
 
                       return (
                         <tr key={qc.id} className="border-b border-zinc-300 font-mono text-[7.5px]">
                           <td className="border-r border-black py-0.5 px-1 font-bold text-left">{qc.report_no || qc.lot_no}</td>
                           <td className="border-r border-black py-0.5 px-1">{qc.time_check || "—"}</td>
-                          <td className="border-r border-black py-0.5 px-1">{ffaRes?.value_numeric != null ? `${ffaRes.value_numeric}%` : "0.045%"}</td>
-                          <td className="border-r border-black py-0.5 px-1 text-red-700 font-bold">{colourRes?.value_numeric != null ? `${colourRes.value_numeric}R` : "2.4R"}</td>
-                          <td className="border-r border-black py-0.5 px-1">{moistRes?.value_numeric != null ? `${moistRes.value_numeric}%` : "0.030%"}</td>
-                          <td className="border-r border-black py-0.5 px-1">{pvRes?.value_numeric != null ? `${pvRes.value_numeric}` : "0.20"}</td>
+                          <td className="border-r border-black py-0.5 px-1">{ffaRes?.value_numeric != null ? `${ffaRes.value_numeric}%` : "—"}</td>
+                          <td className="border-r border-black py-0.5 px-1 text-red-700 font-bold">{colourRes?.value_numeric != null ? `${colourRes.value_numeric}R` : "—"}</td>
+                          <td className="border-r border-black py-0.5 px-1">{moistRes?.value_numeric != null ? `${moistRes.value_numeric}%` : "—"}</td>
+                          <td className="border-r border-black py-0.5 px-1">{pvRes?.value_numeric != null ? `${pvRes.value_numeric}` : "—"}</td>
                           <td className="border-r border-black py-0.5 px-1 font-bold uppercase">
-                            <span className={isPassed ? "text-emerald-700" : "text-amber-700"}>
-                              {qc.decision?.decision ? qc.decision.decision.toUpperCase() : "IN-SPEC RELEASE"}
+                            <span className={isPassed ? "text-emerald-700" : isRejected ? "text-red-700" : "text-amber-700"}>
+                              {qc.decision?.decision ? qc.decision.decision.toUpperCase() : "PENDING"}
                             </span>
                           </td>
                           <td className="border-r border-black py-0.5 px-1 font-sans text-[7px] truncate">
-                            {qc.decision?.decided_by_name || qc.submitted_by_name || "Siti Hajar (Chemist)"}
+                            {qc.decision?.decided_by_name || qc.submitted_by_name || "—"}
                           </td>
                           <td className="py-0.5 px-2 text-left font-sans text-[7px] truncate">
-                            {qc.remarks || qc.decision?.reason_label || "Analytical testing verified conforming to PORAM / Lam Soon Grade 1."}
+                            {qc.remarks || qc.decision?.reason_label || "—"}
                           </td>
                         </tr>
                       );
@@ -707,7 +709,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
                       <div>
                         Supervisor:{" "}
                         <strong className="font-mono text-[8px]">
-                          {sheet.reviewed_by_name || (sheet.status === "Approved" ? "Ir. Roslan Zakaria" : "Pending Supervisor")}
+                          {sheet.reviewed_by_name || (sheet.status === "Approved" ? "—" : "Pending Supervisor")}
                         </strong>
                       </div>
                       <div className="text-[7px] text-zinc-600">

@@ -103,6 +103,150 @@ export function playChime(type: "success" | "warning" | "alert" | "info" | "rete
 }
 
 /**
+ * High-tech frequency-swept laser chirp during biometric / ID scan.
+ */
+export function playScanTone(): void {
+  if (!isAudioEnabled()) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  try {
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(800, now);
+    osc.frequency.exponentialRampToValueAtTime(2400, now + 0.18);
+    osc.frequency.exponentialRampToValueAtTime(1200, now + 0.35);
+
+    // Filter to give high-tech filtered sweep
+    const filter = ctx.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.frequency.setValueAtTime(1600, now);
+    filter.Q.setValueAtTime(4.0, now);
+
+    gain.gain.setValueAtTime(0.08, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.36);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.38);
+  } catch {}
+}
+
+/**
+ * Ascending futuristic triad chord chime for biometric clearance & access granted.
+ */
+export function playAccessGrantedChime(): void {
+  if (!isAudioEnabled()) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  try {
+    const now = ctx.currentTime;
+    const notes = [
+      { freq: 440.0, time: 0.0, dur: 0.5 },   // A4
+      { freq: 554.37, time: 0.08, dur: 0.55 }, // C#5
+      { freq: 659.25, time: 0.16, dur: 0.65 }, // E5
+      { freq: 880.0, time: 0.24, dur: 0.8 },   // A5 (sparkle)
+    ];
+
+    notes.forEach((n) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(n.freq, now + n.time);
+
+      gain.gain.setValueAtTime(0.14, now + n.time);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + n.time + n.dur);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now + n.time);
+      osc.stop(now + n.time + n.dur + 0.05);
+    });
+  } catch {}
+}
+
+/**
+ * Industrial double denial buzz when credentials fail.
+ */
+export function playAccessDeniedTone(): void {
+  if (!isAudioEnabled()) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  try {
+    const now = ctx.currentTime;
+    [0.0, 0.12].forEach((offset) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "square";
+      osc.frequency.setValueAtTime(140, now + offset);
+      osc.frequency.setValueAtTime(110, now + offset + 0.08);
+
+      gain.gain.setValueAtTime(0.15, now + offset);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.09);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now + offset);
+      osc.stop(now + offset + 0.1);
+    });
+  } catch {}
+}
+
+/**
+ * Deep resonant bass warp sweep when entering the console.
+ */
+export function playWarpWhoosh(): void {
+  if (!isAudioEnabled()) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  try {
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(220, now);
+    osc.frequency.exponentialRampToValueAtTime(60, now + 0.4);
+
+    gain.gain.setValueAtTime(0.18, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.46);
+  } catch {}
+}
+
+/**
+ * Subtle tactile tick for button clicks and role switching.
+ */
+export function playTactileTick(): void {
+  if (!isAudioEnabled()) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  try {
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(1200, now);
+    osc.frequency.exponentialRampToValueAtTime(400, now + 0.03);
+
+    gain.gain.setValueAtTime(0.06, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.04);
+  } catch {}
+}
+
+/**
  * Triggers a sample chime when user enables sound in HeaderNav.
  */
 export function playTestTone(): void {
@@ -122,4 +266,5 @@ export function playTestTone(): void {
     osc.stop(now + 0.27);
   } catch {}
 }
+
 

@@ -1526,7 +1526,7 @@ export default function BleachingProcessLogApp() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[var(--bg-primary)] text-[var(--text-main)] transition-colors animate-in fade-in duration-300">
+    <div className="min-h-screen flex flex-col bg-[var(--bg-primary)] text-[var(--text-main)] transition-colors animate-terminal-boot">
       {/* 1. Header Navigation with Dynamic Tab Pill & User Auth Button */}
       <HeaderNav
         sheetStatus={sheet.status}
